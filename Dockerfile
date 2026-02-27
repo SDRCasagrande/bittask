@@ -54,16 +54,19 @@ set -e
 # Fix data directory permissions
 chown -R nextjs:nodejs /app/data
 
+# Run Prisma via node directly (npx not available in standalone)
+PRISMA="node /app/node_modules/prisma/build/index.js"
+
 # Initialize database if it doesn't exist
 if [ ! -f /app/data/prod.db ]; then
   echo "==> Initializing database..."
-  su-exec nextjs:nodejs npx prisma db push --skip-generate
+  su-exec nextjs:nodejs $PRISMA db push --skip-generate
   echo "==> Seeding users..."
-  su-exec nextjs:nodejs node prisma/seed.js
+  su-exec nextjs:nodejs node /app/prisma/seed.js
   echo "==> Database ready!"
 else
-  echo "==> Database exists, running migrations..."
-  su-exec nextjs:nodejs npx prisma db push --skip-generate
+  echo "==> Database exists, syncing schema..."
+  su-exec nextjs:nodejs $PRISMA db push --skip-generate --accept-data-loss 2>/dev/null || true
 fi
 
 # Start the server
