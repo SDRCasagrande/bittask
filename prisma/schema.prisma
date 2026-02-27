@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  simulations       Simulation[]
+  sharedSimulations SimulationShare[]
+  clients           Client[]
+
+  @@map("users")
+}
+
+model Simulation {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shares SimulationShare[]
+
+  @@index([userId])
+  @@map("simulations")
+}
+
+model SimulationShare {
+  id           String   @id @default(cuid())
+  simulationId String
+  sharedWithId String
+  createdAt    DateTime @default(now())
+
+  simulation Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  sharedWith User       @relation(fields: [sharedWithId], references: [id], onDelete: Cascade)
+
+  @@unique([simulationId, sharedWithId])
+  @@map("simulation_shares")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  stoneCode String   @default("")
+  cnpj      String   @default("")
+  phone     String   @default("")
+  email     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  negotiations Negotiation[]
+
+  @@index([userId])
+  @@map("clients")
+}
+
+model Negotiation {
+  id         String   @id @default(cuid())
+  clientId   String
+  dateNeg    String
+  dateAccept String   @default("")
+  status     String   @default("pendente")
+  rates      Json
+  notes      String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@map("negotiations")
+}
+
