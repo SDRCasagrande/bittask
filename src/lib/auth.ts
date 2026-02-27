@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'bitkaiser-taxas-dev-secret-2026';
+const JWT_SECRET = process.env.JWT_SECRET as string;
+if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
 
 export interface JWTPayload {
     userId: string;

@@ -15,6 +15,13 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
+# Initialize SQLite database with schema + seed data during build
+# This runs with all deps available, avoid runtime prisma CLI issues
+ENV DATABASE_URL="file:/app/data/prod.db"
+RUN mkdir -p /app/data
+RUN npx prisma db push --skip-generate
+RUN node prisma/seed.js
+
 # Build Next.js (standalone)
 RUN npm run build
 
@@ -35,18 +42,17 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Copy Prisma for runtime (db push, seed)
+# Copy the initialized database as a seed template
+COPY --from=builder /app/data/prod.db /app/data/seed.db
+
+# Copy Prisma schema (for reference)
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
 COPY --from=builder /app/package.json ./package.json
 
 # Create data directory for SQLite
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 
-# Entrypoint: always sync schema + seed, then start
+# Entrypoint: if no DB exists, copy seed DB, then start
 COPY <<'EOF' /app/entrypoint.sh
 #!/bin/sh
 set -e
@@ -54,16 +60,14 @@ set -e
 # Fix data directory permissions
 chown -R nextjs:nodejs /app/data
 
-# Run Prisma via node directly (npx not available in standalone)
-PRISMA="node /app/node_modules/prisma/build/index.js"
-
-# Always push schema (creates tables if missing, safe to run multiple times)
-echo "==> Syncing database schema..."
-su-exec nextjs:nodejs $PRISMA db push --skip-generate --accept-data-loss 2>&1 || echo "Schema sync warning (non-fatal)"
-
-# Always run seed (uses upsert, safe to run multiple times)
-echo "==> Ensuring seed data..."
-su-exec nextjs:nodejs node /app/prisma/seed.js 2>&1 || echo "Seed warning (non-fatal)"
+# If no production database exists, copy the seed template
+if [ ! -f /app/data/prod.db ] || [ ! -s /app/data/prod.db ]; then
+  echo "==> Initializing database from seed template..."
+  rm -f /app/data/prod.db
+  cp /app/data/seed.db /app/data/prod.db
+  chown nextjs:nodejs /app/data/prod.db
+  echo "==> Database ready with seeded users!"
+fi
 
 echo "==> Starting server..."
 exec su-exec nextjs:nodejs node server.js

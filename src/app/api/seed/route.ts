@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
-const SEED_KEY = process.env.SEED_KEY || 'bitkaiser-seed-2026';
+const SEED_KEY = process.env.SEED_KEY;
 
 const USERS = [
     { name: 'Eliel', email: 'eliel@casa94.com' },
