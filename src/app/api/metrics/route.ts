@@ -64,6 +64,39 @@ export async function GET() {
             take: 5,
         });
 
+        // Upcoming renegotiations (60-day deadline from dateAccept)
+        const RENEG_DAYS = 60;
+        const acceptedNegsAll = await prisma.negotiation.findMany({
+            where: { client: { userId: uid }, status: "aceita", dateAccept: { not: "" } },
+            include: { client: { select: { id: true, name: true, stoneCode: true } } },
+            orderBy: { dateAccept: "asc" },
+        });
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const upcomingRenegotiations = acceptedNegsAll
+            .map((neg) => {
+                const acceptDate = new Date(neg.dateAccept);
+                if (isNaN(acceptDate.getTime())) return null;
+                const renegDate = new Date(acceptDate);
+                renegDate.setDate(renegDate.getDate() + RENEG_DAYS);
+                renegDate.setHours(0, 0, 0, 0);
+                const daysLeft = Math.ceil((renegDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                if (daysLeft > 7) return null; // Only show within 7 days
+                return {
+                    negId: neg.id,
+                    clientId: neg.client.id,
+                    clientName: neg.client.name,
+                    stoneCode: neg.client.stoneCode,
+                    dateAccept: neg.dateAccept,
+                    renegDate: renegDate.toISOString().split("T")[0],
+                    daysLeft,
+                };
+            })
+            .filter(Boolean)
+            .sort((a, b) => (a!.daysLeft - b!.daysLeft));
+
         return NextResponse.json({
             totalClients,
             totalNegotiations,
@@ -73,6 +106,7 @@ export async function GET() {
             conversionRate,
             avgRates,
             recentClients,
+            upcomingRenegotiations,
         });
     } catch (error) {
         console.error("GET /api/metrics error:", error);

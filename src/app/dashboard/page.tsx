@@ -4,6 +4,16 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { formatPercent } from "@/lib/calculator";
 
+interface RenegAlert {
+    negId: string;
+    clientId: string;
+    clientName: string;
+    stoneCode: string;
+    dateAccept: string;
+    renegDate: string;
+    daysLeft: number;
+}
+
 interface Metrics {
     totalClients: number;
     totalNegotiations: number;
@@ -13,6 +23,7 @@ interface Metrics {
     conversionRate: number;
     avgRates: { debit: number; credit1x: number; credit2to6: number; credit7to12: number; pix: number; rav: number };
     recentClients: { id: string; name: string; stoneCode: string; cnpj: string; negotiations: { status: string; dateNeg: string; rates: Record<string, number> }[] }[];
+    upcomingRenegotiations: RenegAlert[];
 }
 
 export default function DashboardPage() {
@@ -50,6 +61,49 @@ export default function DashboardPage() {
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">Painel de controle BitKaiser Taxas</p>
             </div>
+
+            {/* Renegotiation Alerts */}
+            {metrics && metrics.upcomingRenegotiations && metrics.upcomingRenegotiations.length > 0 && (
+                <div className="glass-card rounded-xl p-4 border-l-4 border-amber-500">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-bold text-foreground">🔔 Renegociações Próximas</h3>
+                        <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-semibold">
+                            {metrics.upcomingRenegotiations.length} alerta(s)
+                        </span>
+                    </div>
+                    <div className="space-y-2">
+                        {metrics.upcomingRenegotiations.map((alert) => {
+                            const isUrgent = alert.daysLeft <= 0;
+                            return (
+                                <Link key={alert.negId} href="/dashboard/negociacoes"
+                                    className={`flex items-center justify-between p-3 rounded-xl transition-colors ${isUrgent
+                                            ? 'bg-red-500/10 hover:bg-red-500/20 border border-red-500/20'
+                                            : 'bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20'
+                                        }`}>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-lg ${isUrgent ? 'bg-red-500/20' : 'bg-amber-500/20'
+                                            }`}>
+                                            {isUrgent ? '🚨' : '⏰'}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-foreground">{alert.clientName}</p>
+                                            <p className="text-[10px] text-muted-foreground">
+                                                {alert.stoneCode && `SC: ${alert.stoneCode} • `}Aceita em {fmtDate(alert.dateAccept)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className={`text-xs font-bold px-3 py-1 rounded-full ${isUrgent
+                                            ? 'bg-red-500/20 text-red-400'
+                                            : 'bg-amber-500/20 text-amber-400'
+                                        }`}>
+                                        {isUrgent ? 'HOJE!' : `${alert.daysLeft}d`}
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">

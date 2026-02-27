@@ -11,6 +11,7 @@ const NAV_ITEMS = [
     { href: "/dashboard/proposta", label: "Simulador", icon: "📊" },
     { href: "/dashboard/comparativo", label: "Comparação", icon: "📋" },
     { href: "/dashboard/negociacoes", label: "Negociações", icon: "🤝" },
+    { href: "/dashboard/configuracoes", label: "Configurações", icon: "⚙️" },
 ];
 
 export default function DashboardLayout({
