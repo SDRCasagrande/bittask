@@ -15,10 +15,10 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Initialize SQLite database with schema + seed data during build
-# This runs with all deps available, avoid runtime prisma CLI issues
-ENV DATABASE_URL="file:/app/data/prod.db"
-RUN mkdir -p /app/data
+# Initialize SQLite database with schema + seed during build
+# (all deps available here, avoids runtime prisma CLI issues)
+RUN mkdir -p /app/seed
+ENV DATABASE_URL="file:/app/seed/prod.db"
 RUN npx prisma db push --skip-generate
 RUN node prisma/seed.js
 
@@ -42,8 +42,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Copy the initialized database as a seed template
-COPY --from=builder /app/data/prod.db /app/data/seed.db
+# Copy seed DB template to /app/seed (NOT /app/data which gets volume-mounted)
+COPY --from=builder /app/seed/prod.db /app/seed/seed.db
 
 # Copy Prisma schema (for reference)
 COPY --from=builder /app/prisma ./prisma
@@ -52,21 +52,21 @@ COPY --from=builder /app/package.json ./package.json
 # Create data directory for SQLite
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 
-# Entrypoint: if no DB exists, copy seed DB, then start
+# Entrypoint: if no DB exists, copy seed template from /app/seed/
 COPY <<'EOF' /app/entrypoint.sh
 #!/bin/sh
 set -e
 
-# Fix data directory permissions
 chown -R nextjs:nodejs /app/data
 
-# If no production database exists, copy the seed template
 if [ ! -f /app/data/prod.db ] || [ ! -s /app/data/prod.db ]; then
-  echo "==> Initializing database from seed template..."
+  echo "==> No database found. Copying seed template..."
   rm -f /app/data/prod.db
-  cp /app/data/seed.db /app/data/prod.db
+  cp /app/seed/seed.db /app/data/prod.db
   chown nextjs:nodejs /app/data/prod.db
-  echo "==> Database ready with seeded users!"
+  echo "==> Database initialized with seeded users!"
+else
+  echo "==> Existing database found, using it."
 fi
 
 echo "==> Starting server..."
