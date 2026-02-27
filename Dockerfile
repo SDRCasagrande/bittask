@@ -39,15 +39,34 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
 COPY --from=builder /app/package.json ./package.json
 
 # Create data directory for SQLite
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 
-# Entrypoint: fix permissions then drop to nextjs user
+# Entrypoint: fix permissions, init DB, then start
 COPY <<'EOF' /app/entrypoint.sh
 #!/bin/sh
+set -e
+
+# Fix data directory permissions
 chown -R nextjs:nodejs /app/data
+
+# Initialize database if it doesn't exist
+if [ ! -f /app/data/prod.db ]; then
+  echo "==> Initializing database..."
+  su-exec nextjs:nodejs npx prisma db push --skip-generate
+  echo "==> Seeding users..."
+  su-exec nextjs:nodejs node prisma/seed.js
+  echo "==> Database ready!"
+else
+  echo "==> Database exists, running migrations..."
+  su-exec nextjs:nodejs npx prisma db push --skip-generate
+fi
+
+# Start the server
 exec su-exec nextjs:nodejs node server.js
 EOF
 RUN chmod +x /app/entrypoint.sh
