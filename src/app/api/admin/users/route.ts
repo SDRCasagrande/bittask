@@ -10,7 +10,7 @@ export async function GET() {
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const users = await prisma.user.findMany({
-            select: { id: true, name: true, email: true, notificationEmail: true, isAdmin: true, isActive: true, createdAt: true },
+            select: { id: true, name: true, email: true, phone: true, notificationEmail: true, isAdmin: true, isActive: true, createdAt: true },
             orderBy: { createdAt: 'asc' },
         });
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
                 notificationEmail: notificationEmail?.trim() || '',
                 isAdmin: true,
             },
-            select: { id: true, name: true, email: true, notificationEmail: true, isAdmin: true, isActive: true, createdAt: true },
+            select: { id: true, name: true, email: true, phone: true, notificationEmail: true, isAdmin: true, isActive: true, createdAt: true },
         });
 
         return NextResponse.json(user, { status: 201 });

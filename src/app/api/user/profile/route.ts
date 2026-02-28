@@ -11,7 +11,7 @@ export async function GET() {
 
         const user = await prisma.user.findUnique({
             where: { id: session.userId },
-            select: { id: true, name: true, email: true, notificationEmail: true, createdAt: true },
+            select: { id: true, name: true, email: true, phone: true, notificationEmail: true, createdAt: true },
         });
 
         if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -22,20 +22,25 @@ export async function GET() {
     }
 }
 
-// PUT update user profile (email, notificationEmail, password)
+// PUT update user profile
 export async function PUT(request: Request) {
     try {
         const session = await getSession();
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await request.json();
-        const { email, notificationEmail, currentPassword, newPassword } = body;
+        const { name, email, phone, notificationEmail, currentPassword, newPassword } = body;
 
         const user = await prisma.user.findUnique({ where: { id: session.userId } });
         if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updateData: any = {};
+
+        // Update name
+        if (name !== undefined && name.trim()) {
+            updateData.name = name.trim();
+        }
 
         // Update login email
         if (email !== undefined && email.trim() !== user.email) {
@@ -45,6 +50,11 @@ export async function PUT(request: Request) {
                 return NextResponse.json({ error: 'Email já está em uso' }, { status: 409 });
             }
             updateData.email = trimmed;
+        }
+
+        // Update phone
+        if (phone !== undefined) {
+            updateData.phone = phone.trim();
         }
 
         // Update notification email (optional override)
@@ -70,7 +80,7 @@ export async function PUT(request: Request) {
         const updated = await prisma.user.update({
             where: { id: session.userId },
             data: updateData,
-            select: { id: true, name: true, email: true, notificationEmail: true },
+            select: { id: true, name: true, email: true, phone: true, notificationEmail: true },
         });
 
         return NextResponse.json(updated);

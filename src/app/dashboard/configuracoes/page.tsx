@@ -6,9 +6,12 @@ export default function ConfiguracoesPage() {
     const [profile, setProfile] = useState<{
         name: string;
         email: string;
+        phone: string;
         notificationEmail: string;
     } | null>(null);
+    const [name, setName] = useState("");
     const [loginEmail, setLoginEmail] = useState("");
+    const [phone, setPhone] = useState("");
     const [notifEmail, setNotifEmail] = useState("");
     const [currentPw, setCurrentPw] = useState("");
     const [newPw, setNewPw] = useState("");
@@ -22,20 +25,22 @@ export default function ConfiguracoesPage() {
             .then((r) => r.json())
             .then((d) => {
                 setProfile(d);
+                setName(d.name || "");
                 setLoginEmail(d.email || "");
+                setPhone(d.phone || "");
                 setNotifEmail(d.notificationEmail || "");
             })
             .finally(() => setLoading(false));
     }, []);
 
-    const saveEmails = async () => {
+    const saveProfile = async () => {
         setSaving(true);
         setMsg(null);
         try {
             const res = await fetch("/api/user/profile", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: loginEmail, notificationEmail: notifEmail }),
+                body: JSON.stringify({ name, email: loginEmail, phone, notificationEmail: notifEmail }),
             });
             const data = await res.json();
             if (res.ok) {
@@ -93,27 +98,32 @@ export default function ConfiguracoesPage() {
                 </div>
             )}
 
-            {/* Profile Info */}
+            {/* Profile + Emails - All in one save */}
             <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6 mb-6">
-                <h2 className="text-lg font-semibold mb-4">👤 Perfil</h2>
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm text-gray-400 mb-1">Nome</label>
-                        <div className="px-4 py-2.5 bg-gray-700/50 rounded-xl text-gray-300">{profile.name}</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Email Settings */}
-            <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6 mb-6">
-                <h2 className="text-lg font-semibold mb-2">📧 Emails</h2>
-                <p className="text-sm text-gray-400 mb-4">
-                    O email de acesso é usado para login e para receber a senha recuperada.
-                    O email de notificação (opcional) recebe os alertas de renegociação — se vazio, usa o de acesso.
-                </p>
+                <h2 className="text-lg font-semibold mb-4">👤 Meus Dados</h2>
                 <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs text-gray-400 mb-1">Nome</label>
+                            <input
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Seu nome"
+                                className="w-full px-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs text-gray-400 mb-1">Telefone</label>
+                            <input
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                placeholder="(00) 00000-0000"
+                                className="w-full px-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50"
+                            />
+                        </div>
+                    </div>
                     <div>
-                        <label className="block text-xs text-gray-400 mb-1">Email de acesso (login)</label>
+                        <label className="block text-xs text-gray-400 mb-1">Email de acesso (login + recuperação de senha)</label>
                         <input
                             type="email"
                             value={loginEmail}
@@ -123,21 +133,21 @@ export default function ConfiguracoesPage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-gray-400 mb-1">Email de notificação (opcional — deixe vazio para usar o de acesso)</label>
+                        <label className="block text-xs text-gray-400 mb-1">Email de notificação (opcional — alertas de renegociação)</label>
                         <input
                             type="email"
                             value={notifEmail}
                             onChange={(e) => setNotifEmail(e.target.value)}
-                            placeholder="outro-email@gmail.com (opcional)"
+                            placeholder="Deixe vazio para usar o email de acesso"
                             className="w-full px-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50"
                         />
                     </div>
                     <button
-                        onClick={saveEmails}
+                        onClick={saveProfile}
                         disabled={saving}
                         className="w-full px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
                     >
-                        {saving ? "Salvando..." : "💾 Salvar Emails"}
+                        {saving ? "Salvando..." : "💾 Salvar Dados"}
                     </button>
                 </div>
             </div>
