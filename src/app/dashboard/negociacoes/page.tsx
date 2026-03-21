@@ -10,9 +10,7 @@ const BRAND_NAMES = Object.keys(BRAND_PRESETS);
 interface BrandRateSet { [brand: string]: { debit: number; credit1x: number; credit2to6: number; credit7to12: number } }
 
 interface RateSnapshot {
-    // legacy flat fields (backward compat)
     debit: number; credit1x: number; credit2to6: number; credit7to12: number; pix: number; rav: number;
-    // new structured fields
     brandRates?: BrandRateSet;
     ravTipo?: "automatico" | "pontual";
     ravRate?: number;
@@ -50,7 +48,7 @@ function fmtDate(d: string) { if (!d) return "—"; try { return new Date(d + "T
 
 type View = "list" | "detail" | "new";
 
-/* ═══ Sub-components — MUST be outside page to prevent React remount / focus loss ═══ */
+/* ═══ Sub-components ═══ */
 
 function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot) => void }) {
     const [activeBrand, setActiveBrand] = useState("VISA/MASTER");
@@ -83,80 +81,80 @@ function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot)
     const brandList = Object.keys(br);
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-4">
             {/* Brand tabs */}
-            <div className="flex gap-0.5 flex-wrap items-center">
+            <div className="flex gap-1.5 flex-wrap items-center">
                 {brandList.map((b) => (
                     <div key={b} className="relative group">
                         <button type="button" onClick={() => setActiveBrand(b)}
-                            className={`px-1.5 py-0.5 text-[8px] rounded font-semibold transition-all ${activeBrand === b ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40" : "bg-secondary text-muted-foreground hover:bg-muted"
+                            className={`px-3 py-1.5 text-xs rounded-lg font-semibold transition-all ${activeBrand === b ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/40" : "bg-secondary text-muted-foreground hover:bg-muted"
                                 }`}>
                             {b}
                         </button>
                         {!BRAND_PRESETS[b] && (
                             <button type="button" onClick={() => removeBrand(b)}
-                                className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 text-white rounded-full text-[7px] leading-none hidden group-hover:flex items-center justify-center">x</button>
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full text-[9px] leading-none hidden group-hover:flex items-center justify-center">×</button>
                         )}
                     </div>
                 ))}
                 {showNewBrand ? (
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-1.5">
                         <input type="text" value={newBrandInput} autoFocus
                             onChange={(e) => setNewBrandInput(e.target.value.toUpperCase())}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && newBrandInput.trim()) { addBrand(newBrandInput.trim()); setNewBrandInput(""); setShowNewBrand(false); }
                                 if (e.key === "Escape") { setNewBrandInput(""); setShowNewBrand(false); }
                             }}
-                            placeholder="NOME"
-                            className="w-20 px-1 py-0.5 text-[8px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-emerald-500" />
+                            placeholder="BANDEIRA"
+                            className="w-24 px-2 py-1.5 text-xs rounded-lg bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-emerald-500" />
                         <button type="button" onClick={() => { addBrand(newBrandInput.trim()); setNewBrandInput(""); setShowNewBrand(false); }}
-                            className="text-[8px] text-emerald-400">OK</button>
+                            className="text-xs font-semibold text-emerald-500 hover:text-emerald-400">OK</button>
                         <button type="button" onClick={() => { setNewBrandInput(""); setShowNewBrand(false); }}
-                            className="text-[8px] text-red-400">X</button>
+                            className="text-xs font-semibold text-red-400 hover:text-red-300">✕</button>
                     </div>
                 ) : (
                     <button type="button" onClick={() => setShowNewBrand(true)}
-                        className="px-1.5 py-0.5 text-[8px] rounded font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">+</button>
+                        className="px-3 py-1.5 text-xs rounded-lg font-semibold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors">+ Bandeira</button>
                 )}
             </div>
             {/* Brand rates */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                <RI l="Debito" v={currentBrand.debit} set={(v) => updateBrand("debit", v)} />
-                <RI l="Cred 1x" v={currentBrand.credit1x} set={(v) => updateBrand("credit1x", v)} />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <RI l="Débito" v={currentBrand.debit} set={(v) => updateBrand("debit", v)} />
+                <RI l="Crédito 1x" v={currentBrand.credit1x} set={(v) => updateBrand("credit1x", v)} />
                 <RI l="2-6x" v={currentBrand.credit2to6} set={(v) => updateBrand("credit2to6", v)} />
                 <RI l="7-12x" v={currentBrand.credit7to12} set={(v) => updateBrand("credit7to12", v)} />
             </div>
             {/* PIX + RAV section */}
-            <div className="pt-2 border-t border-border space-y-1.5">
-                <h4 className="text-[9px] font-bold text-muted-foreground uppercase">PIX & RAV</h4>
-                <div className="grid grid-cols-2 gap-1.5">
+            <div className="pt-4 border-t border-border space-y-3">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">PIX & RAV</h4>
+                <div className="grid grid-cols-2 gap-3">
                     <RI l="PIX" v={rates.pix} set={(v) => set({ ...rates, pix: v })} />
                     <div>
-                        <label className="text-[9px] text-muted-foreground uppercase block mb-px">Tipo RAV</label>
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Tipo RAV</label>
                         <select value={rates.ravTipo || "automatico"} onChange={(e) => set({ ...rates, ravTipo: e.target.value as "automatico" | "pontual" })}
-                            className="w-full px-1 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] focus:ring-1 focus:ring-emerald-500">
-                            <option value="automatico">Automatico</option>
+                            className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all">
+                            <option value="automatico">Automático</option>
                             <option value="pontual">Pontual (sem CET)</option>
                         </select>
                     </div>
                 </div>
                 {(rates.ravTipo || "automatico") === "automatico" && (
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-3 gap-3">
                         <RI l="RAV Auto" v={rates.ravRate ?? rates.rav} set={(v) => set({ ...rates, ravRate: v, rav: v })} />
                         <RI l="RAV Pontual" v={rates.ravPontual ?? 3.79} set={(v) => set({ ...rates, ravPontual: v })} />
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Recebimento</label>
+                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Recebimento</label>
                             <select value={rates.ravTiming || "md"} onChange={(e) => set({ ...rates, ravTiming: e.target.value as "md" | "ds" | "du" })}
-                                className="w-full px-1 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] focus:ring-1 focus:ring-emerald-500">
+                                className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all">
                                 <option value="md">Mesmo Dia</option>
                                 <option value="ds">Dia Seguinte</option>
-                                <option value="du">Dias Uteis</option>
+                                <option value="du">Dias Úteis</option>
                             </select>
                         </div>
                     </div>
                 )}
                 {rates.ravTipo === "pontual" && (
-                    <div className="grid grid-cols-2 gap-1.5">
+                    <div className="grid grid-cols-2 gap-3">
                         <RI l="RAV Auto" v={rates.ravRate ?? rates.rav} set={(v) => set({ ...rates, ravRate: v, rav: v })} />
                         <RI l="RAV Pontual" v={rates.ravPontual ?? 3.79} set={(v) => set({ ...rates, ravPontual: v })} />
                     </div>
@@ -173,25 +171,25 @@ function RatesReadonly({ rates }: { rates: RateSnapshot }) {
     const ravLabel = rates.ravTipo === "pontual" ? "Pontual" : `Auto ${rates.ravTiming === "ds" ? "D.Seg" : rates.ravTiming === "du" ? "D.Uteis" : "M.Dia"}`;
 
     return (
-        <div className="space-y-1.5">
+        <div className="space-y-3">
             {br && (
-                <div className="flex gap-0.5 flex-wrap">
+                <div className="flex gap-1.5 flex-wrap">
                     {BRAND_NAMES.filter(b => br[b]).map((b) => (
                         <button key={b} type="button" onClick={() => setShowBrand(b)}
-                            className={`px-1 py-0.5 text-[7px] rounded font-semibold ${showBrand === b ? "bg-emerald-500/20 text-emerald-400" : "bg-secondary/50 text-muted-foreground"
+                            className={`px-2.5 py-1 text-xs rounded-lg font-semibold transition-all ${showBrand === b ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-secondary/60 text-muted-foreground hover:bg-secondary"
                                 }`}>
                             {b}
                         </button>
                     ))}
                 </div>
             )}
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-1">
-                {[{ l: "Deb", v: current.debit }, { l: "1x", v: current.credit1x }, { l: "2-6x", v: current.credit2to6 },
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                {[{ l: "Débito", v: current.debit }, { l: "Créd 1x", v: current.credit1x }, { l: "2-6x", v: current.credit2to6 },
                 { l: "7-12x", v: current.credit7to12 }, { l: "PIX", v: rates.pix },
                 { l: ravLabel, v: rates.ravTipo === "pontual" ? 0 : (rates.ravRate ?? rates.rav) }].map((r) => (
-                    <div key={r.l} className="bg-secondary rounded-md p-1 text-center">
-                        <p className="text-[8px] text-muted-foreground">{r.l}</p>
-                        <p className="text-[10px] font-bold text-foreground">{formatPercent(r.v)}</p>
+                    <div key={r.l} className="bg-secondary rounded-xl p-2.5 text-center">
+                        <p className="text-xs text-muted-foreground font-medium">{r.l}</p>
+                        <p className="text-sm font-bold text-foreground mt-0.5">{formatPercent(r.v)}</p>
                     </div>
                 ))}
             </div>
@@ -200,23 +198,30 @@ function RatesReadonly({ rates }: { rates: RateSnapshot }) {
 }
 
 function StatusBadge({ s }: { s: Negotiation["status"] }) {
-    const cls = { pendente: "bg-amber-500/10 text-amber-500 border-amber-500/30", aceita: "bg-emerald-500/10 text-emerald-500 border-emerald-500/30", recusada: "bg-red-500/10 text-red-500 border-red-500/30" };
-    const lbl = { pendente: "⏳ Pendente", aceita: "✅ Aceita", recusada: "❌ Recusada" };
-    return <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${cls[s]}`}>{lbl[s]}</span>;
+    const cls = {
+        pendente: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30",
+        aceita: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30",
+        recusada: "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-400 dark:border-red-500/30",
+    };
+    const lbl = { pendente: "Pendente", aceita: "Aceita", recusada: "Recusada" };
+    return <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${cls[s]}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${s === "pendente" ? "bg-amber-500" : s === "aceita" ? "bg-emerald-500" : "bg-red-500"}`} />
+        {lbl[s]}
+    </span>;
 }
 
 function DateFields({ dn, setDN, da, setDA }: { dn: string; setDN: (s: string) => void; da: string; setDA: (s: string) => void }) {
     return (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
             <div>
-                <label className="text-[9px] text-muted-foreground uppercase block mb-px">📅 Data Negociação</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Data Negociação</label>
                 <input type="date" value={dn} onChange={(e) => setDN(e.target.value)}
-                    className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs focus:ring-1 focus:ring-emerald-500" />
+                    className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
             </div>
             <div>
-                <label className="text-[9px] text-muted-foreground uppercase block mb-px">✅ Data Aceite</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Data Aceite</label>
                 <input type="date" value={da} onChange={(e) => setDA(e.target.value)}
-                    className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs focus:ring-1 focus:ring-emerald-500" />
+                    className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
             </div>
         </div>
     );
@@ -248,7 +253,6 @@ export default function NegociacoesPage() {
     const [er, setER] = useState<RateSnapshot>(defaultRates());
     const [edn, setEDN] = useState(""); const [eda, setEDA] = useState(""); const [en, setEN] = useState("");
 
-    // Load from API
     const loadClients = useCallback(async () => {
         try {
             const r = await fetch("/api/clients");
@@ -289,7 +293,7 @@ export default function NegociacoesPage() {
                         if (data.razaoSocial && !fn.trim()) setFN(data.razaoSocial);
                         if (data.telefone && !fph.trim()) setFPH(data.telefone);
                         if (data.email && !fem.trim()) setFEM(data.email);
-                        setFDocMsg(`CNPJ valido - ${data.razaoSocial || "Encontrado"}`);
+                        setFDocMsg(`CNPJ válido — ${data.razaoSocial || "Encontrado"}`);
                     }
                 } catch { /* */ }
                 setCnpjLoading(false);
@@ -374,32 +378,29 @@ export default function NegociacoesPage() {
         } catch { /* */ }
     }
 
-    // WhatsApp share for client history
     function shareClientWhatsApp() {
         if (!sel) return;
         const activeNeg = sel.negotiations.find((n) => n.status === "aceita");
         const rates = activeNeg?.rates || sel.negotiations[0]?.rates;
-        let txt = `HISTORICO - ${sel.name}\n`;
-        if (sel.stoneCode) txt += `SC: ${sel.stoneCode}\n`;
+        let txt = `HISTÓRICO — ${sel.name}\n`;
+        if (sel.stoneCode) txt += `Stone Code: ${sel.stoneCode}\n`;
         if (sel.cnpj) txt += `CNPJ: ${sel.cnpj}\n`;
-        const ravInfo = rates?.ravTipo === "pontual" ? "RAV Pontual (sem antecipacao)" : `RAV Automatico: ${formatPercent(rates?.ravRate ?? rates?.rav ?? 0)}`;
+        const ravInfo = rates?.ravTipo === "pontual" ? "RAV Pontual (sem antecipação)" : `RAV Automático: ${formatPercent(rates?.ravRate ?? rates?.rav ?? 0)}`;
         txt += `\nTAXAS ${activeNeg ? "APROVADAS" : "ATUAIS"} (VISA/MASTER):\n`;
         if (rates) {
-            txt += `Deb: ${formatPercent(rates.debit)} | Cred 1x: ${formatPercent(rates.credit1x)}\n`;
+            txt += `Débito: ${formatPercent(rates.debit)} | Crédito 1x: ${formatPercent(rates.credit1x)}\n`;
             txt += `2-6x: ${formatPercent(rates.credit2to6)} | 7-12x: ${formatPercent(rates.credit7to12)}\n`;
             txt += `PIX: ${formatPercent(rates.pix)}\n`;
             txt += `${ravInfo}\n`;
         }
-        txt += `\n📜 ${sel.negotiations.length} negociação(ões) registradas\n`;
+        txt += `\n${sel.negotiations.length} negociação(ões) registradas\n`;
         sel.negotiations.forEach((n, i) => {
             const st = { pendente: "⏳", aceita: "✅", recusada: "❌" };
             txt += `${i + 1}. ${st[n.status]} ${fmtDate(n.dateNeg)}${n.notes ? " — " + n.notes : ""}\n`;
         });
-        txt += `\nBoa negociacao!`;
+        txt += `\nBoa negociação!`;
         window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
     }
-
-    // Components already extracted to module level to prevent focus loss
 
     if (loading) {
         return (
@@ -409,69 +410,71 @@ export default function NegociacoesPage() {
         );
     }
 
-    // ─── LIST ───
+    // ─── LIST VIEW ───
     if (view === "list") {
         return (
-            <div className="max-w-5xl mx-auto space-y-4">
-                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div className="max-w-5xl mx-auto space-y-6">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <div>
-                        <h1 className="text-lg font-bold text-foreground">Negociações</h1>
-                        <p className="text-xs text-muted-foreground">CRM de controle de taxas por cliente</p>
+                        <h1 className="text-2xl font-bold text-foreground">Negociações</h1>
+                        <p className="text-sm text-muted-foreground mt-1">CRM de controle de taxas por cliente</p>
                     </div>
                     <button onClick={() => { resetNewForm(); setView("new"); }}
-                        className="px-3 py-1.5 text-xs rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-500 hover:to-emerald-400 shadow-sm">
-                        ➕ Novo Cliente
+                        className="px-5 py-2.5 text-sm rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition-colors shadow-sm">
+                        + Novo Cliente
                     </button>
                 </div>
 
                 <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">🔍</span>
+                    <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome, Stone Code ou CNPJ..."
-                        className="w-full pl-9 pr-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:ring-1 focus:ring-emerald-500" />
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
                 </div>
 
                 {filtered.length === 0 ? (
-                    <div className="glass-card rounded-2xl p-10 text-center">
-                        <p className="text-3xl mb-3">🤝</p>
-                        <p className="font-semibold text-foreground text-sm">Nenhum cliente cadastrado</p>
-                        <p className="text-xs text-muted-foreground mt-1">Cadastre clientes para acompanhar negociações.</p>
+                    <div className="bg-card border border-border rounded-2xl p-12 text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </div>
+                        <p className="font-semibold text-foreground text-base">Nenhum cliente cadastrado</p>
+                        <p className="text-sm text-muted-foreground mt-1">Cadastre clientes para acompanhar negociações de taxas.</p>
                     </div>
                 ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {filtered.map((c) => {
                             const last = c.negotiations[0];
                             const rates = last?.rates;
                             return (
                                 <button key={c.id} onClick={() => { setSelId(c.id); setView("detail"); setEditNegId(null); setShowReNeg(false); }}
-                                    className="w-full glass-card rounded-xl p-3 text-left hover:ring-1 hover:ring-emerald-500/30 transition-all">
-                                    <div className="flex items-start gap-3 mb-2">
-                                        <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-sm font-bold text-emerald-500">{c.name.charAt(0).toUpperCase()}</span>
+                                    className="w-full bg-card border border-border rounded-2xl p-5 text-left hover:border-emerald-500/40 hover:shadow-sm transition-all">
+                                    <div className="flex items-start gap-4 mb-3">
+                                        <div className="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">{c.name.charAt(0).toUpperCase()}</span>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-foreground text-sm truncate">{c.name}</p>
-                                            <div className="flex gap-2 text-[10px] text-muted-foreground">
+                                            <p className="font-semibold text-foreground text-base truncate">{c.name}</p>
+                                            <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
                                                 {c.stoneCode && <span>SC: {c.stoneCode}</span>}
                                                 {c.cnpj && <span>{c.cnpj}</span>}
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                                             {last && <StatusBadge s={last.status} />}
-                                            <span className="text-[10px] text-muted-foreground">{c.negotiations.length} neg.</span>
+                                            <span className="text-xs text-muted-foreground">{c.negotiations.length} negociação(ões)</span>
                                         </div>
                                     </div>
                                     {last && rates && (
-                                        <div className="space-y-1.5">
-                                            <div className="flex gap-4 text-[10px]">
-                                                <span className="text-muted-foreground">📅 Neg: <strong className="text-foreground">{fmtDate(last.dateNeg)}</strong></span>
-                                                <span className="text-muted-foreground">✅ Aceite: <strong className={last.dateAccept ? "text-emerald-500" : "text-amber-500"}>{last.dateAccept ? fmtDate(last.dateAccept) : "Pendente"}</strong></span>
+                                        <div className="space-y-2">
+                                            <div className="flex gap-6 text-xs">
+                                                <span className="text-muted-foreground">Negociação: <strong className="text-foreground">{fmtDate(last.dateNeg)}</strong></span>
+                                                <span className="text-muted-foreground">Aceite: <strong className={last.dateAccept ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>{last.dateAccept ? fmtDate(last.dateAccept) : "Pendente"}</strong></span>
                                             </div>
-                                            <div className="grid grid-cols-6 gap-1">
-                                                {[{ l: "Déb", v: rates.debit }, { l: "1x", v: rates.credit1x }, { l: "2-6x", v: rates.credit2to6 },
+                                            <div className="grid grid-cols-6 gap-2">
+                                                {[{ l: "Débito", v: rates.debit }, { l: "1x", v: rates.credit1x }, { l: "2-6x", v: rates.credit2to6 },
                                                 { l: "7-12x", v: rates.credit7to12 }, { l: "PIX", v: rates.pix }, { l: "RAV", v: rates.rav }].map((r) => (
-                                                    <div key={r.l} className="bg-secondary/50 rounded p-1 text-center">
-                                                        <p className="text-[8px] text-muted-foreground">{r.l}</p>
-                                                        <p className="text-[10px] font-bold text-foreground">{formatPercent(r.v)}</p>
+                                                    <div key={r.l} className="bg-secondary/60 rounded-lg p-2 text-center">
+                                                        <p className="text-xs text-muted-foreground">{r.l}</p>
+                                                        <p className="text-sm font-bold text-foreground">{formatPercent(r.v)}</p>
                                                     </div>
                                                 ))}
                                             </div>
@@ -489,176 +492,180 @@ export default function NegociacoesPage() {
     // ─── NEW CLIENT ───
     if (view === "new") {
         return (
-            <div className="max-w-2xl mx-auto space-y-4">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => setView("list")} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-foreground text-sm">← Voltar</button>
-                    <h1 className="text-lg font-bold text-foreground">Novo Cliente + Negociação</h1>
+            <div className="max-w-2xl mx-auto space-y-6">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => setView("list")} className="p-2 rounded-lg hover:bg-muted transition-colors text-foreground">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <h1 className="text-xl font-bold text-foreground">Novo Cliente + Negociação</h1>
                 </div>
 
-                <div className="glass-card rounded-xl p-4 space-y-3">
-                    <h3 className="text-[10px] font-bold text-foreground uppercase">👤 Dados do Cliente</h3>
-                    <div className="grid grid-cols-2 gap-2">
+                <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Dados do Cliente</h3>
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2">
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Nome/Razao Social *</label>
-                            <input value={fn} onChange={(e) => setFN(e.target.value)} placeholder="Nome"
-                                className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs placeholder:text-muted-foreground focus:ring-1 focus:ring-emerald-500" />
+                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Nome / Razão Social *</label>
+                            <input value={fn} onChange={(e) => setFN(e.target.value)} placeholder="Nome completo ou razão social"
+                                className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
                         </div>
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Stone Code</label>
+                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Stone Code</label>
                             <input value={fsc} onChange={(e) => setFSC(e.target.value)} placeholder="123456"
-                                className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs placeholder:text-muted-foreground focus:ring-1 focus:ring-emerald-500" />
+                                className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
                         </div>
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">
-                                CNPJ/CPF {cnpjLoading && <span className="text-emerald-400 animate-pulse">buscando...</span>}
+                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">
+                                CNPJ/CPF {cnpjLoading && <span className="text-emerald-500 animate-pulse ml-1">buscando...</span>}
                             </label>
                             <input value={fcnpj} onChange={(e) => handleCnpjChange(e.target.value)} placeholder="00.000.000/0000-00"
-                                className={`w-full px-2 py-1.5 rounded-md bg-secondary border text-foreground text-xs placeholder:text-muted-foreground focus:ring-1 focus:ring-emerald-500 ${fDocOk === true ? "border-emerald-500" : fDocOk === false ? "border-red-500" : "border-border"
+                                className={`w-full px-3 py-2.5 rounded-lg bg-secondary border text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500/40 transition-all ${fDocOk === true ? "border-emerald-500" : fDocOk === false ? "border-red-500" : "border-border"
                                     }`} />
                             {fDocMsg && (
-                                <p className={`text-[9px] mt-0.5 ${fDocOk ? "text-emerald-400" : "text-red-400"}`}>{fDocMsg}</p>
+                                <p className={`text-xs mt-1 ${fDocOk ? "text-emerald-500" : "text-red-500"}`}>{fDocMsg}</p>
                             )}
                         </div>
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Telefone</label>
+                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Telefone</label>
                             <input value={fph} onChange={(e) => setFPH(e.target.value)} placeholder="(00) 00000-0000"
-                                className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs placeholder:text-muted-foreground focus:ring-1 focus:ring-emerald-500" />
+                                className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
                         </div>
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">E-mail</label>
-                            <input value={fem} onChange={(e) => setFEM(e.target.value)} placeholder="email@emp.com"
-                                className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs placeholder:text-muted-foreground focus:ring-1 focus:ring-emerald-500" />
+                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">E-mail</label>
+                            <input value={fem} onChange={(e) => setFEM(e.target.value)} placeholder="email@empresa.com"
+                                className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
                         </div>
                     </div>
                 </div>
 
-                <div className="glass-card rounded-xl p-4 space-y-3 border border-emerald-500/20">
-                    <h3 className="text-[10px] font-bold text-emerald-500 uppercase">📊 Taxas Negociadas</h3>
+                <div className="bg-card border border-emerald-500/20 rounded-2xl p-6 space-y-4">
+                    <h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Taxas Negociadas</h3>
                     <RatesForm rates={fRates} set={setFRates} />
                     <DateFields dn={fDateN} setDN={setFDateN} da={fDateA} setDA={setFDateA} />
                     <div>
-                        <label className="text-[9px] text-muted-foreground uppercase block mb-px">📝 Observações</label>
-                        <textarea value={fNotes} onChange={(e) => setFNotes(e.target.value)} rows={2} placeholder="Detalhes..."
-                            className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs placeholder:text-muted-foreground resize-none focus:ring-1 focus:ring-emerald-500" />
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Observações</label>
+                        <textarea value={fNotes} onChange={(e) => setFNotes(e.target.value)} rows={3} placeholder="Detalhes da negociação..."
+                            className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground resize-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
                     </div>
                 </div>
 
                 <button onClick={handleSaveClient} disabled={!fn.trim()}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-sm font-semibold hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-50 shadow-sm">
-                    💾 Salvar Cliente + Negociação
+                    className="w-full py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-500 disabled:opacity-50 transition-colors shadow-sm">
+                    Salvar Cliente + Negociação
                 </button>
             </div>
         );
     }
 
-    // ─── DETAIL ───
+    // ─── DETAIL VIEW ───
     if (view === "detail" && sel) {
         const activeRates = sel.negotiations.find((n) => n.status === "aceita")?.rates;
 
         return (
-            <div className="max-w-4xl mx-auto space-y-4">
-                <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
-                    <div className="flex items-center gap-3">
+            <div className="max-w-4xl mx-auto space-y-6">
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button onClick={() => { setView("list"); setSelId(null); setEditNegId(null); }}
-                            className="p-1.5 rounded-lg hover:bg-muted transition-colors text-foreground text-sm">← Voltar</button>
+                            className="p-2 rounded-lg hover:bg-muted transition-colors text-foreground">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                        </button>
                         <div>
-                            <h1 className="text-lg font-bold text-foreground">{sel.name}</h1>
-                            <div className="flex gap-2 text-[10px] text-muted-foreground flex-wrap">
+                            <h1 className="text-xl font-bold text-foreground">{sel.name}</h1>
+                            <div className="flex gap-3 text-sm text-muted-foreground mt-0.5 flex-wrap">
                                 {sel.stoneCode && <span>SC: {sel.stoneCode}</span>}
                                 {sel.cnpj && <span>{sel.cnpj}</span>}
-                                {sel.phone && <span>📞 {sel.phone}</span>}
+                                {sel.phone && <span>{sel.phone}</span>}
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-2 flex-wrap">
                         <button onClick={shareClientWhatsApp}
-                            className="px-3 py-1.5 text-xs rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20">📱 WhatsApp</button>
+                            className="px-4 py-2 text-sm rounded-xl bg-green-500/10 text-green-600 dark:text-green-400 font-semibold hover:bg-green-500/20 transition-colors">WhatsApp</button>
                         <button onClick={() => {
                             setShowReNeg(true); setEditNegId(null);
                             if (activeRates) setRR({ ...activeRates }); else setRR(defaultRates());
                             setRDN(today()); setRDA(""); setRN("");
-                        }} className="px-3 py-1.5 text-xs rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20">
-                            🔄 Renegociar
+                        }} className="px-4 py-2 text-sm rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold hover:bg-emerald-500/20 transition-colors">
+                            Renegociar
                         </button>
                         <button onClick={() => handleDeleteClient(sel.id)}
-                            className="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20">🗑️</button>
+                            className="px-4 py-2 text-sm rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 font-semibold hover:bg-red-500/20 transition-colors">Excluir</button>
                     </div>
                 </div>
 
                 {activeRates && (
-                    <div className="glass-card rounded-xl p-3 border border-emerald-500/20">
-                        <h3 className="text-[10px] font-bold text-emerald-500 uppercase mb-2">✅ Taxas Vigentes (Aprovadas)</h3>
+                    <div className="bg-card border border-emerald-500/20 rounded-2xl p-5">
+                        <h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-3">Taxas Vigentes (Aprovadas)</h3>
                         <RatesReadonly rates={activeRates} />
                     </div>
                 )}
 
                 {showReNeg && (
-                    <div className="glass-card rounded-xl p-4 space-y-3 border border-blue-500/30">
-                        <h3 className="text-[10px] font-bold text-blue-500 uppercase">🔄 Nova Renegociação</h3>
+                    <div className="bg-card border border-blue-500/30 rounded-2xl p-6 space-y-4">
+                        <h3 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Nova Renegociação</h3>
                         <RatesForm rates={rr} set={setRR} />
                         <DateFields dn={rdn} setDN={setRDN} da={rda} setDA={setRDA} />
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">📝 Observações</label>
-                            <textarea value={rn} onChange={(e) => setRN(e.target.value)} rows={2} placeholder="Motivo..."
-                                className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs placeholder:text-muted-foreground resize-none" />
+                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">Observações</label>
+                            <textarea value={rn} onChange={(e) => setRN(e.target.value)} rows={3} placeholder="Motivo da renegociação..."
+                                className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground resize-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all" />
                         </div>
-                        <div className="flex gap-2">
-                            <button onClick={handleAddReNeg} className="flex-1 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500">💾 Registrar</button>
-                            <button onClick={() => setShowReNeg(false)} className="px-4 py-2 rounded-lg bg-secondary text-muted-foreground text-xs">Cancelar</button>
+                        <div className="flex gap-3">
+                            <button onClick={handleAddReNeg} className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-colors">Registrar</button>
+                            <button onClick={() => setShowReNeg(false)} className="px-6 py-2.5 rounded-xl bg-secondary text-muted-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
                         </div>
                     </div>
                 )}
 
                 <div>
-                    <h3 className="text-sm font-semibold text-foreground mb-2">📜 Histórico ({sel.negotiations.length})</h3>
-                    <div className="space-y-2">
+                    <h3 className="text-base font-bold text-foreground mb-3">Histórico ({sel.negotiations.length})</h3>
+                    <div className="space-y-3">
                         {sel.negotiations.map((neg, idx) => {
                             const isEditing = editNegId === neg.id;
                             return (
-                                <div key={neg.id} className={`glass-card rounded-xl p-3 ${idx === 0 ? "ring-1 ring-emerald-500/20" : ""}`}>
+                                <div key={neg.id} className={`bg-card border rounded-2xl p-5 ${idx === 0 ? "border-emerald-500/20" : "border-border"}`}>
                                     {isEditing ? (
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <h4 className="text-[10px] font-bold text-amber-500 uppercase">✏️ Editando</h4>
-                                                <button onClick={() => setEditNegId(null)} className="text-[10px] text-muted-foreground hover:text-foreground">✕</button>
+                                                <h4 className="text-sm font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Editando Negociação</h4>
+                                                <button onClick={() => setEditNegId(null)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">✕</button>
                                             </div>
                                             <RatesForm rates={er} set={setER} />
                                             <DateFields dn={edn} setDN={setEDN} da={eda} setDA={setEDA} />
-                                            <textarea value={en} onChange={(e) => setEN(e.target.value)} rows={2} placeholder="Obs..."
-                                                className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-xs resize-none" />
+                                            <textarea value={en} onChange={(e) => setEN(e.target.value)} rows={2} placeholder="Observações..."
+                                                className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm resize-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all" />
                                             <button onClick={handleSaveEditNeg}
-                                                className="w-full py-2 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:bg-amber-500">💾 Salvar</button>
+                                                className="w-full py-2.5 rounded-xl bg-amber-600 text-white text-sm font-bold hover:bg-amber-500 transition-colors">Salvar Alterações</button>
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2">
-                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                                <div className="flex items-center gap-2 flex-wrap">
                                                     <StatusBadge s={neg.status} />
-                                                    {idx === 0 && <span className="text-[9px] text-emerald-500 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-full">RECENTE</span>}
+                                                    {idx === 0 && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-full">Mais recente</span>}
                                                 </div>
-                                                <div className="flex gap-1 flex-wrap">
+                                                <div className="flex gap-1.5 flex-wrap">
                                                     {neg.status === "pendente" && (
                                                         <>
                                                             <button onClick={() => handleNegStatus(neg.id, "aceita")}
-                                                                className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20">✅ Aceitar</button>
+                                                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors">Aceitar</button>
                                                             <button onClick={() => handleNegStatus(neg.id, "recusada")}
-                                                                className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-500/10 text-red-500 hover:bg-red-500/20">❌ Recusar</button>
+                                                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-colors">Recusar</button>
                                                         </>
                                                     )}
                                                     <button onClick={() => startEditNeg(neg)}
-                                                        className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-500 hover:bg-amber-500/20">✏️ Editar</button>
+                                                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">Editar</button>
                                                     {sel.negotiations.length > 1 && (
                                                         <button onClick={() => handleDeleteNeg(neg.id)}
-                                                            className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-500/10 text-red-500 hover:bg-red-500/20">🗑️</button>
+                                                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-colors">Excluir</button>
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="flex gap-4 text-[10px] mb-2">
-                                                <span className="text-muted-foreground">📅 {fmtDate(neg.dateNeg)}</span>
-                                                <span className="text-muted-foreground">✅ {neg.dateAccept ? fmtDate(neg.dateAccept) : "Pendente"}</span>
+                                            <div className="flex gap-6 text-sm mb-3">
+                                                <span className="text-muted-foreground">Negociação: <strong className="text-foreground">{fmtDate(neg.dateNeg)}</strong></span>
+                                                <span className="text-muted-foreground">Aceite: <strong className={neg.dateAccept ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>{neg.dateAccept ? fmtDate(neg.dateAccept) : "Pendente"}</strong></span>
                                             </div>
                                             <RatesReadonly rates={neg.rates} />
-                                            {neg.notes && <p className="text-[10px] text-muted-foreground mt-2 italic border-t border-border pt-1.5">📝 {neg.notes}</p>}
+                                            {neg.notes && <p className="text-sm text-muted-foreground mt-3 italic border-t border-border pt-3">{neg.notes}</p>}
                                         </>
                                     )}
                                 </div>

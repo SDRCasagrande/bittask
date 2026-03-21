@@ -17,7 +17,7 @@ export function RI({ l, v, set }: { l: string; v: number; set: (n: number) => vo
 
     return (
         <div>
-            <label className="text-[9px] text-muted-foreground uppercase block mb-px">{l}</label>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1">{l}</label>
             <div className="relative">
                 <input type="text" inputMode="decimal" value={txt}
                     onFocus={() => { focused.current = true; }}
@@ -32,8 +32,8 @@ export function RI({ l, v, set }: { l: string; v: number; set: (n: number) => vo
                         if (!isNaN(n)) { set(n); setTxt(String(n)); }
                         else { set(0); setTxt("0"); }
                     }}
-                    className="w-full px-1.5 py-1 rounded-md bg-secondary border border-border text-foreground text-[11px] font-medium text-right pr-4 focus:ring-1 focus:ring-emerald-500" />
-                <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] text-muted-foreground">%</span>
+                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm font-semibold text-right pr-7 focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">%</span>
             </div>
         </div>
     );
