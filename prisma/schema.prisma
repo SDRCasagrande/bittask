@@ -80,6 +80,8 @@ model Negotiation {
   status     String   @default("pendente")
   rates      Json
   notes      String   @default("")
+  alertDate  String   @default("")
+  alertSent  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
