@@ -40,67 +40,63 @@ export interface ProposalData {
     isExempt: boolean;
 }
 
-// ─── PDF — TUDO EM 1 PÁGINA A4 PAISAGEM ───
+// ─── PDF — PRINT-FRIENDLY, WHITE BACKGROUND, A4 LANDSCAPE ───
 export function exportPDF(data: ProposalData) {
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const w = doc.internal.pageSize.getWidth(); // 297
     const h = doc.internal.pageSize.getHeight(); // 210
-    const m = 8; // margin
+    const m = 10; // margin
     let y = m;
     const colW = (w - m * 3) / 2; // two-column layout
 
-    // Colors
-    const emerald: [number, number, number] = [0, 168, 104];
-    const dark: [number, number, number] = [15, 23, 42];
-    const darkCard: [number, number, number] = [30, 41, 59];
-    const gray: [number, number, number] = [100, 116, 139];
+    // Colors (text only — no background fills!)
+    const emerald: [number, number, number] = [0, 136, 80];
+    const black: [number, number, number] = [30, 30, 30];
+    const gray: [number, number, number] = [100, 100, 100];
+    const white: [number, number, number] = [255, 255, 255];
 
-    // Dark background
-    doc.setFillColor(...dark);
-    doc.rect(0, 0, w, h, "F");
-
-    // Header bar
+    // Header bar (thin green line at top)
     doc.setFillColor(...emerald);
-    doc.rect(0, 0, w, 16, "F");
+    doc.rect(0, 0, w, 14, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
+    doc.setFontSize(14);
     doc.setTextColor(255, 255, 255);
-    doc.text(`PROPOSTA COMERCIAL STONE — ${data.cliente.nome || "Cliente"}`, m, 10);
-    doc.setFontSize(9);
-    doc.text(new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR"), w - m, 10, { align: "right" });
+    doc.text(`PROPOSTA COMERCIAL STONE — ${data.cliente.nome || "Cliente"}`, m, 9);
+    doc.setFontSize(10);
+    doc.text(new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR"), w - m, 9, { align: "right" });
     y = 20;
 
     // === LEFT COLUMN ===
     const lx = m;
 
-    // Client info (compact)
-    doc.setFontSize(10);
+    // Client info
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...emerald);
     doc.text("CLIENTE", lx, y);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(220, 220, 220);
-    doc.text(`${data.cliente.nome || "—"}  |  ${data.cliente.cnpj || "—"}  |  ${data.cliente.telefone || "—"}`, lx, y + 5);
-    y += 12;
+    doc.setFontSize(10);
+    doc.setTextColor(...black);
+    doc.text(`${data.cliente.nome || "—"}  |  ${data.cliente.cnpj || "—"}  |  ${data.cliente.telefone || "—"}`, lx, y + 6);
+    y += 14;
 
     // Volume
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setTextColor(...emerald);
     doc.text("VOLUME (TPV)", lx, y);
-    doc.setTextColor(255, 255, 255);
-    doc.text(formatCurrency(data.tpv) + "/mês", lx + 45, y);
+    doc.setTextColor(...black);
+    doc.text(formatCurrency(data.tpv) + "/mês", lx + 50, y);
     y += 5;
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(200, 200, 200);
+    doc.setFontSize(9);
+    doc.setTextColor(...gray);
     doc.text(`Déb: ${formatCurrency(data.volDebit)} (${data.shareDebit.toFixed(0)}%) | Créd: ${formatCurrency(data.volCredit)} (${data.shareCredit.toFixed(0)}%) | PIX: ${formatCurrency(data.volPix)} (${data.sharePix.toFixed(0)}%)`, lx, y);
-    y += 7;
+    y += 8;
 
     // Rates comparison table
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setTextColor(...emerald);
     doc.text("COMPARATIVO DE TAXAS", lx, y);
     y += 2;
@@ -114,17 +110,18 @@ export function exportPDF(data: ProposalData) {
             [data.competitorName, formatPercent(data.compRates.debit), formatPercent(data.compRates.credit1x), formatPercent(data.compRates.credit2to6), formatPercent(data.compRates.credit7to12), formatPercent(data.compRates.pix), formatPercent(data.compRates.rav)],
         ],
         theme: "grid",
-        styles: { fontSize: 9, halign: "center", cellPadding: 2.5, textColor: [255, 255, 255], fillColor: darkCard },
-        headStyles: { fillColor: emerald as [number, number, number], textColor: [255, 255, 255], fontSize: 9 },
+        styles: { fontSize: 10, halign: "center", cellPadding: 3, textColor: black, lineColor: [200, 200, 200], lineWidth: 0.3 },
+        headStyles: { fillColor: emerald, textColor: white, fontSize: 10, fontStyle: "bold" },
+        bodyStyles: { fillColor: white },
         columnStyles: { 0: { halign: "left", fontStyle: "bold" } },
         tableWidth: colW,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    y = (doc as any).lastAutoTable.finalY + 4;
+    y = (doc as any).lastAutoTable.finalY + 6;
 
     // Costs summary
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setTextColor(...emerald);
     doc.text("CUSTOS MENSAIS", lx, y);
     y += 2;
@@ -138,35 +135,38 @@ export function exportPDF(data: ProposalData) {
             [data.competitorName, formatCurrency(data.compFee), formatCurrency(data.compRental), formatCurrency(data.compTotal)],
         ],
         theme: "grid",
-        styles: { fontSize: 9, halign: "center", cellPadding: 2.5, textColor: [255, 255, 255], fillColor: darkCard },
-        headStyles: { fillColor: [51, 65, 85], textColor: [255, 255, 255], fontSize: 9 },
+        styles: { fontSize: 10, halign: "center", cellPadding: 3, textColor: black, lineColor: [200, 200, 200], lineWidth: 0.3 },
+        headStyles: { fillColor: [70, 70, 70], textColor: white, fontSize: 10, fontStyle: "bold" },
+        bodyStyles: { fillColor: white },
         columnStyles: { 0: { halign: "left", fontStyle: "bold" } },
         tableWidth: colW,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    y = (doc as any).lastAutoTable.finalY + 4;
+    y = (doc as any).lastAutoTable.finalY + 6;
 
     // Agreement
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setTextColor(...emerald);
     doc.text("ACORDO", lx, y);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(200, 200, 200);
-    doc.text(`${data.agreementType === "fidelidade" ? "Fidelidade" : "Adesão"} | ${data.machines} máquina(s) ${data.isExempt ? "(ISENTO)" : ""}`, lx + 22, y);
-    y += 6;
+    doc.setTextColor(...black);
+    doc.text(`${data.agreementType === "fidelidade" ? "Fidelidade" : "Adesão"} | ${data.machines} máquina(s) ${data.isExempt ? "(ISENTO)" : ""}`, lx + 25, y);
+    y += 8;
 
-    // Economy block
-    doc.setFillColor(...emerald);
-    doc.roundedRect(lx, y, colW, 22, 2, 2, "F");
+    // Economy block (green border, no fill)
+    doc.setDrawColor(...emerald);
+    doc.setLineWidth(1);
+    doc.roundedRect(lx, y, colW, 24, 2, 2, "S");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
-    doc.text(data.economy > 0 ? ">> ECONOMIA COM STONE" : ">> CUSTO ADICIONAL", lx + 4, y + 7);
-    doc.setFontSize(16);
-    doc.text(`${formatCurrency(Math.abs(data.economy))}/mês`, lx + 4, y + 16);
     doc.setFontSize(11);
-    doc.text(`${formatCurrency(Math.abs(data.economy) * 12)}/ano`, lx + 65, y + 16);
+    doc.setTextColor(...emerald);
+    doc.text(data.economy > 0 ? ">> ECONOMIA COM STONE" : ">> CUSTO ADICIONAL", lx + 4, y + 8);
+    doc.setFontSize(18);
+    doc.text(`${formatCurrency(Math.abs(data.economy))}/mês`, lx + 4, y + 18);
+    doc.setFontSize(12);
+    doc.setTextColor(...gray);
+    doc.text(`${formatCurrency(Math.abs(data.economy) * 12)}/ano`, lx + 70, y + 18);
 
     // === RIGHT COLUMN ===
     const rx = m * 2 + colW;
@@ -174,7 +174,7 @@ export function exportPDF(data: ProposalData) {
 
     // CET table
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setTextColor(...emerald);
     doc.text("TABELA CET STONE (1x-12x)", rx, ry);
     ry += 2;
@@ -185,15 +185,16 @@ export function exportPDF(data: ProposalData) {
         return formatPercent(calculateCET(mdr, data.rav, i + 1));
     });
 
-    // 2 rows of 6 for compactness
+    // 2 rows of 6
     autoTable(doc, {
         startY: ry,
         margin: { left: rx, right: m },
         head: [cetH.slice(0, 6)],
         body: [cetV.slice(0, 6)],
         theme: "grid",
-        styles: { fontSize: 9, halign: "center", cellPadding: 2.5, textColor: [255, 255, 255], fillColor: darkCard },
-        headStyles: { fillColor: emerald as [number, number, number], textColor: [255, 255, 255], fontSize: 9 },
+        styles: { fontSize: 10, halign: "center", cellPadding: 3, textColor: black, lineColor: [200, 200, 200], lineWidth: 0.3 },
+        headStyles: { fillColor: emerald, textColor: white, fontSize: 10 },
+        bodyStyles: { fillColor: white },
         tableWidth: colW,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -205,23 +206,24 @@ export function exportPDF(data: ProposalData) {
         head: [cetH.slice(6)],
         body: [cetV.slice(6)],
         theme: "grid",
-        styles: { fontSize: 6, halign: "center", cellPadding: 1.5, textColor: [255, 255, 255], fillColor: darkCard },
-        headStyles: { fillColor: emerald as [number, number, number], textColor: [255, 255, 255], fontSize: 6 },
+        styles: { fontSize: 10, halign: "center", cellPadding: 3, textColor: black, lineColor: [200, 200, 200], lineWidth: 0.3 },
+        headStyles: { fillColor: emerald, textColor: white, fontSize: 10 },
+        bodyStyles: { fillColor: white },
         tableWidth: colW,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ry = (doc as any).lastAutoTable.finalY + 6;
+    ry = (doc as any).lastAutoTable.finalY + 8;
 
-    // Savings visual (big text on right column)
-    doc.setFillColor(30, 41, 59);
-    doc.roundedRect(rx, ry, colW, 30, 2, 2, "F");
+    // Financial summary (bordered box, no dark fill)
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(rx, ry, colW, 35, 2, 2, "S");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(...gray);
-    doc.text("RESUMO FINANCEIRO", rx + 4, ry + 6);
+    doc.setFontSize(11);
+    doc.setTextColor(...emerald);
+    doc.text("RESUMO FINANCEIRO", rx + 4, ry + 7);
 
-    doc.setFontSize(9);
-    doc.setTextColor(200, 200, 200);
+    doc.setFontSize(10);
     const items = [
         { l: "Custo Stone (taxas + aluguel):", v: formatCurrency(data.stoneTotal) },
         { l: `Custo ${data.competitorName}:`, v: formatCurrency(data.compTotal) },
@@ -230,17 +232,17 @@ export function exportPDF(data: ProposalData) {
     ];
     items.forEach((item, i) => {
         doc.setTextColor(...gray);
-        doc.text(item.l, rx + 3, ry + 10 + i * 5);
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.text(item.v, rx + colW - 3, ry + 10 + i * 5, { align: "right" });
         doc.setFont("helvetica", "normal");
+        doc.text(item.l, rx + 4, ry + 13 + i * 6);
+        doc.setTextColor(...black);
+        doc.setFont("helvetica", "bold");
+        doc.text(item.v, rx + colW - 4, ry + 13 + i * 6, { align: "right" });
     });
 
     // Footer
-    doc.setFontSize(8);
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Proposta gerada em ${new Date().toLocaleDateString("pt-BR")}`, w / 2, h - 4, { align: "center" });
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Proposta gerada em ${new Date().toLocaleDateString("pt-BR")} — BitKaiser Taxas`, w / 2, h - 5, { align: "center" });
 
     const filename = `Proposta_${(data.cliente.nome || "Stone").replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
     const blob = doc.output("blob");

@@ -152,44 +152,42 @@ export default function CETCalculatorPage() {
         const totalMaqPdf = machines + maqAdesao;
         const adesaoCustoPdf = maqAdesao * adesaoValor;
         const ravLabel = ravTipo === "pontual" ? "Pontual (sem antecipação)" : `Automático — ${ravTiming === "md" ? "Mesmo Dia" : ravTiming === "ds" ? "Dia Seguinte" : "Dias Úteis"}`;
+        const brandCount = ACTIVE_BRANDS.length;
+        // Adaptive columns: 2 cols if <=4 brands, 3 if 5-6, etc.
+        const gridCols = brandCount <= 3 ? brandCount : brandCount <= 6 ? Math.min(brandCount, 3) : Math.min(brandCount, 4);
 
         let html = `<html><head><title>CET ${clientName || "Stone"}</title>
 <style>
-@page{size:landscape;margin:6mm}
+@page{size:landscape;margin:5mm}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;font-size:13px;color:#333;padding:10px}
-.header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #00a868;padding-bottom:5px;margin-bottom:6px}
+html,body{height:100%;overflow:hidden}
+body{font-family:Arial,sans-serif;font-size:14px;color:#333;padding:6px;display:flex;flex-direction:column;height:100vh}
+.header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #00a868;padding-bottom:4px;margin-bottom:6px;flex-shrink:0}
 .header-center{flex:1;text-align:center}
-.header h1{font-size:22px;color:#00a868;margin:0;font-weight:bold}
+.header h1{font-size:24px;color:#00a868;margin:0;font-weight:bold}
 .badges{margin-top:2px}
-.promo-badge,.fidelidade-badge{display:inline-block;font-size:11px;padding:3px 8px;border-radius:3px;margin:0 2px}
+.promo-badge,.fidelidade-badge{display:inline-block;font-size:12px;padding:3px 10px;border-radius:3px;margin:0 3px}
 .promo-badge{background:#fff3cd;color:#856404;border:1px solid #ffc107}
 .fidelidade-badge{background:#e3f2fd;color:#1565c0;border:1px solid #42a5f5}
-.logo{display:flex;align-items:center;gap:3px;flex-shrink:0}
-.logo .dot{width:14px;height:14px;background:#00a868;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:bold}
-.logo span{font-size:11px;font-weight:bold;color:#00a868}
-.main{display:flex;gap:8px}
-.left{width:210px;flex-shrink:0}
-.right{flex:1;min-width:0}
-.card{border:1px solid #e0e0e0;border-radius:4px;padding:4px;margin-bottom:4px}
-.card h3{font-size:12px;font-weight:bold;text-transform:uppercase;color:#00a868;margin-bottom:3px;letter-spacing:0.3px}
-.card-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;border-bottom:1px solid #f5f5f5}
+.main{display:flex;gap:10px;flex:1;min-height:0}
+.left{width:240px;flex-shrink:0;display:flex;flex-direction:column;gap:5px}
+.right{flex:1;min-width:0;overflow:hidden}
+.card{border:1px solid #ccc;border-radius:5px;padding:8px 10px;flex:1}
+.card h3{font-size:14px;font-weight:bold;text-transform:uppercase;color:#00a868;margin-bottom:6px;letter-spacing:0.3px;border-bottom:2px solid #e8f5e9;padding-bottom:4px}
+.card-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px solid #f0f0f0}
 .card-row:last-child{border-bottom:none}
-.card-row .label{color:#888}.card-row .val{font-weight:bold;color:#333}
-.cet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0}
-.brand-block{page-break-inside:avoid;border-right:1px solid #ccc;padding:0 2px}
-.brand-header{display:flex;justify-content:space-between;align-items:center;padding:1px 2px;background:linear-gradient(90deg,#e8f5e9,#fff);border-radius:3px 3px 0 0;border:1px solid #c8e6c9;border-bottom:none}
-.brand-header h4{font-size:10px;font-weight:bold;color:#2e7d32;margin:0}
-.brand-header .deb{font-size:8px;color:#666}
+.card-row .label{color:#666;font-size:12px}.card-row .val{font-weight:bold;color:#222;font-size:13px}
+.cet-grid{display:grid;grid-template-columns:repeat(${gridCols},1fr);gap:4px;height:100%}
+.brand-block{border:1px solid #ccc;border-radius:5px;overflow:hidden;display:flex;flex-direction:column}
+.brand-header{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:linear-gradient(90deg,#e8f5e9,#fff);border-bottom:1px solid #c8e6c9}
+.brand-header h4{font-size:13px;font-weight:bold;color:#2e7d32;margin:0}
+.brand-header .deb{font-size:11px;color:#666}
 .brand-header .deb b{color:#333}
-table{width:100%;border-collapse:collapse;font-size:9px;line-height:1.2}
-th{padding:1px 3px;font-weight:600;color:#555;font-size:8px;border-bottom:1px solid #ddd}
-td{padding:1px 3px;border-bottom:1px solid #f0f0f0}
-.mdr-row td{color:#555}
-.cet-row td{font-weight:bold}
+table{width:100%;border-collapse:collapse;font-size:11px;line-height:1.4}
+th{padding:2px 6px;font-weight:600;color:#555;font-size:10px;border-bottom:1px solid #ddd;background:#fafafa}
+td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
 .green{color:#059669}.amber{color:#d97706}.red{color:#dc2626}
-.pix-line{font-size:10px;color:#888;padding:1px 4px;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 3px 3px;background:#fafafa}
-.footer{font-size:11px;color:#aaa;margin-top:4px;border-top:1px solid #eee;padding-top:2px;display:flex;justify-content:space-between}
+.footer{font-size:11px;color:#999;margin-top:4px;border-top:1px solid #eee;padding-top:3px;display:flex;justify-content:space-between;flex-shrink:0}
 </style></head><body>`;
 
         // Header
@@ -200,12 +198,14 @@ td{padding:1px 3px;border-bottom:1px solid #f0f0f0}
 
         html += `<div class="main">`;
 
-        // LEFT
+        // LEFT — fills full height with larger fonts
         html += `<div class="left">`;
-        html += `<div class="card"><h3>Taxas por Bandeira</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px">`;
+
+        // Taxas por Bandeira card
+        html += `<div class="card" style="flex:2"><h3>Taxas por Bandeira</h3>`;
         ACTIVE_BRANDS.forEach(name => {
             const r = brandRates[name];
-            html += `<div style="margin-bottom:3px;padding-bottom:3px;border-bottom:1px solid #ddd"><div style="font-size:7px;font-weight:bold;color:#2e7d32">${name}</div>`;
+            html += `<div style="margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #e0e0e0"><div style="font-size:12px;font-weight:bold;color:#2e7d32;margin-bottom:2px">${name}</div>`;
             html += `<div class="card-row"><span class="label">D\u00e9b</span><span class="val">${formatPercent(r.debit)}</span></div>`;
             html += `<div class="card-row"><span class="label">1x</span><span class="val">${formatPercent(r.credit1x)}</span></div>`;
             html += `<div class="card-row"><span class="label">2-6x</span><span class="val">${formatPercent(r.credit2to6)}</span></div>`;
@@ -213,20 +213,22 @@ td{padding:1px 3px;border-bottom:1px solid #f0f0f0}
             html += `<div class="card-row"><span class="label">13-18x</span><span class="val">${formatPercent(r.credit13to18)}</span></div>`;
             html += `</div>`;
         });
-        html += `</div></div>`;
+        html += `</div>`;
 
+        // RAV card
         html += `<div class="card"><h3>Antecipa\u00e7\u00e3o (RAV)</h3>`;
-        html += `<div class="card-row"><span class="label">Tipo</span><span class="val">${ravLabel}</span></div>`;
+        html += `<div class="card-row"><span class="label">Tipo</span><span class="val" style="font-size:12px">${ravLabel}</span></div>`;
         html += `<div class="card-row"><span class="label">Auto</span><span class="val">${formatPercent(ravAuto)}</span></div>`;
         html += `<div class="card-row"><span class="label">Pontual</span><span class="val">${formatPercent(ravPontual)}</span></div>`;
         html += `</div>`;
 
+        // PIX & Maquinas card
         html += `<div class="card"><h3>PIX & M\u00e1quinas</h3>`;
         html += `<div class="card-row"><span class="label">PIX</span><span class="val">${formatPercent(pixRate)}</span></div>`;
         html += `<div class="card-row"><span class="label">TPV</span><span class="val">R$ ${tpv.toLocaleString("pt-BR")}</span></div>`;
         html += `<div class="card-row"><span class="label">Maq. Proposta</span><span class="val">${machines}</span></div>`;
         if (maqAdesao > 0) {
-            html += `<div class="card-row"><span class="label">Ades\u00e3o (sem aluguel)</span><span class="val" style="color:#1565c0">${maqAdesao} m\u00e1q. (R$ ${adesaoCustoPdf.toFixed(2)})</span></div>`;
+            html += `<div class="card-row"><span class="label">Ades\u00e3o</span><span class="val" style="color:#1565c0">${maqAdesao} m\u00e1q. (R$ ${adesaoCustoPdf.toFixed(2)})</span></div>`;
         }
         html += `<div class="card-row"><span class="label">Total</span><span class="val">${totalMaqPdf}</span></div>`;
         html += `<div class="card-row"><span class="label">IPV (isentas)</span><span class="val" style="color:#059669">${Math.min(ipvPdf, machines)}</span></div>`;
@@ -234,9 +236,9 @@ td{padding:1px 3px;border-bottom:1px solid #f0f0f0}
         else html += `<div class="card-row"><span class="label">Aluguel</span><span class="val" style="color:#059669">ISENTO</span></div>`;
         if (fidelidade) html += `<div class="card-row"><span class="label">Fidelidade</span><span class="val" style="color:#1565c0">13 meses</span></div>`;
         html += `</div>`;
-        html += `</div>`;
+        html += `</div>`; // end left
 
-        // RIGHT — CET tables in 2-column grid
+        // RIGHT — CET tables in adaptive grid
         html += `<div class="right"><div class="cet-grid">`;
         ACTIVE_BRANDS.forEach(name => {
             const rates = brandRates[name];
