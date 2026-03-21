@@ -57,7 +57,7 @@ async function main() {
 
   for (const neg of negotiations) {
     const result = await prisma.negotiation.create({ data: neg });
-    console.log(`  ✓ ${neg.status} (${neg.dateNeg.toISOString().split("T")[0]}) → ${result.id}`);
+    console.log(`  ✓ ${neg.status} (${neg.dateNeg}) → ${result.id}`);
   }
 
   console.log("\n==> Done! 3 negotiations restored.");
