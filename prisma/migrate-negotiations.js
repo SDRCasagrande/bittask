@@ -25,8 +25,8 @@ async function main() {
   const negotiations = [
     {
       clientId: claudia.id,
-      dateNeg: new Date("2026-01-30"),
-      dateAccept: new Date("2026-01-30"),
+      dateNeg: "2026-01-30",
+      dateAccept: "2026-01-30",
       status: "aceita",
       rates: {"debit":2.04,"credit1x":3.85,"credit2to6":2.18,"credit7to12":2.41,"pix":5,"rav":1.3,"brandRates":{"VISA/MASTER":{"debit":2.04,"credit1x":3.85,"credit2to6":2.18,"credit7to12":2.41},"ELO":{"debit":2.38,"credit1x":4.4,"credit2to6":3.28,"credit7to12":3.76},"AMEX":{"debit":2.5,"credit1x":3.5,"credit2to6":4,"credit7to12":4.5},"HIPERCARD":{"debit":1.9,"credit1x":2.9,"credit2to6":3.4,"credit7to12":3.9},"CABAL":{"debit":1.8,"credit1x":2.8,"credit2to6":3.3,"credit7to12":3.8}},"ravTipo":"automatico","ravRate":1.3,"ravPontual":3.79,"ravTiming":"du"},
       notes: "",
@@ -35,8 +35,8 @@ async function main() {
     },
     {
       clientId: tatiele.id,
-      dateNeg: new Date("2026-02-06"),
-      dateAccept: new Date("2026-02-06"),
+      dateNeg: "2026-02-06",
+      dateAccept: "2026-02-06",
       status: "aceita",
       rates: {"debit":1.34,"credit1x":3.85,"credit2to6":8.37,"credit7to12":13.9,"pix":50,"rav":1.3,"brandRates":{"VISA/MASTER":{"debit":1.34,"credit1x":3.85,"credit2to6":8.37,"credit7to12":13.9},"ELO":{"debit":1.83,"credit1x":2.82,"credit2to6":3.28,"credit7to12":3.76},"AMEX":{"debit":2.5,"credit1x":3.5,"credit2to6":4,"credit7to12":4.5},"HIPERCARD":{"debit":1.9,"credit1x":2.9,"credit2to6":3.4,"credit7to12":3.9},"CABAL":{"debit":1.8,"credit1x":2.8,"credit2to6":3.3,"credit7to12":3.8}},"ravTipo":"automatico","ravRate":1.3,"ravPontual":3.79,"ravTiming":"du"},
       notes: "",
@@ -45,8 +45,8 @@ async function main() {
     },
     {
       clientId: stylus.id,
-      dateNeg: new Date("2026-02-13"),
-      dateAccept: new Date("2026-02-13"),
+      dateNeg: "2026-02-13",
+      dateAccept: "2026-02-13",
       status: "aceita",
       rates: {"debit":1.49,"credit1x":3.51,"credit2to6":2.18,"credit7to12":2.41,"pix":50,"rav":1.3,"brandRates":{"VISA/MASTER":{"debit":1.49,"credit1x":3.51,"credit2to6":2.18,"credit7to12":2.41},"ELO":{"debit":1.83,"credit1x":2.82,"credit2to6":3.28,"credit7to12":3.76},"AMEX":{"debit":2.5,"credit1x":3.5,"credit2to6":4,"credit7to12":4.5},"HIPERCARD":{"debit":1.9,"credit1x":2.9,"credit2to6":3.4,"credit7to12":3.9},"CABAL":{"debit":1.8,"credit1x":2.8,"credit2to6":3.3,"credit7to12":3.8}},"ravTipo":"automatico","ravRate":1.3,"ravPontual":3.79,"ravTiming":"du"},
       notes: "",
