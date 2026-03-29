@@ -12,6 +12,33 @@ import {
     type BrandRates,
 } from "@/lib/calculator";
 import { exportPDF, exportExcel, type ProposalData } from "@/lib/exports";
+import {
+    ArrowRight,
+    Check,
+    Users,
+    TrendingUp,
+    Package,
+    Truck,
+    Palette,
+    ShieldCheck,
+    QrCode,
+    Store,
+    Crown,
+    ChevronDown,
+    MousePointer2,
+    Calculator,
+    Smartphone,
+    FileText,
+    FileSpreadsheet,
+    RefreshCcw,
+    User,
+    Wallet,
+    Percent,
+    SmartphoneNfc,
+    FileSignature,
+    TrendingDown,
+    Activity
+} from "lucide-react";
 import { RI } from "@/components/rate-input";
 
 const STORAGE_KEY = "bitkaiser_proposta_v2";
@@ -220,24 +247,40 @@ export default function PropostaPage() {
     return (
         <div className="max-w-[1400px] mx-auto space-y-3">
             {/* Header */}
-            <div className="flex items-center justify-between gap-3">
-                <div>
-                    <h1 className="text-lg font-bold text-foreground">Simulador de Proposta</h1>
-                    <p className="text-xs text-muted-foreground">Stone vs {comp.name} — Comparação + Proposta unificada</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
+                        <Calculator className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold text-foreground">Simulador de Proposta</h1>
+                        <p className="text-sm text-muted-foreground">Stone vs {comp.name} — Comparação + Proposta unificada</p>
+                    </div>
                 </div>
-                <div className="flex gap-1.5 flex-wrap">
-                    <button onClick={shareWhatsApp} className="px-3 py-1.5 text-xs rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors">📱 WhatsApp</button>
-                    <button onClick={() => exportPDF(getExportData())} className="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors">📄 PDF</button>
-                    <button onClick={() => exportExcel(getExportData())} className="px-3 py-1.5 text-xs rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors">📊 Excel</button>
-                    <button onClick={handleReset} className="px-3 py-1.5 text-xs rounded-lg bg-secondary text-muted-foreground hover:bg-muted transition-colors">🔄</button>
+                <div className="flex gap-2 flex-wrap">
+                    <button onClick={shareWhatsApp} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors">
+                        <Smartphone className="w-4 h-4" /> WhatsApp
+                    </button>
+                    <button onClick={() => exportPDF(getExportData())} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors">
+                        <FileText className="w-4 h-4" /> PDF
+                    </button>
+                    <button onClick={() => exportExcel(getExportData())} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors">
+                        <FileSpreadsheet className="w-4 h-4" /> Excel
+                    </button>
+                    <button onClick={handleReset} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-secondary text-muted-foreground hover:bg-muted transition-colors">
+                        <RefreshCcw className="w-4 h-4" /> Reset
+                    </button>
                 </div>
             </div>
 
             {/* ROW 1: Client + Volume + TPV */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                 {/* Client — 5 cols */}
-                <div className="md:col-span-5 glass-card rounded-xl p-3 space-y-2">
-                    <h3 className="text-[10px] font-bold text-foreground uppercase">👤 Cliente</h3>
+                <div className="md:col-span-5 glass-card rounded-xl p-4 space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                        <User className="w-4 h-4 text-emerald-500" />
+                        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Cliente</h3>
+                    </div>
                     <div className="relative">
                         <input value={nome} onChange={(e) => searchCRM(e.target.value)} placeholder="Nome / Stone Code"
                             onFocus={() => nome.length >= 2 && crmResults.length > 0 && setShowCrm(true)}
@@ -264,9 +307,12 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Volume — 5 cols */}
-                <div className="md:col-span-5 glass-card rounded-xl p-3">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-[10px] font-bold text-foreground uppercase">💰 Volume (R$)</h3>
+                <div className="md:col-span-5 glass-card rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <Wallet className="w-4 h-4 text-emerald-500" />
+                            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Volume (R$)</h3>
+                        </div>
                         <div className="flex items-center gap-2">
                             <select value={compId} onChange={(e) => setCompId(e.target.value)}
                                 className="px-2 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px]">
@@ -301,8 +347,11 @@ export default function PropostaPage() {
             {/* ROW 2: Stone Rates + Competitor Rates + CET */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                 {/* Stone Rates — multi-brand */}
-                <div className="md:col-span-3 glass-card rounded-xl p-3 border-l-2 border-emerald-500/30">
-                    <h3 className="text-[10px] font-bold text-emerald-500 uppercase mb-1.5">🟢 Taxas Stone</h3>
+                <div className="md:col-span-3 glass-card rounded-xl p-4 border-[1px] border-emerald-500/20">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Percent className="w-4 h-4 text-emerald-500" />
+                        <h3 className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Taxas Stone</h3>
+                    </div>
                     <div className="flex gap-0.5 mb-2 flex-wrap items-center">
                         {BRANDS.map((b) => (
                             <div key={b} className="relative group">
@@ -363,8 +412,8 @@ export default function PropostaPage() {
                     </div>
 
                     {/* PIX + RAV — separados das bandeiras */}
-                    <div className="mt-3 pt-2 border-t border-border">
-                        <h4 className="text-[9px] font-bold text-muted-foreground uppercase mb-1.5">PIX & RAV (todas bandeiras)</h4>
+                    <div className="mt-4 pt-3 border-t border-border">
+                        <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">PIX & RAV (todas bandeiras)</h4>
                         <div className="grid grid-cols-2 gap-1.5 mb-2">
                             <RI l="PIX" v={pixR} set={setPixR} />
                             <div>
@@ -399,8 +448,11 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Competitor Rates — 3 cols */}
-                <div className="md:col-span-3 glass-card rounded-xl p-3 border-l-2" style={{ borderColor: comp.color + '50' }}>
-                    <h3 className="text-[10px] font-bold uppercase mb-2" style={{ color: comp.color }}>🔴 Taxas {comp.name}</h3>
+                <div className="md:col-span-3 glass-card rounded-xl p-4 border-[1px]" style={{ borderColor: comp.color + '30' }}>
+                    <div className="flex items-center gap-2 mb-3">
+                        <Percent className="w-4 h-4" style={{ color: comp.color }} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: comp.color }}>Taxas {comp.name}</h3>
+                    </div>
                     <div className="grid grid-cols-3 gap-1.5">
                         <RI l="Débito" v={cr.debit} set={(v) => setCR((p) => ({ ...p, debit: v }))} />
                         <RI l="Créd 1x" v={cr.credit1x} set={(v) => setCR((p) => ({ ...p, credit1x: v }))} />
@@ -412,8 +464,11 @@ export default function PropostaPage() {
                 </div>
 
                 {/* CET Grid — 6 cols */}
-                <div className="md:col-span-6 glass-card rounded-xl p-3">
-                    <h3 className="text-[10px] font-bold text-foreground uppercase mb-1.5">📊 CET Stone — {activeBrand} (1x-12x)</h3>
+                <div className="md:col-span-6 glass-card rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Activity className="w-4 h-4 text-foreground" />
+                        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">CET Stone — {activeBrand} (1x-12x)</h3>
+                    </div>
                     <div className="grid grid-cols-6 gap-1">
                         {cetTable.map(({ inst, cet }) => {
                             const color = cet < 5 ? "text-emerald-500" : cet < 10 ? "text-amber-500" : "text-red-500";
@@ -432,8 +487,11 @@ export default function PropostaPage() {
             {/* ROW 3: Machines + IPV + Agreement + Diff */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3">
                 {/* Machines Stone */}
-                <div className="md:col-span-3 glass-card rounded-xl p-3">
-                    <h3 className="text-[10px] font-bold text-emerald-500 uppercase mb-2">🟢 Máquinas Stone</h3>
+                <div className="md:col-span-3 glass-card rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <SmartphoneNfc className="w-4 h-4 text-emerald-500" />
+                        <h3 className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Máquinas Stone</h3>
+                    </div>
                     <div className="grid grid-cols-2 gap-1.5">
                         <div>
                             <label className="text-[9px] text-muted-foreground uppercase block mb-px">Qtd</label>
@@ -456,8 +514,11 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Machines Comp — 3 cols */}
-                <div className="md:col-span-3 glass-card rounded-xl p-3">
-                    <h3 className="text-[10px] font-bold uppercase mb-2" style={{ color: comp.color }}>🔴 Máquinas {comp.name}</h3>
+                <div className="md:col-span-3 glass-card rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <SmartphoneNfc className="w-4 h-4" style={{ color: comp.color }} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: comp.color }}>Máquinas {comp.name}</h3>
+                    </div>
                     <div className="grid grid-cols-3 gap-1.5">
                         <div>
                             <label className="text-[9px] text-muted-foreground uppercase block mb-px">Qtd</label>
@@ -484,8 +545,11 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Agreement — 3 cols */}
-                <div className="md:col-span-3 glass-card rounded-xl p-3">
-                    <h3 className="text-[10px] font-bold text-foreground uppercase mb-2">📝 Acordo</h3>
+                <div className="md:col-span-3 glass-card rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <FileSignature className="w-4 h-4 text-foreground" />
+                        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Acordo</h3>
+                    </div>
                     <div className="flex gap-1 mb-2">
                         <button onClick={() => setAgreement("fidelidade")}
                             className={`flex-1 py-1 text-[10px] rounded-md font-medium ${agreement === "fidelidade" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/30" : "bg-secondary text-muted-foreground border border-border"}`}>
@@ -541,8 +605,11 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Cost Diff — 3 cols */}
-                <div className="md:col-span-3 glass-card rounded-xl p-3">
-                    <h3 className="text-[10px] font-bold text-foreground uppercase mb-2">📊 Diferença</h3>
+                <div className="md:col-span-3 glass-card rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <TrendingDown className="w-4 h-4 text-foreground" />
+                        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Diferença</h3>
+                    </div>
                     <div className="space-y-1 text-[11px]">
                         {[
                             { l: "Taxas Déb", d: cDebitCost - sDebitCost },
@@ -568,11 +635,16 @@ export default function PropostaPage() {
             </div>
 
             {/* ROW 4: Economy Bar */}
-            <div className={`rounded-xl p-4 flex items-center justify-between text-white shadow-lg ${economy > 0 ? "bg-gradient-to-r from-emerald-600 to-emerald-500 glow-green" :
+            <div className={`rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 text-white shadow-lg ${economy > 0 ? "bg-gradient-to-r from-emerald-600 to-emerald-500 glow-green" :
                 economy < 0 ? "bg-gradient-to-r from-amber-600 to-amber-500" : "bg-gradient-to-r from-slate-600 to-slate-500"}`}>
-                <div>
-                    <p className="text-xs text-white/70">{economy > 0 ? "💰 Economia com Stone" : economy < 0 ? "⚠️ Custo adicional" : "Equivalente"}</p>
-                    <p className="text-2xl font-bold">{formatCurrency(Math.abs(economy))}<span className="text-sm font-normal">/mês</span></p>
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                        {economy > 0 ? <TrendingDown className="w-6 h-6 text-white" /> : <TrendingUp className="w-6 h-6 text-white" />}
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-white/80 mb-1">{economy > 0 ? "Economia com a Stone" : economy < 0 ? "Custo adicional na Stone" : "Custos Equivalentes"}</p>
+                        <p className="text-3xl font-black tracking-tight">{formatCurrency(Math.abs(economy))}<span className="text-base font-normal text-white/80">/mês</span></p>
+                    </div>
                 </div>
                 <div className="text-right">
                     <p className="text-lg font-bold">{formatCurrency(Math.abs(economy) * 12)}<span className="text-sm font-normal">/ano</span></p>

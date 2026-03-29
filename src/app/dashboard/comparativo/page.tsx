@@ -8,6 +8,16 @@ import {
     formatPercent,
     COMPETITORS,
 } from "@/lib/calculator";
+import {
+    Activity,
+    Download,
+    TrendingDown,
+    TrendingUp,
+    Percent,
+    Tag,
+    SmartphoneNfc,
+    Wallet
+} from "lucide-react";
 
 const STORAGE_KEY = "bitkaiser_comparativo";
 const CET_STORAGE_KEY = "bitkaiser_stone_rates";
@@ -140,15 +150,20 @@ export default function ComparativoPage() {
     return (
         <div className="max-w-6xl mx-auto space-y-5">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                <div>
-                    <h1 className="text-xl font-bold text-foreground">Comparação de Taxas</h1>
-                    <p className="text-sm text-muted-foreground">Stone vs {competitorInfo.name}</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
+                        <Activity className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold text-foreground">Comparação de Taxas</h1>
+                        <p className="text-sm text-muted-foreground">Stone vs {competitorInfo.name}</p>
+                    </div>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={pullCET}
-                        className="px-4 py-2 text-sm rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors">
-                        📥 Puxar CET
+                        className="flex items-center gap-1.5 px-4 py-2 text-sm rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+                        <Download className="w-4 h-4" /> Puxar CET
                     </button>
                 </div>
             </div>
@@ -196,22 +211,23 @@ export default function ComparativoPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Stone */}
                 <RateCard
-                    title="Stone" emoji="🟢" color="#00A868"
+                    title="Stone" color="#00A868"
                     rates={stoneRates}
                     onChange={setStoneRates}
                     costs={stoneCosts}
                 />
                 {/* Competitor */}
                 <RateCard
-                    title={competitorInfo.name} emoji="🔴" color={competitorInfo.color}
+                    title={competitorInfo.name} color={competitorInfo.color}
                     rates={compRates}
                     onChange={setCompRates}
                     costs={compCosts}
                 />
                 {/* Diff */}
                 <div className="glass-card rounded-2xl overflow-hidden">
-                    <div className="px-4 py-3 bg-gradient-to-r from-slate-500/10 to-transparent border-b border-border">
-                        <h3 className="font-bold text-foreground text-sm">📊 Diferença</h3>
+                    <div className="px-4 py-3 bg-gradient-to-r from-slate-500/10 to-transparent border-b border-border flex items-center gap-2">
+                        <TrendingDown className="w-4 h-4 text-foreground" />
+                        <h3 className="font-bold text-foreground text-sm">Diferença</h3>
                     </div>
                     <div className="p-4 space-y-2 text-sm">
                         {[
@@ -238,21 +254,24 @@ export default function ComparativoPage() {
 
             {/* Machines */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <MachineCard label="Stone" color="#00A868" emoji="🟢"
+                <MachineCard label="Stone" color="#00A868"
                     config={stoneMachines} onChange={setStoneMachines} />
-                <MachineCard label={competitorInfo.name} color={competitorInfo.color} emoji="🔴"
+                <MachineCard label={competitorInfo.name} color={competitorInfo.color}
                     config={compMachines} onChange={setCompMachines} />
             </div>
 
             {/* IPV — Isenção Por Volume */}
             <div className="glass-card rounded-2xl p-5 space-y-4">
-                <h3 className="font-bold text-foreground text-sm">🏷️ IPV — Isenção Por Volume</h3>
+                <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-foreground" />
+                    <h3 className="font-bold text-foreground text-sm">IPV — Isenção Por Volume</h3>
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* Stone IPV — automático */}
                     <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-4 space-y-3">
                         <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-sm text-emerald-600 dark:text-emerald-400">🟢 Stone (Automático)</h4>
+                            <h4 className="font-semibold text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><Percent className="w-4 h-4" /> Stone (Automático)</h4>
                             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
                                 {stoneExempt} isenta(s)
                             </span>
@@ -284,7 +303,7 @@ export default function ComparativoPage() {
                     {/* Competitor IPV — manual */}
                     <div className="rounded-xl bg-secondary p-4 space-y-3">
                         <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-sm" style={{ color: competitorInfo.color }}>🔴 {competitorInfo.name} (Manual)</h4>
+                            <h4 className="font-semibold text-sm flex items-center gap-1.5" style={{ color: competitorInfo.color }}><Percent className="w-4 h-4" /> {competitorInfo.name} (Manual)</h4>
                         </div>
                         <div>
                             <label className="text-[10px] text-muted-foreground uppercase block mb-0.5">Máquinas Isentas (informar manualmente)</label>
@@ -303,26 +322,35 @@ export default function ComparativoPage() {
             </div>
 
             {/* Economy */}
-            <div className={`rounded-2xl p-6 text-center text-white shadow-lg ${economy > 0 ? "bg-gradient-to-r from-emerald-600 to-emerald-500 glow-green" :
+            <div className={`rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center text-white shadow-lg ${economy > 0 ? "bg-gradient-to-r from-emerald-600 to-emerald-500 glow-green" :
                 economy < 0 ? "bg-gradient-to-r from-amber-600 to-amber-500" :
                     "bg-gradient-to-r from-slate-600 to-slate-500"
                 }`}>
-                <p className="text-sm text-white/80 mb-1">
-                    {economy > 0 ? "💰 Economia com Stone" : economy < 0 ? "⚠️ Custo adicional" : "Equivalente"}
-                </p>
-                <p className="text-3xl font-bold">{formatCurrency(Math.abs(economy))}<span className="text-lg font-normal">/mês</span></p>
-                <p className="text-xl font-semibold mt-1">{formatCurrency(Math.abs(economy) * 12)}<span className="text-sm font-normal">/ano</span></p>
-                {economy > 0 && compTotal > 0 && (
-                    <p className="text-xs text-white/60 mt-2">Redução de {formatPercent((economy / compTotal) * 100)} nos custos</p>
-                )}
+                <div className="flex items-center gap-4 mb-4 md:mb-0">
+                    <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                        {economy > 0 ? <TrendingDown className="w-7 h-7 text-white" /> : <TrendingUp className="w-7 h-7 text-white" />}
+                    </div>
+                    <div className="text-left">
+                        <p className="text-sm font-medium text-white/80 mb-1">
+                            {economy > 0 ? "Economia com a Stone" : economy < 0 ? "Custo adicional na Stone" : "Custos Equivalentes"}
+                        </p>
+                        <p className="text-4xl font-black tracking-tight">{formatCurrency(Math.abs(economy))}<span className="text-lg font-normal text-white/80">/mês</span></p>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <p className="text-xl font-bold">{formatCurrency(Math.abs(economy) * 12)}<span className="text-sm font-normal text-white/80">/ano</span></p>
+                    {economy > 0 && compTotal > 0 && (
+                        <p className="text-xs text-white/60 mt-1">Redução de {formatPercent((economy / compTotal) * 100)} nos custos</p>
+                    )}
+                </div>
             </div>
         </div>
     );
 }
 
 /* ─── Rate Card Component ─── */
-function RateCard({ title, emoji, color, rates, onChange, costs }: {
-    title: string; emoji: string; color: string;
+function RateCard({ title, color, rates, onChange, costs }: {
+    title: string; color: string;
     rates: FullRates;
     onChange: (r: FullRates) => void;
     costs: { debit: number; credit: number; pix: number; total: number };
@@ -338,9 +366,10 @@ function RateCard({ title, emoji, color, rates, onChange, costs }: {
 
     return (
         <div className="glass-card rounded-2xl overflow-hidden" style={{ borderColor: color + '33' }}>
-            <div className="px-4 py-3 border-b border-border"
+            <div className="px-4 py-3 border-b border-border flex items-center gap-2"
                 style={{ background: `linear-gradient(to right, ${color}15, transparent)` }}>
-                <h3 className="font-bold text-sm" style={{ color }}>{emoji} {title}</h3>
+                <Percent className="w-4 h-4" style={{ color }} />
+                <h3 className="font-bold text-sm" style={{ color }}>{title}</h3>
             </div>
             <div className="p-4">
                 <div className="grid grid-cols-3 gap-2">
@@ -367,15 +396,17 @@ function RateCard({ title, emoji, color, rates, onChange, costs }: {
     );
 }
 
-/* ─── Machine Card Component ─── */
-function MachineCard({ label, color, emoji, config, onChange }: {
-    label: string; color: string; emoji: string;
+function MachineCard({ label, color, config, onChange }: {
+    label: string; color: string;
     config: MachineConfig;
     onChange: (c: MachineConfig) => void;
 }) {
     return (
         <div className="glass-card rounded-2xl p-4">
-            <h3 className="font-bold text-sm mb-3" style={{ color }}>{emoji} Máquinas {label}</h3>
+            <div className="flex items-center gap-2 mb-3">
+                <SmartphoneNfc className="w-4 h-4" style={{ color }} />
+                <h3 className="font-bold text-sm" style={{ color }}>Máquinas {label}</h3>
+            </div>
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label className="text-[10px] text-muted-foreground uppercase block mb-0.5">Quantidade</label>

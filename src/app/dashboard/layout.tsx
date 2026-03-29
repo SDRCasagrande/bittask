@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { TasksDrawer } from "@/components/tasks-drawer";
 import {
     LayoutDashboard, Calculator, FileBarChart, GitCompare,
     Handshake, Settings, Users, LogOut, Menu, X, ChevronRight,
-    Bell, Search, MoreHorizontal
+    Bell, Search, MoreHorizontal, Calendar
 } from "lucide-react";
 
 /* ═══ Navigation Items ═══ */
@@ -157,6 +158,15 @@ export default function DashboardLayout({
 
                 {/* User Profile Footer */}
                 <div className="p-3 border-t border-border space-y-2 shrink-0">
+                    <a 
+                        href="https://calendar.google.com/calendar/r/eventedit"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all duration-200"
+                    >
+                        <Calendar className="w-4 h-4" />
+                        Agendar Reunião
+                    </a>
                     {user && (
                         <div className="flex items-center gap-3 px-3 py-2">
                             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/10 flex items-center justify-center text-sm font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -204,6 +214,7 @@ export default function DashboardLayout({
 
                     {/* Right side actions */}
                     <div className="flex items-center gap-2">
+                        <TasksDrawer />
                         <ThemeToggle />
                         {user && (
                             <div className="hidden sm:flex items-center gap-2 ml-2 pl-2 border-l border-border">
@@ -289,6 +300,15 @@ export default function DashboardLayout({
                                         );
                                     })}
                                     <div className="border-t border-border">
+                                        <a
+                                            href="https://calendar.google.com/calendar/r/eventedit"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                                        >
+                                            <Calendar className="w-4 h-4" />
+                                            Agendar Reunião
+                                        </a>
                                         <button
                                             onClick={handleLogout}
                                             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-all"
