@@ -60,7 +60,12 @@ export default function PropostaPage() {
     const [vPix, setVPix] = useState(15000);
 
     // Stone — multi-brand
-    const [brandRates, setBrandRates] = useState<Record<string, BrandRates>>(() => ({ ...BRAND_PRESETS }));
+    const DEFAULT_BRANDS = ["VISA/MASTER", "ELO"];
+    const [brandRates, setBrandRates] = useState<Record<string, BrandRates>>(() => {
+        const filtered: Record<string, BrandRates> = {};
+        DEFAULT_BRANDS.forEach(b => { if (BRAND_PRESETS[b]) filtered[b] = { ...BRAND_PRESETS[b] }; });
+        return filtered;
+    });
     const BRANDS = Object.keys(brandRates);
     const [activeBrand, setActiveBrand] = useState("VISA/MASTER");
     const sr = brandRates[activeBrand] || BRAND_PRESETS["VISA/MASTER"];
@@ -197,7 +202,9 @@ export default function PropostaPage() {
         localStorage.removeItem(STORAGE_KEY);
         setNome(""); setCnpj(""); setPhone(""); setEmail("");
         setVDeb(30000); setVCred(55000); setVPix(15000);
-        setBrandRates({ ...BRAND_PRESETS }); setActiveBrand("VISA/MASTER");
+        const defaultBrands: Record<string, BrandRates> = {};
+        DEFAULT_BRANDS.forEach(b => { if (BRAND_PRESETS[b]) defaultBrands[b] = { ...BRAND_PRESETS[b] }; });
+        setBrandRates(defaultBrands); setActiveBrand("VISA/MASTER");
         setRavRate(1.30); setRavPontual(3.79); setRavTipo("automatico"); setRavTiming("md"); setPixR(0); setSMach({ quantity: 1, rental: 0 });
         setCompId("rede"); setCR({ debit: 0, credit1x: 0, credit2to6: 0, credit7to12: 0, pix: 0, rav: 0 });
         setCMach({ quantity: 1, rental: 0 }); setCExempt(0);
@@ -379,7 +386,7 @@ export default function PropostaPage() {
                                         if (e.key === "Enter" && newBrandInput.trim()) {
                                             const name = newBrandInput.trim();
                                             if (!brandRates[name]) {
-                                                setBrandRates({ ...brandRates, [name]: { debit: 0, credit1x: 0, credit2to6: 0, credit7to12: 0, credit13to18: 0 } });
+                                                setBrandRates({ ...brandRates, [name]: BRAND_PRESETS[name] || { debit: 0, credit1x: 0, credit2to6: 0, credit7to12: 0, credit13to18: 0 } });
                                                 setActiveBrand(name);
                                             }
                                             setNewBrandInput(""); setShowNewBrand(false);
@@ -391,7 +398,7 @@ export default function PropostaPage() {
                                 <button onClick={() => {
                                     const name = newBrandInput.trim();
                                     if (name && !brandRates[name]) {
-                                        setBrandRates({ ...brandRates, [name]: { debit: 0, credit1x: 0, credit2to6: 0, credit7to12: 0, credit13to18: 0 } });
+                                        setBrandRates({ ...brandRates, [name]: BRAND_PRESETS[name] || { debit: 0, credit1x: 0, credit2to6: 0, credit7to12: 0, credit13to18: 0 } });
                                         setActiveBrand(name);
                                     }
                                     setNewBrandInput(""); setShowNewBrand(false);
