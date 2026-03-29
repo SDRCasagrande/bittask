@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         // Find all accepted negotiations with a dateAccept
         const negotiations = await prisma.negotiation.findMany({
             where: {
-                status: 'aceita',
+                status: { in: ['aceita', 'aprovado'] },
                 dateAccept: { not: '' },
             },
             include: {

@@ -27,6 +27,7 @@ model User {
   taskLists         TaskList[]
   createdTasks      Task[]   @relation("TaskCreator")
   assignedTasks     Task[]   @relation("TaskAssignee")
+  negotiations      Negotiation[] @relation("NegotiationAssignee")
 
   @@map("users")
 }
@@ -140,21 +141,25 @@ model Client {
 }
 
 model Negotiation {
-  id         String   @id @default(cuid())
-  clientId   String
-  dateNeg    String
-  dateAccept String   @default("")
-  status     String   @default("pendente")
-  rates      Json
-  notes      String   @default("")
-  alertDate  String   @default("")
-  alertSent  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           String   @id @default(cuid())
+  clientId     String
+  dateNeg      String
+  dateAccept   String   @default("")
+  status       String   @default("prospeccao")
+  stageHistory Json     @default("[]")
+  assigneeId   String?
+  rates        Json
+  notes        String   @default("")
+  alertDate    String   @default("")
+  alertSent    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  assignee User?  @relation("NegotiationAssignee", fields: [assigneeId], references: [id])
 
   @@index([clientId])
+  @@index([assigneeId])
   @@map("negotiations")
 }
 

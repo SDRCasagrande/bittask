@@ -10,7 +10,7 @@ export async function GET() {
 
         const clients = await prisma.client.findMany({
             where: { userId: session.userId },
-            include: { negotiations: { orderBy: { createdAt: "desc" } } },
+            include: { negotiations: { include: { assignee: { select: { id: true, name: true, email: true } } }, orderBy: { createdAt: "desc" } } },
             orderBy: { createdAt: "desc" },
         });
         return NextResponse.json(clients);

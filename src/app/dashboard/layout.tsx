@@ -60,7 +60,7 @@ export default function DashboardLayout({
     const isOverflowActive = OVERFLOW_ITEMS.some(item => pathname === item.href);
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-background text-foreground lg:flex lg:flex-row">
             {/* ═══ Mobile Sidebar Overlay ═══ */}
             {sidebarOpen && (
                 <div
@@ -181,7 +181,7 @@ export default function DashboardLayout({
             </aside>
 
             {/* ═══ Main Area ═══ */}
-            <div className="flex-1 flex flex-col min-h-screen lg:ml-[280px]">
+            <div className="flex-1 flex flex-col min-h-screen min-w-0">
                 {/* ═══ Top Bar ═══ */}
                 <header className="sticky top-0 z-30 h-14 bg-card/80 backdrop-blur-xl border-b border-border flex items-center justify-between px-4 lg:px-6 shrink-0">
                     <div className="flex items-center gap-3">
