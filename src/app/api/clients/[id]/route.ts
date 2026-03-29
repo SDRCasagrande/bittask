@@ -29,7 +29,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         const { id } = await params;
         const body = await request.json();
 
-        // Verify ownership
         const existing = await prisma.client.findFirst({ where: { id, userId: session.userId } });
         if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -41,8 +40,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
                 cnpj: body.cnpj ?? existing.cnpj,
                 phone: body.phone ?? existing.phone,
                 email: body.email ?? existing.email,
+                status: body.status ?? existing.status,
+                credentialDate: body.credentialDate !== undefined ? body.credentialDate : existing.credentialDate,
+                cancelDate: body.cancelDate !== undefined ? body.cancelDate : existing.cancelDate,
+                segment: body.segment !== undefined ? body.segment : existing.segment,
             },
-            include: { negotiations: { orderBy: { createdAt: "desc" } } },
+            include: { negotiations: { orderBy: { createdAt: "desc" } }, monthlyVolumes: { orderBy: { month: "desc" } } },
         });
         return NextResponse.json(client);
     } catch (error) {

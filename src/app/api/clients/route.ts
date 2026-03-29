@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
-// GET all clients for the current user
+// GET all clients for the current user (with monthly volumes + negotiations)
 export async function GET() {
     try {
         const session = await getSession();
@@ -10,7 +10,10 @@ export async function GET() {
 
         const clients = await prisma.client.findMany({
             where: { userId: session.userId },
-            include: { negotiations: { include: { assignee: { select: { id: true, name: true, email: true } } }, orderBy: { createdAt: "desc" } } },
+            include: {
+                negotiations: { include: { assignee: { select: { id: true, name: true, email: true } } }, orderBy: { createdAt: "desc" } },
+                monthlyVolumes: { orderBy: { month: "desc" }, take: 12 },
+            },
             orderBy: { createdAt: "desc" },
         });
         return NextResponse.json(clients);
@@ -27,7 +30,7 @@ export async function POST(request: Request) {
         if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await request.json();
-        const { name, stoneCode, cnpj, phone, email, negotiation } = body;
+        const { name, stoneCode, cnpj, phone, email, segment, credentialDate, negotiation } = body;
 
         if (!name?.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
@@ -39,18 +42,22 @@ export async function POST(request: Request) {
                 cnpj: cnpj || "",
                 phone: phone || "",
                 email: email || "",
+                segment: segment || "",
+                credentialDate: credentialDate || "",
                 negotiations: negotiation ? {
                     create: {
                         dateNeg: negotiation.dateNeg || new Date().toISOString().split("T")[0],
                         dateAccept: negotiation.dateAccept || "",
-                        status: negotiation.dateAccept ? "aceita" : "pendente",
+                        status: negotiation.status || "prospeccao",
                         rates: negotiation.rates || {},
                         notes: negotiation.notes || "",
                         alertDate: negotiation.alertDate || "",
+                        assigneeId: negotiation.assigneeId || null,
+                        stageHistory: [{ from: "", to: negotiation.status || "prospeccao", timestamp: new Date().toISOString(), userName: "Sistema" }],
                     },
                 } : undefined,
             },
-            include: { negotiations: true },
+            include: { negotiations: true, monthlyVolumes: true },
         });
 
         return NextResponse.json(client, { status: 201 });

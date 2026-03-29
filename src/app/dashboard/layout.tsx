@@ -8,7 +8,7 @@ import { TasksDrawer } from "@/components/tasks-drawer";
 import {
     LayoutDashboard, Calculator, FileBarChart, GitCompare,
     Handshake, Settings, Users, LogOut, Menu, X, ChevronRight,
-    Bell, Search, MoreHorizontal, CheckSquare
+    Bell, Search, MoreHorizontal, CheckSquare, Briefcase
 } from "lucide-react";
 
 /* ═══ Navigation Items ═══ */
@@ -17,7 +17,8 @@ const NAV_ITEMS = [
     { href: "/dashboard/cet", label: "Calculador CET", icon: Calculator, mobileLabel: "CET" },
     { href: "/dashboard/proposta", label: "Simulador", icon: FileBarChart, mobileLabel: "Simulador" },
     { href: "/dashboard/comparativo", label: "Comparação", icon: GitCompare, mobileLabel: "Comparar" },
-    { href: "/dashboard/negociacoes", label: "Negociações", icon: Handshake, mobileLabel: "Negociações" },
+    { href: "/dashboard/negociacoes", label: "Pipeline", icon: Handshake, mobileLabel: "Pipeline" },
+    { href: "/dashboard/clientes", label: "Clientes", icon: Briefcase, mobileLabel: "Clientes" },
     { href: "/dashboard/tarefas", label: "Tarefas", icon: CheckSquare, mobileLabel: "Tarefas" },
     { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
     { href: "/dashboard/usuarios", label: "Equipe", icon: Users },
@@ -100,7 +101,7 @@ export default function DashboardLayout({
                     <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                         Menu Principal
                     </p>
-                    {NAV_ITEMS.slice(0, 5).map((item) => {
+                    {NAV_ITEMS.slice(0, 6).map((item) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link
@@ -132,7 +133,7 @@ export default function DashboardLayout({
                             Administração
                         </p>
                     </div>
-                    {NAV_ITEMS.slice(5).map((item) => {
+                    {NAV_ITEMS.slice(6).map((item) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link
