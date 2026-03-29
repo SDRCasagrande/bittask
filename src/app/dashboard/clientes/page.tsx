@@ -64,11 +64,12 @@ export default function ClientesPage() {
     const [fcd, setFCD] = useState(""); const [fDocMsg, setFDocMsg] = useState(""); const [fDocOk, setFDocOk] = useState<boolean | null>(null);
     const [cnpjLoading, setCnpjLoading] = useState(false);
 
-    // TPV input
     const [tpvMonth, setTpvMonth] = useState(currentMonth());
     const [tpvD, setTpvD] = useState(""); const [tpvC, setTpvC] = useState(""); const [tpvP, setTpvP] = useState("");
     const [rD, setRD] = useState(""); const [rC, setRC] = useState(""); const [rP, setRP] = useState("");
     const [tpvSaving, setTpvSaving] = useState(false);
+    const [showBreakdown, setShowBreakdown] = useState(false);
+    const [tpvTotal, setTpvTotal] = useState("");
 
     const loadClients = useCallback(async () => { try { const r = await fetch("/api/clients"); const d = await r.json(); if (Array.isArray(d)) setClients(d); } catch { } finally { setLoading(false); } }, []);
     useEffect(() => { loadClients(); }, [loadClients]);
@@ -331,19 +332,82 @@ export default function ClientesPage() {
                 )}
 
                 {/* TAB: Registrar TPV */}
-                {tab === "tpv" && (
+                {tab === "tpv" && (() => {
+                    // Auto-distribute when not using breakdown
+                    const totalVal = parseFloat(tpvTotal) || 0;
+                    const autoD = totalVal * 0.30;
+                    const autoC = totalVal * 0.50;
+                    const autoP = totalVal * 0.20;
+
+                    const effectiveD = showBreakdown ? (parseFloat(tpvD) || 0) : autoD;
+                    const effectiveC = showBreakdown ? (parseFloat(tpvC) || 0) : autoC;
+                    const effectiveP = showBreakdown ? (parseFloat(tpvP) || 0) : autoP;
+                    const effectiveTotal = showBreakdown ? (effectiveD + effectiveC + effectiveP) : totalVal;
+
+                    const previewReady = effectiveTotal > 0;
+                    const previewVol = { tpvDebit: effectiveD, tpvCredit: effectiveC, tpvPix: effectiveP, rateDebit: parseFloat(rD) || lastNeg?.rates?.debit || 0, rateCredit: parseFloat(rC) || lastNeg?.rates?.credit1x || 0, ratePix: parseFloat(rP) || lastNeg?.rates?.pix || 0 } as MonthVolume;
+                    const preview = previewReady ? calcCommission(previewVol) : null;
+
+                    const handleSaveTpvNew = async () => {
+                        if (!sel) return;
+                        setTpvSaving(true);
+                        const rd = parseFloat(rD) || lastNeg?.rates?.debit || 0;
+                        const rc = parseFloat(rC) || lastNeg?.rates?.credit1x || 0;
+                        const rp = parseFloat(rP) || lastNeg?.rates?.pix || 0;
+                        try {
+                            await fetch(`/api/clients/${sel.id}/months`, { method: "POST", headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ month: tpvMonth, tpvDebit: effectiveD, tpvCredit: effectiveC, tpvPix: effectiveP, rateDebit: rd, rateCredit: rc, ratePix: rp })
+                            });
+                            loadClients(); setTpvD(""); setTpvC(""); setTpvP(""); setTpvTotal(""); setRD(""); setRC(""); setRP("");
+                        } catch { } finally { setTpvSaving(false); }
+                    };
+
+                    return (
                     <div className="bg-card border border-blue-500/20 rounded-xl p-5 space-y-4">
                         <h3 className="text-sm font-bold text-blue-500 uppercase">Registrar TPV do Mês</h3>
+
+                        {/* Month selector */}
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Mês</label>
-                            <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
-                        <div className="grid grid-cols-3 gap-3">
-                            <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Débito (R$)</label>
-                                <input type="number" value={tpvD} onChange={e => setTpvD(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
-                            <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Crédito (R$)</label>
-                                <input type="number" value={tpvC} onChange={e => setTpvC(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
-                            <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV PIX (R$)</label>
-                                <input type="number" value={tpvP} onChange={e => setTpvP(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                            <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50 [color-scheme:dark]" /></div>
+
+                        {/* TPV Total — Primary Input */}
+                        <div className="bg-gradient-to-br from-blue-500/5 to-indigo-500/5 border border-blue-500/20 rounded-xl p-4">
+                            <label className="text-xs font-bold text-blue-500 uppercase block mb-2">TPV Total (R$)</label>
+                            <input type="number" value={showBreakdown ? "" : tpvTotal} onChange={e => setTpvTotal(e.target.value)}
+                                disabled={showBreakdown}
+                                placeholder="Ex: 100000.00"
+                                className="w-full px-4 py-3 rounded-xl bg-card border border-border text-lg font-bold text-foreground focus:outline-none focus:border-blue-500/50 disabled:opacity-40" />
+                            {!showBreakdown && totalVal > 0 && (
+                                <div className="flex gap-3 mt-2 text-[10px] text-muted-foreground">
+                                    <span>Déb (30%): {fmtMoney(autoD)}</span>
+                                    <span>Créd (50%): {fmtMoney(autoC)}</span>
+                                    <span>PIX (20%): {fmtMoney(autoP)}</span>
+                                </div>
+                            )}
                         </div>
+
+                        {/* Modality Toggle */}
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <div className={`w-9 h-5 rounded-full relative transition-colors ${showBreakdown ? "bg-blue-500" : "bg-muted"}`}
+                                onClick={() => { setShowBreakdown(!showBreakdown); if (!showBreakdown) { setTpvTotal(""); } }}>
+                                <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all shadow-sm ${showBreakdown ? "left-[18px]" : "left-0.5"}`} />
+                            </div>
+                            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">Detalhar por Modalidade</span>
+                        </label>
+
+                        {/* Modality Breakdown (optional) */}
+                        {showBreakdown && (
+                            <div className="grid grid-cols-3 gap-3">
+                                <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Débito (R$)</label>
+                                    <input type="number" value={tpvD} onChange={e => setTpvD(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Crédito (R$)</label>
+                                    <input type="number" value={tpvC} onChange={e => setTpvC(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV PIX (R$)</label>
+                                    <input type="number" value={tpvP} onChange={e => setTpvP(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                            </div>
+                        )}
+
+                        {/* Rates */}
                         <p className="text-xs text-muted-foreground">Taxas: preenchidas automaticamente da última negociação, ou personalize:</p>
                         <div className="grid grid-cols-3 gap-3">
                             <div><label className="text-xs font-medium text-muted-foreground block mb-1">Taxa Débito (%)</label>
@@ -354,27 +418,25 @@ export default function ClientesPage() {
                                 <input type="number" step="0.01" value={rP} onChange={e => setRP(e.target.value)} placeholder={lastNeg?.rates?.pix?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
                         </div>
 
-                        {/* Preview calc */}
-                        {(parseFloat(tpvD) > 0 || parseFloat(tpvC) > 0 || parseFloat(tpvP) > 0) && (() => {
-                            const preview = calcCommission({ tpvDebit: parseFloat(tpvD) || 0, tpvCredit: parseFloat(tpvC) || 0, tpvPix: parseFloat(tpvP) || 0, rateDebit: parseFloat(rD) || lastNeg?.rates?.debit || 0, rateCredit: parseFloat(rC) || lastNeg?.rates?.credit1x || 0, ratePix: parseFloat(rP) || lastNeg?.rates?.pix || 0 } as MonthVolume);
-                            return (
-                                <div className="bg-gradient-to-br from-purple-500/5 to-indigo-500/5 border border-purple-500/20 rounded-xl p-4 space-y-2">
-                                    <h4 className="text-xs font-bold text-purple-500 uppercase">Preview do Cálculo</h4>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                                        <div><p className="text-[10px] text-muted-foreground">TPV Total</p><p className="text-sm font-bold">{fmtMoney(preview.tpvTotal)}</p></div>
-                                        <div><p className="text-[10px] text-muted-foreground">Receita Taxas</p><p className="text-sm font-bold text-amber-500">{fmtMoney(preview.totalRevenue)}</p></div>
-                                        <div><p className="text-[10px] text-muted-foreground">Franquia (30%)</p><p className="text-sm font-bold text-blue-500">{fmtMoney(preview.franchise)}</p></div>
-                                        <div><p className="text-[10px] text-muted-foreground">Sua Comissão (10%)</p><p className="text-lg font-black text-purple-500">{fmtMoney(preview.agent)}</p></div>
-                                    </div>
+                        {/* Preview */}
+                        {preview && (
+                            <div className="bg-gradient-to-br from-purple-500/5 to-indigo-500/5 border border-purple-500/20 rounded-xl p-4 space-y-2">
+                                <h4 className="text-xs font-bold text-purple-500 uppercase">Preview do Cálculo</h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                                    <div><p className="text-[10px] text-muted-foreground">TPV Total</p><p className="text-sm font-bold">{fmtMoney(preview.tpvTotal)}</p></div>
+                                    <div><p className="text-[10px] text-muted-foreground">Receita Taxas</p><p className="text-sm font-bold text-amber-500">{fmtMoney(preview.totalRevenue)}</p></div>
+                                    <div><p className="text-[10px] text-muted-foreground">Franquia (30%)</p><p className="text-sm font-bold text-blue-500">{fmtMoney(preview.franchise)}</p></div>
+                                    <div><p className="text-[10px] text-muted-foreground">Sua Comissão (10%)</p><p className="text-lg font-black text-purple-500">{fmtMoney(preview.agent)}</p></div>
                                 </div>
-                            );
-                        })()}
+                            </div>
+                        )}
 
-                        <button onClick={handleSaveTpv} disabled={tpvSaving} className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+                        <button onClick={handleSaveTpvNew} disabled={tpvSaving || !previewReady} className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
                             {tpvSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <BarChart3 className="w-4 h-4" />} Salvar TPV de {fmtMonth(tpvMonth)}
                         </button>
                     </div>
-                )}
+                    );
+                })()}
 
                 {/* TAB: Negociações */}
                 {tab === "negs" && (
@@ -400,8 +462,8 @@ export default function ClientesPage() {
                                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                                         {[{ l: "Déb", v: neg.rates?.debit }, { l: "1x", v: neg.rates?.credit1x }, { l: "2-6x", v: neg.rates?.credit2to6 }, { l: "7-12x", v: neg.rates?.credit7to12 }, { l: "PIX", v: neg.rates?.pix }, { l: "RAV", v: neg.rates?.rav }].map(r => (
                                             <div key={r.l} className="bg-secondary/50 rounded-lg p-1.5 text-center">
-                                                <p className="text-[9px] text-muted-foreground">{r.l}</p>
-                                                <p className="text-[11px] font-bold">{formatPercent(r.v || 0)}</p>
+                                                <p className="text-[10px] text-muted-foreground">{r.l}</p>
+                                                <p className="text-xs font-bold">{formatPercent(r.v || 0)}</p>
                                             </div>
                                         ))}
                                     </div>
