@@ -300,28 +300,23 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
     return (
         <div className="max-w-7xl mx-auto space-y-4">
             {/* Header */}
-            <div className="glass-card rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 flex-1 w-full">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/10 flex items-center justify-center shrink-0">
+                        <span className="text-emerald-600 dark:text-emerald-400 text-sm font-black">CET</span>
+                    </div>
                     <div className="flex-1">
                         <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)}
                             placeholder="Nome da Empresa / Cliente"
                             className="w-full text-lg font-bold bg-transparent border-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0" />
-                        <p className="text-xs text-muted-foreground">Analise de Custo Efetivo Total por parcela e bandeira</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
-                                <span className="text-white text-[10px] font-bold">S</span>
-                            </div>
-                            <span className="text-sm font-bold text-emerald-500">STONE</span>
-                        </div>
+                        <p className="text-xs text-muted-foreground">Custo Efetivo Total por parcela e bandeira</p>
                     </div>
                 </div>
                 <div className="flex gap-1.5 flex-wrap">
-                    <button onClick={shareWhatsApp} className="px-3 py-1.5 text-xs rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors">WhatsApp</button>
-                    <button onClick={exportPDF} className="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">PDF</button>
-                    <button onClick={exportExcel} className="px-3 py-1.5 text-xs rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors">Excel</button>
-                    <button onClick={handleReset} className="px-3 py-1.5 text-xs rounded-lg bg-secondary text-muted-foreground hover:bg-muted transition-colors">Resetar</button>
+                    <button onClick={shareWhatsApp} className="px-3 py-1.5 text-xs rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 font-medium transition-colors">WhatsApp</button>
+                    <button onClick={exportPDF} className="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 font-medium transition-colors">PDF</button>
+                    <button onClick={exportExcel} className="px-3 py-1.5 text-xs rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 font-medium transition-colors">Excel</button>
+                    <button onClick={handleReset} className="px-3 py-1.5 text-xs rounded-lg bg-secondary text-muted-foreground hover:bg-muted font-medium transition-colors">Resetar</button>
                 </div>
             </div>
 
@@ -359,7 +354,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                     </div>
 
                     {/* TPV */}
-                    <div className="glass-card rounded-xl p-3 border-l-2 border-cyan-500/30">
+                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-cyan-500/30">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[10px] font-bold text-cyan-400 uppercase">TPV Mensal Acordado</h3>
                             {(() => { const ex = calculateExemptMachines(tpv); return ex > 0 ? <span className="text-[9px] text-emerald-400 font-bold">{ex} maq. isentas</span> : null; })()}
@@ -374,7 +369,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                     </div>
 
                     {/* Brand Tabs + Rates */}
-                    <div className="glass-card rounded-xl p-3 border-l-2 border-emerald-500/30">
+                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-emerald-500/30">
                         <h3 className="text-[10px] font-bold text-emerald-500 uppercase mb-1.5">Taxas por Bandeira</h3>
 
                         {/* Toggle chips */}
@@ -455,7 +450,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                     </div>
 
                     {/* RAV */}
-                    <div className="glass-card rounded-xl p-3 border-l-2 border-amber-500/30">
+                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-amber-500/30">
                         <h3 className="text-[10px] font-bold text-amber-500 uppercase mb-1.5">Antecipacao (RAV)</h3>
                         <div className="grid grid-cols-2 gap-1.5 mb-1.5">
                             <div>
@@ -488,7 +483,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                     </div>
 
                     {/* PIX & Maquinas */}
-                    <div className="glass-card rounded-xl p-3 border-l-2 border-blue-500/30">
+                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-blue-500/30">
                         <h3 className="text-[10px] font-bold text-blue-400 uppercase mb-1.5">PIX & Maquinas</h3>
                         <div className="grid grid-cols-2 gap-1.5">
                             <RI l="PIX" v={pixRate} set={setPixRate} />
@@ -570,7 +565,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                 <div className="lg:col-span-8">
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                         {ACTIVE_BRANDS.length === 0 && (
-                            <div className="glass-card rounded-xl p-8 text-center text-muted-foreground">
+                            <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
                                 <p className="text-sm">Nenhuma bandeira ativa</p>
                                 <p className="text-xs">Passe o mouse sobre as bandeiras e clique ✓ para ativar</p>
                             </div>
@@ -578,7 +573,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                         {ACTIVE_BRANDS.map((name) => {
                             const rates = brandRates[name];
                             return (
-                                <div key={name} className="glass-card rounded-xl overflow-hidden">
+                                <div key={name} className="bg-card border border-border rounded-xl overflow-hidden">
                                     <div className="px-4 py-2.5 bg-gradient-to-r from-emerald-500/10 to-transparent border-b border-border flex items-center justify-between">
                                         <h3 className="text-sm font-bold text-foreground">{name}</h3>
                                         <span className="text-xs text-muted-foreground">Debito: <span className="font-bold text-foreground">{formatPercent(rates.debit)}</span></span>

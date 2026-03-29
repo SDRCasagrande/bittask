@@ -6,7 +6,7 @@ import { RI } from "@/components/rate-input";
 import { formatarDocumento, validarDocumento } from "@/lib/documento";
 import {
     Handshake, Plus, X, ChevronLeft, LayoutGrid, List, Search,
-    Calendar, MessageSquare, Clock, User, Trash2, CheckCircle,
+    Calendar, CalendarPlus, MessageSquare, Clock, User, Trash2, CheckCircle,
     AlertCircle, Loader2, ExternalLink, GripVertical, ArrowRight
 } from "lucide-react";
 
@@ -40,6 +40,24 @@ function today() { return new Date().toISOString().split("T")[0]; }
 function fmtDate(d: string) { if (!d) return "—"; try { return new Date(d + "T00:00:00").toLocaleDateString("pt-BR"); } catch { return d; } }
 function fmtDateTime(iso: string) { try { return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch { return iso; } }
 function initials(name: string) { return name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase(); }
+
+/* ═══ GOOGLE CALENDAR ═══ */
+function gcalLink(neg: { clientName: string; clientPhone?: string; stoneCode?: string; cnpj?: string; dateNeg: string; rates: RateSnapshot; notes?: string; status: string }) {
+    const title = `Negociação Stone — ${neg.clientName}`;
+    // Schedule follow-up for 3 days from now or use negotiation date
+    const followUp = new Date();
+    followUp.setDate(followUp.getDate() + 3);
+    const start = followUp.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const end = new Date(followUp.getTime() + 3600000).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    let desc = `Cliente: ${neg.clientName}\n`;
+    if (neg.stoneCode) desc += `Stone Code: ${neg.stoneCode}\n`;
+    if (neg.cnpj) desc += `CNPJ: ${neg.cnpj}\n`;
+    if (neg.clientPhone) desc += `Tel: ${neg.clientPhone}\n`;
+    desc += `\nTaxas: Déb ${formatPercent(neg.rates.debit)} | 1x ${formatPercent(neg.rates.credit1x)} | PIX ${formatPercent(neg.rates.pix)}\n`;
+    if (neg.notes) desc += `\nObs: ${neg.notes}\n`;
+    desc += `\n— BitKaiser Taxas`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&details=${encodeURIComponent(desc)}`;
+}
 
 /* ═══ PIPELINE STAGES ═══ */
 const STAGES = [
@@ -358,11 +376,13 @@ export default function NegociacoesPage() {
                                                     )}
                                                 </div>
 
-                                                {/* Hover actions */}
                                                 <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button onClick={() => shareWhatsApp(neg)} className="p-1 rounded-md text-[10px] font-medium text-emerald-500 hover:bg-emerald-500/10 flex items-center gap-0.5" title="Enviar via WhatsApp">
                                                         <MessageSquare className="w-3 h-3" /> WhatsApp
                                                     </button>
+                                                    <a href={gcalLink(neg)} target="_blank" rel="noopener noreferrer" className="p-1 rounded-md text-[10px] font-medium text-blue-500 hover:bg-blue-500/10 flex items-center gap-0.5" title="Agendar no Google Calendar">
+                                                        <CalendarPlus className="w-3 h-3" /> Agenda
+                                                    </a>
                                                     <select value={neg.assignee?.id || ""} onChange={e => assignNeg(neg.id, e.target.value || null)}
                                                         className="ml-auto text-[10px] bg-transparent border border-border rounded-md px-1 py-0.5 text-muted-foreground focus:outline-none max-w-[80px]">
                                                         <option value="">Atribuir</option>
