@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckSquare, Plus, Trash2, X, Circle, CheckCircle2 } from "lucide-react";
+import { CheckSquare, Plus, Trash2, X, Circle, CheckCircle2, Calendar } from "lucide-react";
 
 interface Task {
     id: string;
@@ -41,6 +41,12 @@ export function TasksDrawer() {
 
     const deleteTask = (id: string) => {
         setTasks(tasks.filter(t => t.id !== id));
+    };
+
+    const scheduleTask = (task: Task) => {
+        const title = encodeURIComponent(task.title);
+        const url = `https://calendar.google.com/calendar/r/eventedit?text=${title}&details=${encodeURIComponent("Tarefa do BitKaiser Taxas")}`;
+        window.open(url, "_blank");
     };
 
     const completedCount = tasks.filter(t => t.completed).length;
@@ -115,7 +121,7 @@ export function TasksDrawer() {
                         tasks.sort((a, b) => Number(a.completed) - Number(b.completed) || b.createdAt - a.createdAt).map(task => (
                             <div 
                                 key={task.id} 
-                                className={`group flex items-center justify-between gap-3 p-3 rounded-xl transition-all ${
+                                className={`group flex items-center justify-between gap-2 p-3 rounded-xl transition-all ${
                                     task.completed ? "opacity-60 bg-transparent" : "bg-secondary hover:bg-secondary/80"
                                 }`}
                             >
@@ -134,12 +140,23 @@ export function TasksDrawer() {
                                         {task.title}
                                     </span>
                                 </div>
-                                <button 
-                                    onClick={() => deleteTask(task.id)}
-                                    className="shrink-0 p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 transition-all sm:opacity-100"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <div className="flex items-center gap-1 shrink-0">
+                                    {!task.completed && (
+                                        <button
+                                            onClick={() => scheduleTask(task)}
+                                            className="p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-blue-500/10 hover:text-blue-500 transition-all sm:opacity-100"
+                                            title="Agendar no Google Calendar"
+                                        >
+                                            <Calendar className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                    <button 
+                                        onClick={() => deleteTask(task.id)}
+                                        className="p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 transition-all sm:opacity-100"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         ))
                     )}

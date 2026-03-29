@@ -16,14 +16,40 @@ model User {
   notificationEmail String   @default("")
   isAdmin           Boolean  @default(true)
   isActive          Boolean  @default(true)
+  roleId            String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  role              Role?    @relation(fields: [roleId], references: [id])
   simulations       Simulation[]
   sharedSimulations SimulationShare[]
   clients           Client[]
 
   @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions RolePermission[]
+  users       User[]
+
+  @@map("roles")
+}
+
+model RolePermission {
+  id         String @id @default(cuid())
+  roleId     String
+  permission String
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permission])
+  @@map("role_permissions")
 }
 
 model Simulation {
