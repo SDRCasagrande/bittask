@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import {
     CheckSquare, Plus, Trash2, Circle, CheckCircle2, Calendar,
     Star, ChevronLeft, ChevronRight, ListTodo, CalendarDays,
-    ExternalLink, MoreVertical, ChevronDown, Clock, Loader2, UserPlus
+    ExternalLink, MoreVertical, ChevronDown, Loader2, UserPlus,
+    Pencil, SortAsc, Copy, Check
 } from "lucide-react";
 
 interface UserOption { id: string; name: string; email: string }
@@ -16,9 +17,7 @@ interface TaskData {
     createdBy: { id: string; name: string };
     createdAt: string;
 }
-interface TaskListData {
-    id: string; name: string; tasks: TaskData[];
-}
+interface TaskListData { id: string; name: string; tasks: TaskData[] }
 
 function today() { return new Date().toISOString().split("T")[0]; }
 function friendlyDate(d: string) {
@@ -30,9 +29,11 @@ function friendlyDate(d: string) {
     return new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
 }
 function isOverdue(d: string) { return d ? d < today() : false; }
+function initials(name: string) { return name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase(); }
 
 export default function TarefasPage() {
     const [lists, setLists] = useState<TaskListData[]>([]);
+    const [assignedToMe, setAssignedToMe] = useState<TaskData[]>([]);
     const [users, setUsers] = useState<UserOption[]>([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<"board" | "calendar">("board");
@@ -40,7 +41,7 @@ export default function TarefasPage() {
     const [newListName, setNewListName] = useState("");
     const [calMonth, setCalMonth] = useState(new Date().getMonth());
     const [calYear, setCalYear] = useState(new Date().getFullYear());
-    const [sidebarFilter, setSidebarFilter] = useState<"all" | "starred">("all");
+    const [sidebarFilter, setSidebarFilter] = useState<"all" | "starred" | "assigned">("all");
 
     const load = useCallback(async () => {
         try {
@@ -50,6 +51,7 @@ export default function TarefasPage() {
             const tasksData = await tasksRes.json();
             const usersData = await usersRes.json();
             if (tasksData.lists) setLists(tasksData.lists);
+            if (tasksData.assignedTasks) setAssignedToMe(tasksData.assignedTasks);
             if (Array.isArray(usersData)) setUsers(usersData.map((u: any) => ({ id: u.id, name: u.name, email: u.email })));
         } catch { /* */ } finally { setLoading(false); }
     }, []);
@@ -63,10 +65,7 @@ export default function TarefasPage() {
     const createList = async () => {
         if (!newListName.trim()) return;
         try {
-            const res = await fetch("/api/tasks", {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: newListName.trim() }),
-            });
+            const res = await fetch("/api/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newListName.trim() }) });
             if (res.ok) { setNewListName(""); setShowNewList(false); load(); }
         } catch { /* */ }
     };
@@ -78,22 +77,13 @@ export default function TarefasPage() {
 
     const addTask = async (listId: string, title: string, date?: string, time?: string, assigneeId?: string) => {
         try {
-            await fetch(`/api/tasks/${listId}/items`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, date, time, assigneeId }),
-            });
+            await fetch(`/api/tasks/${listId}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, date, time, assigneeId }) });
             load();
         } catch { /* */ }
     };
 
     const updateTask = async (taskId: string, data: Record<string, any>) => {
-        try {
-            await fetch(`/api/tasks/item/${taskId}`, {
-                method: "PUT", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data),
-            });
-            load();
-        } catch { /* */ }
+        try { await fetch(`/api/tasks/item/${taskId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }); load(); } catch { /* */ }
     };
 
     const deleteTask = async (taskId: string) => {
@@ -103,20 +93,15 @@ export default function TarefasPage() {
     const scheduleToCalendar = (task: TaskData) => {
         const title = encodeURIComponent(task.title);
         let url = `https://calendar.google.com/calendar/r/eventedit?text=${title}&details=${encodeURIComponent("Tarefa BitKaiser")}`;
-        if (task.date) {
-            const d = task.date.replace(/-/g, "");
-            if (task.time) { const t = task.time.replace(":", "") + "00"; url += `&dates=${d}T${t}/${d}T${t}`; }
-            else url += `&dates=${d}/${d}`;
-        }
+        if (task.date) { const d = task.date.replace(/-/g, ""); url += task.time ? `&dates=${d}T${task.time.replace(":", "")}00/${d}T${task.time.replace(":", "")}00` : `&dates=${d}/${d}`; }
         window.open(url, "_blank");
         updateTask(task.id, { scheduled: true });
     };
 
     // Calendar
     const calDays = useMemo(() => {
-        const first = new Date(calYear, calMonth, 1);
         const lastDay = new Date(calYear, calMonth + 1, 0).getDate();
-        const startDow = first.getDay();
+        const startDow = new Date(calYear, calMonth, 1).getDay();
         const days: { day: number; date: string; tasks: TaskData[] }[] = [];
         for (let i = 0; i < startDow; i++) days.push({ day: 0, date: "", tasks: [] });
         for (let d = 1; d <= lastDay; d++) {
@@ -127,26 +112,18 @@ export default function TarefasPage() {
     }, [calMonth, calYear, allTasks]);
     const monthLabel = new Date(calYear, calMonth).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
-    if (loading) return (
-        <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>
-    );
+    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>;
 
     return (
         <div className="h-full flex flex-col">
             <div className="flex items-center justify-between px-1 pb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                        <CheckSquare className="w-4 h-4" />
-                    </div>
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20"><CheckSquare className="w-4 h-4" /></div>
                     <h1 className="text-lg font-bold text-foreground">Tarefas</h1>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={() => setView("board")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${view === "board" ? "bg-blue-500/10 text-blue-500" : "text-muted-foreground hover:bg-muted"}`}>
-                        <ListTodo className="w-3.5 h-3.5" /> Board
-                    </button>
-                    <button onClick={() => setView("calendar")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${view === "calendar" ? "bg-blue-500/10 text-blue-500" : "text-muted-foreground hover:bg-muted"}`}>
-                        <CalendarDays className="w-3.5 h-3.5" /> Calendário
-                    </button>
+                    <button onClick={() => setView("board")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${view === "board" ? "bg-blue-500/10 text-blue-500" : "text-muted-foreground hover:bg-muted"}`}><ListTodo className="w-3.5 h-3.5" /> Board</button>
+                    <button onClick={() => setView("calendar")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${view === "calendar" ? "bg-blue-500/10 text-blue-500" : "text-muted-foreground hover:bg-muted"}`}><CalendarDays className="w-3.5 h-3.5" /> Calendário</button>
                 </div>
             </div>
 
@@ -161,6 +138,12 @@ export default function TarefasPage() {
                         <Star className="w-4 h-4" /> Com estrela
                         {totalStarred > 0 && <span className="ml-auto text-[10px] opacity-70">{totalStarred}</span>}
                     </button>
+                    {assignedToMe.length > 0 && (
+                        <button onClick={() => setSidebarFilter("assigned")} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sidebarFilter === "assigned" ? "bg-purple-500/20 text-purple-500" : "text-muted-foreground hover:bg-muted"}`}>
+                            <UserPlus className="w-4 h-4" /> Atribuídas a mim
+                            <span className="ml-auto text-[10px] opacity-70">{assignedToMe.filter(t => !t.completed).length}</span>
+                        </button>
+                    )}
                     <div className="mt-4 mb-1"><span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 px-3">Listas</span></div>
                     {lists.map(l => (
                         <div key={l.id} className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground">
@@ -176,9 +159,7 @@ export default function TarefasPage() {
                             <button onClick={createList} className="px-2 py-1 bg-blue-600 text-white rounded-lg text-xs">OK</button>
                         </div>
                     ) : (
-                        <button onClick={() => setShowNewList(true)} className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            <Plus className="w-3.5 h-3.5" /> Criar nova lista
-                        </button>
+                        <button onClick={() => setShowNewList(true)} className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"><Plus className="w-3.5 h-3.5" /> Criar nova lista</button>
                     )}
                 </div>
 
@@ -186,17 +167,26 @@ export default function TarefasPage() {
                 {view === "board" ? (
                     <div className="flex-1 overflow-x-auto">
                         <div className="flex gap-4 min-h-full pb-4" style={{ minWidth: `${Math.max(lists.length + 1, 2) * 320}px` }}>
-                            {(sidebarFilter === "starred" ? [{ id: "starred", name: "Com estrela", tasks: allTasks.filter(t => t.starred) }] : lists).map(list => (
+                            {sidebarFilter === "starred" && (
+                                <ListColumn key="starred" list={{ id: "starred", name: "Com estrela", tasks: allTasks.filter(t => t.starred) }} users={users}
+                                    onAdd={() => {}} onToggle={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
+                                    onStar={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
+                                    onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })} isSpecialView />
+                            )}
+                            {sidebarFilter === "assigned" && (
+                                <ListColumn key="assigned" list={{ id: "assigned", name: "Atribuídas a mim", tasks: assignedToMe }} users={users}
+                                    onAdd={() => {}} onToggle={(id) => { const t = assignedToMe.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
+                                    onStar={(id) => { const t = assignedToMe.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
+                                    onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })} isSpecialView />
+                            )}
+                            {sidebarFilter === "all" && lists.map(list => (
                                 <ListColumn key={list.id} list={list} users={users}
                                     onAdd={(title, date, time, assigneeId) => addTask(list.id, title, date, time, assigneeId)}
                                     onToggle={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
                                     onStar={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
-                                    onDelete={deleteTask}
-                                    onSchedule={(t) => scheduleToCalendar(t)}
-                                    onAssign={(id, assigneeId) => updateTask(id, { assigneeId })}
-                                    onDeleteList={lists.length > 1 && sidebarFilter === "all" ? () => deleteList(list.id, list.name) : undefined}
-                                    isStarredView={sidebarFilter === "starred"}
-                                />
+                                    onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
+                                    onDeleteList={lists.length > 1 ? () => deleteList(list.id, list.name) : undefined}
+                                    onClearCompleted={() => { list.tasks.filter(t => t.completed).forEach(t => deleteTask(t.id)); }} />
                             ))}
                             {sidebarFilter === "all" && (
                                 <div className="w-72 shrink-0">
@@ -210,9 +200,7 @@ export default function TarefasPage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <button onClick={() => setShowNewList(true)} className="w-full flex items-center gap-2 px-4 py-3 bg-card/50 border border-dashed border-border rounded-2xl text-sm text-muted-foreground hover:text-foreground transition-all">
-                                            <Plus className="w-4 h-4" /> Nova lista
-                                        </button>
+                                        <button onClick={() => setShowNewList(true)} className="w-full flex items-center gap-2 px-4 py-3 bg-card/50 border border-dashed border-border rounded-2xl text-sm text-muted-foreground hover:text-foreground transition-all"><Plus className="w-4 h-4" /> Nova lista</button>
                                     )}
                                 </div>
                             )}
@@ -258,7 +246,7 @@ export default function TarefasPage() {
 }
 
 /* ═══ LIST COLUMN ═══ */
-function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onDeleteList, isStarredView }: {
+function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onDeleteList, onClearCompleted, isSpecialView }: {
     list: { id: string; name: string; tasks: TaskData[] };
     users: UserOption[];
     onAdd: (title: string, date?: string, time?: string, assigneeId?: string) => void;
@@ -268,7 +256,8 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
     onSchedule: (t: TaskData) => void;
     onAssign: (id: string, assigneeId: string | null) => void;
     onDeleteList?: () => void;
-    isStarredView?: boolean;
+    onClearCompleted?: () => void;
+    isSpecialView?: boolean;
 }) {
     const [adding, setAdding] = useState(false);
     const [newTitle, setNewTitle] = useState("");
@@ -277,6 +266,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
     const [newAssignee, setNewAssignee] = useState("");
     const [showMenu, setShowMenu] = useState(false);
     const [showCompleted, setShowCompleted] = useState(false);
+    const [assigningId, setAssigningId] = useState<string | null>(null);
 
     const pending = list.tasks.filter(t => !t.completed).sort((a, b) => {
         if (a.starred !== b.starred) return Number(b.starred) - Number(a.starred);
@@ -292,16 +282,34 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
 
     return (
         <div className="w-72 shrink-0 bg-card border border-border rounded-2xl flex flex-col max-h-[calc(100vh-180px)]">
+            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 shrink-0">
                 <h3 className="text-sm font-bold text-foreground truncate">{list.name}</h3>
-                {!isStarredView && (
+                <span className="text-[10px] text-muted-foreground mr-auto ml-2">{pending.length}</span>
+                {!isSpecialView && (
                     <div className="relative">
                         <button onClick={() => setShowMenu(!showMenu)} className="p-1 rounded-lg hover:bg-muted text-muted-foreground"><MoreVertical className="w-4 h-4" /></button>
                         {showMenu && (<>
                             <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                            <div className="absolute right-0 top-8 z-20 bg-popover border border-border rounded-xl shadow-xl py-1 min-w-[160px]">
+                            <div className="absolute right-0 top-8 z-20 bg-popover border border-border rounded-xl shadow-xl py-1 min-w-[200px]">
+                                <button onClick={() => { navigator.clipboard.writeText(pending.map(t => `- ${t.title}`).join("\n")); setShowMenu(false); }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
+                                    <Copy className="w-3.5 h-3.5 text-muted-foreground" /> Copiar tarefas
+                                </button>
+                                <button onClick={() => { const sorted = [...pending].sort((a, b) => (a.date || "9").localeCompare(b.date || "9")); setShowMenu(false); }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
+                                    <SortAsc className="w-3.5 h-3.5 text-muted-foreground" /> Ordenar por data
+                                </button>
+                                {completed.length > 0 && (
+                                    <button onClick={() => { if (onClearCompleted) onClearCompleted(); setShowMenu(false); }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
+                                        <Check className="w-3.5 h-3.5 text-muted-foreground" /> Limpar concluídas
+                                    </button>
+                                )}
+                                <div className="h-px bg-border my-1" />
                                 {onDeleteList && (
-                                    <button onClick={() => { onDeleteList(); setShowMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10">
+                                    <button onClick={() => { onDeleteList(); setShowMenu(false); }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors">
                                         <Trash2 className="w-3.5 h-3.5" /> Excluir lista
                                     </button>
                                 )}
@@ -311,8 +319,9 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                 )}
             </div>
 
+            {/* Add Task */}
             <div className="px-3 pt-3 pb-1 shrink-0">
-                {adding ? (
+                {!isSpecialView && adding ? (
                     <div className="space-y-2 mb-2">
                         <input value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") setAdding(false); }}
                             autoFocus placeholder="Título da tarefa..."
@@ -321,7 +330,6 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                             <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} className="flex-1 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none min-w-0" />
                             <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)} className="w-20 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none" />
                         </div>
-                        {/* Assignee selector */}
                         <select value={newAssignee} onChange={e => setNewAssignee(e.target.value)}
                             className="w-full px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none">
                             <option value="">Sem responsável</option>
@@ -332,13 +340,12 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                             <button onClick={() => { setAdding(false); setNewTitle(""); }} className="px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs">Cancelar</button>
                         </div>
                     </div>
-                ) : (
-                    <button onClick={() => setAdding(true)} className="w-full flex items-center gap-2 text-sm text-blue-500 hover:text-blue-400 py-1">
-                        <Plus className="w-4 h-4" /> Adicionar uma tarefa
-                    </button>
-                )}
+                ) : !isSpecialView ? (
+                    <button onClick={() => setAdding(true)} className="w-full flex items-center gap-2 text-sm text-blue-500 hover:text-blue-400 py-1"><Plus className="w-4 h-4" /> Adicionar uma tarefa</button>
+                ) : null}
             </div>
 
+            {/* Tasks */}
             <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5">
                 {pending.map(task => (
                     <div key={task.id} className="group flex items-start gap-2 px-2 py-2 rounded-xl hover:bg-muted/40 transition-colors relative">
@@ -351,10 +358,16 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                                         <Calendar className="w-3 h-3" /> {friendlyDate(task.date)}{task.time && <> · {task.time}</>}
                                     </span>
                                 )}
-                                {task.assignee && (
-                                    <span className="text-[10px] bg-purple-500/10 text-purple-500 px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5">
+                                {task.assignee ? (
+                                    <button onClick={() => setAssigningId(assigningId === task.id ? null : task.id)}
+                                        className="text-[10px] bg-purple-500/10 text-purple-500 px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5 hover:bg-purple-500/20">
                                         <UserPlus className="w-3 h-3" /> {task.assignee.name.split(" ")[0]}
-                                    </span>
+                                    </button>
+                                ) : (
+                                    <button onClick={() => setAssigningId(assigningId === task.id ? null : task.id)}
+                                        className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 hover:bg-muted/80">
+                                        <UserPlus className="w-3 h-3" /> Atribuir
+                                    </button>
                                 )}
                                 {task.scheduled && (
                                     <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5">
@@ -362,26 +375,30 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                                     </span>
                                 )}
                             </div>
+                            {/* Inline assign dropdown */}
+                            {assigningId === task.id && (
+                                <div className="mt-1.5">
+                                    <select value={task.assigneeId || ""} onChange={e => { onAssign(task.id, e.target.value || null); setAssigningId(null); }}
+                                        autoFocus className="w-full px-2 py-1 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none">
+                                        <option value="">Sem responsável</option>
+                                        {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                    </select>
+                                </div>
+                            )}
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onClick={() => onStar(task.id)} className={`p-1 rounded-md ${task.starred ? "text-amber-500 opacity-100" : "text-muted-foreground hover:text-amber-500"}`}>
                                 <Star className={`w-3.5 h-3.5 ${task.starred ? "fill-amber-500" : ""}`} />
                             </button>
-                            <button onClick={() => onSchedule(task)} className="p-1 rounded-md text-muted-foreground hover:text-blue-500" title="Agendar no Google Calendar">
-                                <ExternalLink className="w-3.5 h-3.5" />
-                            </button>
-                            <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-red-500">
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <button onClick={() => onSchedule(task)} className="p-1 rounded-md text-muted-foreground hover:text-blue-500" title="Agendar no Google Calendar"><ExternalLink className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                         </div>
                         {task.starred && <Star className="w-3 h-3 text-amber-500 fill-amber-500 absolute right-2 top-2 group-hover:hidden" />}
                     </div>
                 ))}
 
                 {pending.length === 0 && !adding && (
-                    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground/40">
-                        <CheckSquare className="w-10 h-10 mb-2" /><p className="text-xs">Não há tarefas</p>
-                    </div>
+                    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground/40"><CheckSquare className="w-10 h-10 mb-2" /><p className="text-xs">Não há tarefas</p></div>
                 )}
 
                 {completed.length > 0 && (
@@ -389,17 +406,13 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                         <button onClick={() => setShowCompleted(!showCompleted)} className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground">
                             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showCompleted ? "" : "-rotate-90"}`} /> Concluída ({completed.length})
                         </button>
-                        {showCompleted && (
-                            <div className="space-y-0.5 mt-1">
-                                {completed.map(task => (
-                                    <div key={task.id} className="group flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-muted/40 opacity-50">
-                                        <button onClick={() => onToggle(task.id)} className="shrink-0 text-emerald-500"><CheckCircle2 className="w-[18px] h-[18px]" /></button>
-                                        <span className="text-sm text-muted-foreground line-through truncate flex-1">{task.title}</span>
-                                        <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
-                                    </div>
-                                ))}
+                        {showCompleted && <div className="space-y-0.5 mt-1">{completed.map(task => (
+                            <div key={task.id} className="group flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-muted/40 opacity-50">
+                                <button onClick={() => onToggle(task.id)} className="shrink-0 text-emerald-500"><CheckCircle2 className="w-[18px] h-[18px]" /></button>
+                                <span className="text-sm text-muted-foreground line-through truncate flex-1">{task.title}</span>
+                                <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                             </div>
-                        )}
+                        ))}</div>}
                     </div>
                 )}
             </div>

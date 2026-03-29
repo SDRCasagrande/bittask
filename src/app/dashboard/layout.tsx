@@ -8,7 +8,7 @@ import { TasksDrawer } from "@/components/tasks-drawer";
 import {
     LayoutDashboard, Calculator, FileBarChart, GitCompare,
     Handshake, Settings, Users, LogOut, Menu, X, ChevronRight,
-    Bell, Search, MoreHorizontal, Shield, CheckSquare
+    Bell, Search, MoreHorizontal, CheckSquare
 } from "lucide-react";
 
 /* ═══ Navigation Items ═══ */
@@ -19,9 +19,8 @@ const NAV_ITEMS = [
     { href: "/dashboard/comparativo", label: "Comparação", icon: GitCompare, mobileLabel: "Comparar" },
     { href: "/dashboard/negociacoes", label: "Negociações", icon: Handshake, mobileLabel: "Negociações" },
     { href: "/dashboard/tarefas", label: "Tarefas", icon: CheckSquare, mobileLabel: "Tarefas" },
-    { href: "/dashboard/permissoes", label: "Permissões", icon: Shield },
     { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
-    { href: "/dashboard/usuarios", label: "Usuários", icon: Users },
+    { href: "/dashboard/usuarios", label: "Equipe", icon: Users },
 ];
 
 // Bottom nav shows first 4 + "More" overflow

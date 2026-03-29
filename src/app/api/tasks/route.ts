@@ -8,7 +8,7 @@ export async function GET() {
         const session = await getSession();
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const lists = await prisma.taskList.findMany({
+        let lists = await prisma.taskList.findMany({
             where: { userId: session.userId },
             include: {
                 tasks: {
@@ -21,6 +21,15 @@ export async function GET() {
             },
             orderBy: { createdAt: 'asc' },
         });
+
+        // Auto-create default list on first visit
+        if (lists.length === 0) {
+            const newList = await prisma.taskList.create({
+                data: { name: 'Minhas Tarefas', userId: session.userId },
+                include: { tasks: { include: { assignee: { select: { id: true, name: true, email: true } }, createdBy: { select: { id: true, name: true } } } } },
+            });
+            lists = [newList];
+        }
 
         // Also include tasks assigned TO this user from other lists
         const assignedTasks = await prisma.task.findMany({
