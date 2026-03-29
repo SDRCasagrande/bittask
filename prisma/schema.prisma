@@ -49,11 +49,13 @@ model TaskList {
 model Task {
   id          String   @id @default(cuid())
   title       String
+  description String   @default("")
   completed   Boolean  @default(false)
   date        String   @default("")
   time        String   @default("")
   starred     Boolean  @default(false)
   scheduled   Boolean  @default(false)
+  priority    String   @default("medium")
   listId      String
   createdById String
   assigneeId  String?

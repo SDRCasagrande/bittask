@@ -17,6 +17,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ task
         if (body.starred !== undefined) data.starred = body.starred;
         if (body.scheduled !== undefined) data.scheduled = body.scheduled;
         if (body.title !== undefined) data.title = body.title.trim();
+        if (body.description !== undefined) data.description = body.description;
+        if (body.priority !== undefined) data.priority = body.priority;
         if (body.date !== undefined) data.date = body.date;
         if (body.time !== undefined) data.time = body.time;
         if (body.assigneeId !== undefined) data.assigneeId = body.assigneeId || null;

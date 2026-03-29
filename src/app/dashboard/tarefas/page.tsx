@@ -5,13 +5,14 @@ import {
     CheckSquare, Plus, Trash2, Circle, CheckCircle2, Calendar,
     Star, ChevronLeft, ChevronRight, ListTodo, CalendarDays,
     ExternalLink, MoreVertical, ChevronDown, Loader2, UserPlus,
-    Pencil, SortAsc, Copy, Check
+    Pencil, SortAsc, Copy, Check, X, Users, MessageSquare,
+    AlertTriangle, Flag, Clock
 } from "lucide-react";
 
 interface UserOption { id: string; name: string; email: string }
 interface TaskData {
-    id: string; title: string; completed: boolean; date: string; time: string;
-    starred: boolean; scheduled: boolean; listId: string; createdById: string;
+    id: string; title: string; description: string; completed: boolean; date: string; time: string;
+    starred: boolean; scheduled: boolean; priority: string; listId: string; createdById: string;
     assigneeId: string | null;
     assignee: UserOption | null;
     createdBy: { id: string; name: string };
@@ -31,28 +32,38 @@ function friendlyDate(d: string) {
 function isOverdue(d: string) { return d ? d < today() : false; }
 function initials(name: string) { return name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase(); }
 
+const PRIORITY_MAP: Record<string, { label: string; color: string; bg: string; icon: typeof Flag }> = {
+    high: { label: "Alta", color: "text-red-500", bg: "bg-red-500/10", icon: Flag },
+    medium: { label: "Média", color: "text-amber-500", bg: "bg-amber-500/10", icon: Flag },
+    low: { label: "Baixa", color: "text-blue-400", bg: "bg-blue-500/10", icon: Flag },
+};
+
 export default function TarefasPage() {
     const [lists, setLists] = useState<TaskListData[]>([]);
     const [assignedToMe, setAssignedToMe] = useState<TaskData[]>([]);
     const [users, setUsers] = useState<UserOption[]>([]);
+    const [currentUserId, setCurrentUserId] = useState("");
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<"board" | "calendar">("board");
     const [showNewList, setShowNewList] = useState(false);
     const [newListName, setNewListName] = useState("");
     const [calMonth, setCalMonth] = useState(new Date().getMonth());
     const [calYear, setCalYear] = useState(new Date().getFullYear());
-    const [sidebarFilter, setSidebarFilter] = useState<"all" | "starred" | "assigned">("all");
+    const [sidebarFilter, setSidebarFilter] = useState<"all" | "starred" | "assigned" | string>("all");
+    const [detailTask, setDetailTask] = useState<TaskData | null>(null);
 
     const load = useCallback(async () => {
         try {
-            const [tasksRes, usersRes] = await Promise.all([
-                fetch("/api/tasks"), fetch("/api/admin/users")
+            const [tasksRes, usersRes, meRes] = await Promise.all([
+                fetch("/api/tasks"), fetch("/api/admin/users"), fetch("/api/auth/me")
             ]);
             const tasksData = await tasksRes.json();
             const usersData = await usersRes.json();
+            const meData = await meRes.json();
             if (tasksData.lists) setLists(tasksData.lists);
             if (tasksData.assignedTasks) setAssignedToMe(tasksData.assignedTasks);
             if (Array.isArray(usersData)) setUsers(usersData.map((u: any) => ({ id: u.id, name: u.name, email: u.email })));
+            if (meData?.id) setCurrentUserId(meData.id);
         } catch { /* */ } finally { setLoading(false); }
     }, []);
 
@@ -61,6 +72,16 @@ export default function TarefasPage() {
     const allTasks = useMemo(() => lists.flatMap(l => l.tasks), [lists]);
     const totalPending = allTasks.filter(t => !t.completed).length;
     const totalStarred = allTasks.filter(t => t.starred && !t.completed).length;
+
+    // Team tasks: group by user for supervisor view
+    const teamMembers = useMemo(() => {
+        return users.filter(u => u.id !== currentUserId);
+    }, [users, currentUserId]);
+
+    // Get tasks for a specific team member (tasks assigned to them)
+    const getTeamTasks = useCallback((userId: string) => {
+        return allTasks.filter(t => t.assigneeId === userId);
+    }, [allTasks]);
 
     const createList = async () => {
         if (!newListName.trim()) return;
@@ -75,9 +96,9 @@ export default function TarefasPage() {
         try { await fetch(`/api/tasks/${listId}`, { method: "DELETE" }); load(); } catch { /* */ }
     };
 
-    const addTask = async (listId: string, title: string, date?: string, time?: string, assigneeId?: string) => {
+    const addTask = async (listId: string, title: string, date?: string, time?: string, assigneeId?: string, priority?: string) => {
         try {
-            await fetch(`/api/tasks/${listId}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, date, time, assigneeId }) });
+            await fetch(`/api/tasks/${listId}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, date, time, assigneeId, priority }) });
             load();
         } catch { /* */ }
     };
@@ -129,7 +150,7 @@ export default function TarefasPage() {
 
             <div className="flex flex-1 gap-4 min-h-0 overflow-hidden">
                 {/* Sidebar */}
-                <div className="w-48 shrink-0 hidden lg:flex flex-col gap-1">
+                <div className="w-52 shrink-0 hidden lg:flex flex-col gap-0.5 overflow-y-auto">
                     <button onClick={() => setSidebarFilter("all")} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sidebarFilter === "all" ? "bg-blue-600 text-white" : "text-muted-foreground hover:bg-muted"}`}>
                         <CheckSquare className="w-4 h-4" /> Todas as tarefas
                         {totalPending > 0 && <span className="ml-auto text-[10px] opacity-70">{totalPending}</span>}
@@ -144,6 +165,23 @@ export default function TarefasPage() {
                             <span className="ml-auto text-[10px] opacity-70">{assignedToMe.filter(t => !t.completed).length}</span>
                         </button>
                     )}
+
+                    {/* Team Section */}
+                    {teamMembers.length > 0 && (<>
+                        <div className="mt-4 mb-1"><span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 px-3">Equipe</span></div>
+                        {teamMembers.map(u => {
+                            const teamTasksCount = getTeamTasks(u.id).filter(t => !t.completed).length;
+                            return (
+                                <button key={u.id} onClick={() => setSidebarFilter(`team_${u.id}`)}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sidebarFilter === `team_${u.id}` ? "bg-indigo-500/20 text-indigo-400" : "text-muted-foreground hover:bg-muted"}`}>
+                                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[8px] text-white font-bold shrink-0">{initials(u.name)}</div>
+                                    <span className="truncate">{u.name.split(" ")[0]}</span>
+                                    {teamTasksCount > 0 && <span className="ml-auto text-[10px] opacity-70">{teamTasksCount}</span>}
+                                </button>
+                            );
+                        })}
+                    </>)}
+
                     <div className="mt-4 mb-1"><span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 px-3">Listas</span></div>
                     {lists.map(l => (
                         <div key={l.id} className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground">
@@ -171,20 +209,36 @@ export default function TarefasPage() {
                                 <ListColumn key="starred" list={{ id: "starred", name: "Com estrela", tasks: allTasks.filter(t => t.starred) }} users={users}
                                     onAdd={() => {}} onToggle={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
                                     onStar={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
-                                    onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })} isSpecialView />
+                                    onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
+                                    onOpenDetail={setDetailTask} isSpecialView />
                             )}
                             {sidebarFilter === "assigned" && (
                                 <ListColumn key="assigned" list={{ id: "assigned", name: "Atribuídas a mim", tasks: assignedToMe }} users={users}
                                     onAdd={() => {}} onToggle={(id) => { const t = assignedToMe.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
                                     onStar={(id) => { const t = assignedToMe.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
-                                    onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })} isSpecialView />
+                                    onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
+                                    onOpenDetail={setDetailTask} isSpecialView />
                             )}
+                            {/* Team member view */}
+                            {sidebarFilter.startsWith("team_") && (() => {
+                                const userId = sidebarFilter.replace("team_", "");
+                                const user = users.find(u => u.id === userId);
+                                const tasks = getTeamTasks(userId);
+                                return (
+                                    <ListColumn key={`team-${userId}`} list={{ id: `team-${userId}`, name: `Tarefas ${user?.name.split(" ")[0] || ""}`, tasks }} users={users}
+                                        onAdd={() => {}} onToggle={(id) => { const t = tasks.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
+                                        onStar={(id) => { const t = tasks.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
+                                        onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
+                                        onOpenDetail={setDetailTask} isSpecialView />
+                                );
+                            })()}
                             {sidebarFilter === "all" && lists.map(list => (
                                 <ListColumn key={list.id} list={list} users={users}
-                                    onAdd={(title, date, time, assigneeId) => addTask(list.id, title, date, time, assigneeId)}
+                                    onAdd={(title, date, time, assigneeId, priority) => addTask(list.id, title, date, time, assigneeId, priority)}
                                     onToggle={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
                                     onStar={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
                                     onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
+                                    onOpenDetail={setDetailTask}
                                     onDeleteList={lists.length > 1 ? () => deleteList(list.id, list.name) : undefined}
                                     onClearCompleted={() => { list.tasks.filter(t => t.completed).forEach(t => deleteTask(t.id)); }} />
                             ))}
@@ -226,11 +280,11 @@ export default function TarefasPage() {
                                                 <span className={`text-xs font-bold ${isToday ? "bg-blue-500 text-white w-6 h-6 rounded-full inline-flex items-center justify-center" : "text-foreground"}`}>{cell.day}</span>
                                                 <div className="space-y-0.5 mt-1">
                                                     {cell.tasks.slice(0, 3).map(t => (
-                                                        <div key={t.id} className={`text-[9px] truncate px-1.5 py-0.5 rounded-md font-medium ${t.starred ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"}`}>
+                                                        <div key={t.id} onClick={() => setDetailTask(t)} className={`text-[10px] truncate px-1.5 py-0.5 rounded-md font-medium cursor-pointer hover:opacity-80 ${t.starred ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"}`}>
                                                             {t.time && <span className="font-bold">{t.time} </span>}{t.title}
                                                         </div>
                                                     ))}
-                                                    {cell.tasks.length > 3 && <span className="text-[9px] text-muted-foreground px-1">+{cell.tasks.length - 3}</span>}
+                                                    {cell.tasks.length > 3 && <span className="text-[10px] text-muted-foreground px-1">+{cell.tasks.length - 3}</span>}
                                                 </div>
                                             </>)}
                                         </div>
@@ -241,20 +295,146 @@ export default function TarefasPage() {
                     </div>
                 )}
             </div>
+
+            {/* Detail Modal */}
+            {detailTask && (
+                <TaskDetailModal task={detailTask} users={users}
+                    onUpdate={(data) => { updateTask(detailTask.id, data); setDetailTask({ ...detailTask, ...data }); }}
+                    onDelete={() => { deleteTask(detailTask.id); setDetailTask(null); }}
+                    onClose={() => setDetailTask(null)} />
+            )}
+        </div>
+    );
+}
+
+/* ═══ TASK DETAIL MODAL ═══ */
+function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
+    task: TaskData; users: UserOption[];
+    onUpdate: (data: Record<string, any>) => void; onDelete: () => void; onClose: () => void;
+}) {
+    const [title, setTitle] = useState(task.title);
+    const [description, setDescription] = useState(task.description || "");
+    const [priority, setPriority] = useState(task.priority || "medium");
+    const [date, setDate] = useState(task.date);
+    const [time, setTime] = useState(task.time);
+    const [assigneeId, setAssigneeId] = useState(task.assigneeId || "");
+    const [editingTitle, setEditingTitle] = useState(false);
+
+    const saveField = (field: string, value: any) => { onUpdate({ [field]: value }); };
+    const pri = PRIORITY_MAP[priority] || PRIORITY_MAP.medium;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-start justify-end" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+            <div className="relative w-full max-w-md h-full bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => onUpdate({ completed: !task.completed })}
+                            className={`${task.completed ? "text-emerald-500" : "text-muted-foreground hover:text-blue-500"}`}>
+                            {task.completed ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                        </button>
+                        <span className="text-sm font-bold text-foreground">Detalhes da Tarefa</span>
+                    </div>
+                    <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                    {/* Title */}
+                    {editingTitle ? (
+                        <input value={title} onChange={e => setTitle(e.target.value)} autoFocus
+                            onBlur={() => { if (title.trim() && title !== task.title) saveField("title", title.trim()); setEditingTitle(false); }}
+                            onKeyDown={e => { if (e.key === "Enter") { if (title.trim() && title !== task.title) saveField("title", title.trim()); setEditingTitle(false); } }}
+                            className="w-full text-lg font-bold text-foreground bg-transparent border-b border-blue-500 focus:outline-none pb-1" />
+                    ) : (
+                        <h2 onClick={() => setEditingTitle(true)} className={`text-lg font-bold cursor-pointer hover:text-blue-500 transition-colors ${task.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{task.title}</h2>
+                    )}
+
+                    {/* Meta Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Priority */}
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prioridade</label>
+                            <select value={priority} onChange={e => { setPriority(e.target.value); saveField("priority", e.target.value); }}
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-blue-500/50">
+                                <option value="high">🔴 Alta</option>
+                                <option value="medium">🟡 Média</option>
+                                <option value="low">🔵 Baixa</option>
+                            </select>
+                        </div>
+
+                        {/* Assignee */}
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Responsável</label>
+                            <select value={assigneeId} onChange={e => { setAssigneeId(e.target.value); saveField("assigneeId", e.target.value || null); }}
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-blue-500/50">
+                                <option value="">Sem responsável</option>
+                                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                            </select>
+                        </div>
+
+                        {/* Date */}
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Data</label>
+                            <input type="date" value={date} onChange={e => { setDate(e.target.value); saveField("date", e.target.value); }}
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-blue-500/50 [color-scheme:dark]" />
+                        </div>
+
+                        {/* Time */}
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Horário</label>
+                            <input type="time" value={time} onChange={e => { setTime(e.target.value); saveField("time", e.target.value); }}
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-blue-500/50 [color-scheme:dark]" />
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição / Notas</label>
+                        <textarea value={description} onChange={e => setDescription(e.target.value)}
+                            onBlur={() => { if (description !== (task.description || "")) saveField("description", description); }}
+                            rows={4} placeholder="Adicione detalhes, observações..."
+                            className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-blue-500/50 resize-none" />
+                    </div>
+
+                    {/* Info */}
+                    <div className="space-y-2 pt-3 border-t border-border/50">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Clock className="w-3.5 h-3.5" /> Criada em {new Date(task.createdAt).toLocaleString("pt-BR")}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Users className="w-3.5 h-3.5" /> Por {task.createdBy.name}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between px-5 py-3 border-t border-border">
+                    <button onClick={() => onUpdate({ starred: !task.starred })}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${task.starred ? "bg-amber-500/10 text-amber-500" : "bg-muted text-muted-foreground hover:text-amber-500"}`}>
+                        <Star className={`w-3.5 h-3.5 ${task.starred ? "fill-amber-500" : ""}`} /> {task.starred ? "Favorita" : "Favoritar"}
+                    </button>
+                    <button onClick={() => { if (confirm("Excluir esta tarefa?")) onDelete(); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20">
+                        <Trash2 className="w-3.5 h-3.5" /> Excluir
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
 
 /* ═══ LIST COLUMN ═══ */
-function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onDeleteList, onClearCompleted, isSpecialView }: {
+function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onOpenDetail, onDeleteList, onClearCompleted, isSpecialView }: {
     list: { id: string; name: string; tasks: TaskData[] };
     users: UserOption[];
-    onAdd: (title: string, date?: string, time?: string, assigneeId?: string) => void;
+    onAdd: (title: string, date?: string, time?: string, assigneeId?: string, priority?: string) => void;
     onToggle: (id: string) => void;
     onStar: (id: string) => void;
     onDelete: (id: string) => void;
     onSchedule: (t: TaskData) => void;
     onAssign: (id: string, assigneeId: string | null) => void;
+    onOpenDetail: (t: TaskData) => void;
     onDeleteList?: () => void;
     onClearCompleted?: () => void;
     isSpecialView?: boolean;
@@ -264,20 +444,25 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
     const [newDate, setNewDate] = useState("");
     const [newTime, setNewTime] = useState("");
     const [newAssignee, setNewAssignee] = useState("");
+    const [newPriority, setNewPriority] = useState("medium");
     const [showMenu, setShowMenu] = useState(false);
     const [showCompleted, setShowCompleted] = useState(false);
     const [assigningId, setAssigningId] = useState<string | null>(null);
 
     const pending = list.tasks.filter(t => !t.completed).sort((a, b) => {
         if (a.starred !== b.starred) return Number(b.starred) - Number(a.starred);
+        const priOrder = { high: 0, medium: 1, low: 2 };
+        const pa = priOrder[a.priority as keyof typeof priOrder] ?? 1;
+        const pb = priOrder[b.priority as keyof typeof priOrder] ?? 1;
+        if (pa !== pb) return pa - pb;
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
     const completed = list.tasks.filter(t => t.completed);
 
     const handleAdd = () => {
         if (!newTitle.trim()) return;
-        onAdd(newTitle.trim(), newDate, newTime, newAssignee || undefined);
-        setNewTitle(""); setNewDate(""); setNewTime(""); setNewAssignee("");
+        onAdd(newTitle.trim(), newDate, newTime, newAssignee || undefined, newPriority);
+        setNewTitle(""); setNewDate(""); setNewTime(""); setNewAssignee(""); setNewPriority("medium");
     };
 
     return (
@@ -295,10 +480,6 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                                 <button onClick={() => { navigator.clipboard.writeText(pending.map(t => `- ${t.title}`).join("\n")); setShowMenu(false); }}
                                     className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
                                     <Copy className="w-3.5 h-3.5 text-muted-foreground" /> Copiar tarefas
-                                </button>
-                                <button onClick={() => { const sorted = [...pending].sort((a, b) => (a.date || "9").localeCompare(b.date || "9")); setShowMenu(false); }}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
-                                    <SortAsc className="w-3.5 h-3.5 text-muted-foreground" /> Ordenar por data
                                 </button>
                                 {completed.length > 0 && (
                                     <button onClick={() => { if (onClearCompleted) onClearCompleted(); setShowMenu(false); }}
@@ -327,14 +508,24 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                             autoFocus placeholder="Título da tarefa..."
                             className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-blue-500/50" />
                         <div className="flex gap-1.5">
-                            <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} className="flex-1 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none min-w-0" />
-                            <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)} className="w-20 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none" />
+                            <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
+                                className="flex-1 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none min-w-0 [color-scheme:dark]" />
+                            <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
+                                className="w-20 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none [color-scheme:dark]" />
                         </div>
-                        <select value={newAssignee} onChange={e => setNewAssignee(e.target.value)}
-                            className="w-full px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none">
-                            <option value="">Sem responsável</option>
-                            {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                        </select>
+                        <div className="flex gap-1.5">
+                            <select value={newAssignee} onChange={e => setNewAssignee(e.target.value)}
+                                className="flex-1 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none">
+                                <option value="">Sem responsável</option>
+                                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                            </select>
+                            <select value={newPriority} onChange={e => setNewPriority(e.target.value)}
+                                className="w-24 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none">
+                                <option value="high">🔴 Alta</option>
+                                <option value="medium">🟡 Média</option>
+                                <option value="low">🔵 Baixa</option>
+                            </select>
+                        </div>
                         <div className="flex gap-1.5">
                             <button onClick={handleAdd} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium">Adicionar</button>
                             <button onClick={() => { setAdding(false); setNewTitle(""); }} className="px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs">Cancelar</button>
@@ -347,55 +538,47 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
 
             {/* Tasks */}
             <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5">
-                {pending.map(task => (
-                    <div key={task.id} className="group flex items-start gap-2 px-2 py-2 rounded-xl hover:bg-muted/40 transition-colors relative">
-                        <button onClick={() => onToggle(task.id)} className="shrink-0 mt-0.5 text-muted-foreground hover:text-blue-500"><Circle className="w-[18px] h-[18px]" /></button>
+                {pending.map(task => {
+                    const pri = PRIORITY_MAP[task.priority] || PRIORITY_MAP.medium;
+                    return (
+                    <div key={task.id} className="group flex items-start gap-2 px-2 py-2 rounded-xl hover:bg-muted/40 transition-colors relative cursor-pointer"
+                        onClick={() => onOpenDetail(task)}>
+                        <button onClick={(e) => { e.stopPropagation(); onToggle(task.id); }} className="shrink-0 mt-0.5 text-muted-foreground hover:text-blue-500"><Circle className="w-[18px] h-[18px]" /></button>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground leading-snug">{task.title}</p>
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                {/* Priority badge */}
+                                {task.priority && task.priority !== "medium" && (
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${pri.bg} ${pri.color}`}>{pri.label}</span>
+                                )}
                                 {task.date && (
                                     <span className={`text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 rounded-md font-medium ${isOverdue(task.date) ? "bg-red-500/10 text-red-500" : "bg-muted text-muted-foreground"}`}>
                                         <Calendar className="w-3 h-3" /> {friendlyDate(task.date)}{task.time && <> · {task.time}</>}
                                     </span>
                                 )}
                                 {task.assignee ? (
-                                    <button onClick={() => setAssigningId(assigningId === task.id ? null : task.id)}
-                                        className="text-[10px] bg-purple-500/10 text-purple-500 px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5 hover:bg-purple-500/20">
+                                    <span className="text-[10px] bg-purple-500/10 text-purple-500 px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5">
                                         <UserPlus className="w-3 h-3" /> {task.assignee.name.split(" ")[0]}
-                                    </button>
-                                ) : (
-                                    <button onClick={() => setAssigningId(assigningId === task.id ? null : task.id)}
-                                        className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 hover:bg-muted/80">
-                                        <UserPlus className="w-3 h-3" /> Atribuir
-                                    </button>
-                                )}
-                                {task.scheduled && (
-                                    <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5">
-                                        <CheckCircle2 className="w-3 h-3" /> Agendado
+                                    </span>
+                                ) : null}
+                                {task.description && (
+                                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                                        <MessageSquare className="w-3 h-3" />
                                     </span>
                                 )}
                             </div>
-                            {/* Inline assign dropdown */}
-                            {assigningId === task.id && (
-                                <div className="mt-1.5">
-                                    <select value={task.assigneeId || ""} onChange={e => { onAssign(task.id, e.target.value || null); setAssigningId(null); }}
-                                        autoFocus className="w-full px-2 py-1 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none">
-                                        <option value="">Sem responsável</option>
-                                        {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                                    </select>
-                                </div>
-                            )}
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => onStar(task.id)} className={`p-1 rounded-md ${task.starred ? "text-amber-500 opacity-100" : "text-muted-foreground hover:text-amber-500"}`}>
+                            <button onClick={(e) => { e.stopPropagation(); onStar(task.id); }} className={`p-1 rounded-md ${task.starred ? "text-amber-500 opacity-100" : "text-muted-foreground hover:text-amber-500"}`}>
                                 <Star className={`w-3.5 h-3.5 ${task.starred ? "fill-amber-500" : ""}`} />
                             </button>
-                            <button onClick={() => onSchedule(task)} className="p-1 rounded-md text-muted-foreground hover:text-blue-500" title="Agendar no Google Calendar"><ExternalLink className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onSchedule(task); }} className="p-1 rounded-md text-muted-foreground hover:text-blue-500" title="Google Calendar"><ExternalLink className="w-3.5 h-3.5" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDelete(task.id); }} className="p-1 rounded-md text-muted-foreground hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                         </div>
                         {task.starred && <Star className="w-3 h-3 text-amber-500 fill-amber-500 absolute right-2 top-2 group-hover:hidden" />}
                     </div>
-                ))}
+                    );
+                })}
 
                 {pending.length === 0 && !adding && (
                     <div className="flex flex-col items-center justify-center py-10 text-muted-foreground/40"><CheckSquare className="w-10 h-10 mb-2" /><p className="text-xs">Não há tarefas</p></div>
@@ -407,10 +590,11 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showCompleted ? "" : "-rotate-90"}`} /> Concluída ({completed.length})
                         </button>
                         {showCompleted && <div className="space-y-0.5 mt-1">{completed.map(task => (
-                            <div key={task.id} className="group flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-muted/40 opacity-50">
-                                <button onClick={() => onToggle(task.id)} className="shrink-0 text-emerald-500"><CheckCircle2 className="w-[18px] h-[18px]" /></button>
+                            <div key={task.id} className="group flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-muted/40 opacity-50 cursor-pointer"
+                                onClick={() => onOpenDetail(task)}>
+                                <button onClick={(e) => { e.stopPropagation(); onToggle(task.id); }} className="shrink-0 text-emerald-500"><CheckCircle2 className="w-[18px] h-[18px]" /></button>
                                 <span className="text-sm text-muted-foreground line-through truncate flex-1">{task.title}</span>
-                                <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); onDelete(task.id); }} className="p-1 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                             </div>
                         ))}</div>}
                     </div>

@@ -9,7 +9,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ lis
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { listId } = await params;
-        const { title, date, time, assigneeId } = await request.json();
+        const { title, date, time, assigneeId, description, priority } = await request.json();
 
         if (!title?.trim()) return NextResponse.json({ error: 'Título é obrigatório' }, { status: 400 });
 
@@ -19,8 +19,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ lis
         const task = await prisma.task.create({
             data: {
                 title: title.trim(),
+                description: description || '',
                 date: date || '',
                 time: time || '',
+                priority: priority || 'medium',
                 listId,
                 createdById: session.userId,
                 assigneeId: assigneeId || null,
