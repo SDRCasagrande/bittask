@@ -169,7 +169,7 @@ export default function ComparativoPage() {
             </div>
 
             {/* Volume por VALOR + Concorrente */}
-            <div className="glass-card rounded-2xl p-5 space-y-4">
+            <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="flex-1">
                         <label className="text-xs font-medium text-foreground mb-1 block">Concorrente</label>
@@ -224,7 +224,7 @@ export default function ComparativoPage() {
                     costs={compCosts}
                 />
                 {/* Diff */}
-                <div className="glass-card rounded-2xl overflow-hidden">
+                <div className="bg-card border border-border rounded-2xl overflow-hidden">
                     <div className="px-4 py-3 bg-gradient-to-r from-slate-500/10 to-transparent border-b border-border flex items-center gap-2">
                         <TrendingDown className="w-4 h-4 text-foreground" />
                         <h3 className="font-bold text-foreground text-sm">Diferença</h3>
@@ -261,7 +261,7 @@ export default function ComparativoPage() {
             </div>
 
             {/* IPV — Isenção Por Volume */}
-            <div className="glass-card rounded-2xl p-5 space-y-4">
+            <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
                 <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-foreground" />
                     <h3 className="font-bold text-foreground text-sm">IPV — Isenção Por Volume</h3>
@@ -365,7 +365,7 @@ function RateCard({ title, color, rates, onChange, costs }: {
     ];
 
     return (
-        <div className="glass-card rounded-2xl overflow-hidden" style={{ borderColor: color + '33' }}>
+        <div className="bg-card border border-border rounded-2xl overflow-hidden" style={{ borderColor: color + '33' }}>
             <div className="px-4 py-3 border-b border-border flex items-center gap-2"
                 style={{ background: `linear-gradient(to right, ${color}15, transparent)` }}>
                 <Percent className="w-4 h-4" style={{ color }} />
@@ -380,7 +380,7 @@ function RateCard({ title, color, rates, onChange, costs }: {
                                 <input type="number" step="0.01" value={rates[f.key]}
                                     onChange={(e) => onChange({ ...rates, [f.key]: parseFloat(e.target.value) || 0 })}
                                     className="w-full px-2 py-1.5 rounded-lg bg-secondary border border-border text-foreground text-xs font-medium text-right pr-5 focus:ring-2 focus:ring-emerald-500" />
-                                <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">%</span>
+                                <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">%</span>
                             </div>
                         </div>
                     ))}
@@ -402,7 +402,7 @@ function MachineCard({ label, color, config, onChange }: {
     onChange: (c: MachineConfig) => void;
 }) {
     return (
-        <div className="glass-card rounded-2xl p-4">
+        <div className="bg-card border border-border rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
                 <SmartphoneNfc className="w-4 h-4" style={{ color }} />
                 <h3 className="font-bold text-sm" style={{ color }}>Máquinas {label}</h3>

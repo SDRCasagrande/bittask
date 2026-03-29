@@ -276,7 +276,7 @@ export default function PropostaPage() {
             {/* ROW 1: Client + Volume + TPV */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                 {/* Client — 5 cols */}
-                <div className="md:col-span-5 glass-card rounded-xl p-4 space-y-3">
+                <div className="md:col-span-5 bg-card border border-border rounded-xl p-4 space-y-3">
                     <div className="flex items-center gap-2 mb-1">
                         <User className="w-4 h-4 text-emerald-500" />
                         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Cliente</h3>
@@ -307,7 +307,7 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Volume — 5 cols */}
-                <div className="md:col-span-5 glass-card rounded-xl p-4">
+                <div className="md:col-span-5 bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                             <Wallet className="w-4 h-4 text-emerald-500" />
@@ -324,7 +324,7 @@ export default function PropostaPage() {
                         {[{ l: "Débito", v: vDeb, s: setVDeb, sh: sDeb }, { l: "Crédito", v: vCred, s: setVCred, sh: sCred }, { l: "PIX", v: vPix, s: setVPix, sh: sPix }].map(
                             (item) => (
                                 <div key={item.l} className="text-center">
-                                    <p className="text-[9px] text-muted-foreground uppercase">{item.l}</p>
+                                    <p className="text-[11px] text-muted-foreground uppercase">{item.l}</p>
                                     <div className="relative">
                                         <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">R$</span>
                                         <input type="number" value={item.v} onChange={(e) => item.s(parseFloat(e.target.value) || 0)}
@@ -337,8 +337,8 @@ export default function PropostaPage() {
                 </div>
 
                 {/* TPV Summary — 2 cols */}
-                <div className="md:col-span-2 glass-card rounded-xl p-3 flex flex-col items-center justify-center text-center">
-                    <p className="text-[9px] text-muted-foreground uppercase">TPV Total</p>
+                <div className="md:col-span-2 bg-card border border-border rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                    <p className="text-[11px] text-muted-foreground uppercase">TPV Total</p>
                     <p className="text-xl font-bold text-foreground">{formatCurrency(tpv)}</p>
                     <p className="text-[10px] text-muted-foreground">/mês</p>
                 </div>
@@ -347,7 +347,7 @@ export default function PropostaPage() {
             {/* ROW 2: Stone Rates + Competitor Rates + CET */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                 {/* Stone Rates — multi-brand */}
-                <div className="md:col-span-3 glass-card rounded-xl p-4 border-[1px] border-emerald-500/20">
+                <div className="md:col-span-3 bg-card border border-border rounded-xl p-4 border-[1px] border-emerald-500/20">
                     <div className="flex items-center gap-2 mb-3">
                         <Percent className="w-4 h-4 text-emerald-500" />
                         <h3 className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Taxas Stone</h3>
@@ -356,7 +356,7 @@ export default function PropostaPage() {
                         {BRANDS.map((b) => (
                             <div key={b} className="relative group">
                                 <button onClick={() => setActiveBrand(b)}
-                                    className={`px-1.5 py-0.5 text-[8px] rounded font-semibold transition-all ${activeBrand === b
+                                    className={`px-1.5 py-0.5 text-[10px] rounded font-semibold transition-all ${activeBrand === b
                                         ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40"
                                         : "bg-secondary text-muted-foreground hover:bg-muted"
                                         }`}>
@@ -387,7 +387,7 @@ export default function PropostaPage() {
                                         if (e.key === "Escape") { setNewBrandInput(""); setShowNewBrand(false); }
                                     }}
                                     placeholder="NOME"
-                                    className="w-20 px-1 py-0.5 text-[8px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-emerald-500" />
+                                    className="w-20 px-1 py-0.5 text-[10px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-emerald-500" />
                                 <button onClick={() => {
                                     const name = newBrandInput.trim();
                                     if (name && !brandRates[name]) {
@@ -395,13 +395,13 @@ export default function PropostaPage() {
                                         setActiveBrand(name);
                                     }
                                     setNewBrandInput(""); setShowNewBrand(false);
-                                }} className="text-[8px] text-emerald-400 hover:text-emerald-300">OK</button>
+                                }} className="text-[10px] text-emerald-400 hover:text-emerald-300">OK</button>
                                 <button onClick={() => { setNewBrandInput(""); setShowNewBrand(false); }}
-                                    className="text-[8px] text-red-400 hover:text-red-300">X</button>
+                                    className="text-[10px] text-red-400 hover:text-red-300">X</button>
                             </div>
                         ) : (
                             <button onClick={() => setShowNewBrand(true)}
-                                className="px-1.5 py-0.5 text-[8px] rounded font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">+</button>
+                                className="px-1.5 py-0.5 text-[10px] rounded font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all">+</button>
                         )}
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -417,7 +417,7 @@ export default function PropostaPage() {
                         <div className="grid grid-cols-2 gap-1.5 mb-2">
                             <RI l="PIX" v={pixR} set={setPixR} />
                             <div>
-                                <label className="text-[9px] text-muted-foreground uppercase block mb-px">Tipo RAV</label>
+                                <label className="text-[11px] text-muted-foreground uppercase block mb-px">Tipo RAV</label>
                                 <select value={ravTipo} onChange={(e) => setRavTipo(e.target.value as "automatico" | "pontual")}
                                     className="w-full px-1 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] focus:ring-1 focus:ring-emerald-500">
                                     <option value="automatico">Automatico</option>
@@ -430,7 +430,7 @@ export default function PropostaPage() {
                             <RI l="RAV Pontual" v={ravPontual} set={setRavPontual} />
                             {ravTipo === "automatico" ? (
                                 <div>
-                                    <label className="text-[9px] text-muted-foreground uppercase block mb-px">Recebimento</label>
+                                    <label className="text-[11px] text-muted-foreground uppercase block mb-px">Recebimento</label>
                                     <select value={ravTiming} onChange={(e) => setRavTiming(e.target.value as "md" | "ds" | "du")}
                                         className="w-full px-1 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] focus:ring-1 focus:ring-emerald-500">
                                         <option value="md">Mesmo Dia</option>
@@ -440,7 +440,7 @@ export default function PropostaPage() {
                                 </div>
                             ) : (
                                 <div className="flex items-end">
-                                    <p className="text-[9px] text-amber-400 bg-amber-500/10 rounded-md px-2 py-1">Sem antecipacao</p>
+                                    <p className="text-[11px] text-amber-400 bg-amber-500/10 rounded-md px-2 py-1">Sem antecipacao</p>
                                 </div>
                             )}
                         </div>
@@ -448,7 +448,7 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Competitor Rates — 3 cols */}
-                <div className="md:col-span-3 glass-card rounded-xl p-4 border-[1px]" style={{ borderColor: comp.color + '30' }}>
+                <div className="md:col-span-3 bg-card border border-border rounded-xl p-4 border-[1px]" style={{ borderColor: comp.color + '30' }}>
                     <div className="flex items-center gap-2 mb-3">
                         <Percent className="w-4 h-4" style={{ color: comp.color }} />
                         <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: comp.color }}>Taxas {comp.name}</h3>
@@ -464,7 +464,7 @@ export default function PropostaPage() {
                 </div>
 
                 {/* CET Grid — 6 cols */}
-                <div className="md:col-span-6 glass-card rounded-xl p-4">
+                <div className="md:col-span-6 bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <Activity className="w-4 h-4 text-foreground" />
                         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">CET Stone — {activeBrand} (1x-12x)</h3>
@@ -475,7 +475,7 @@ export default function PropostaPage() {
                             const bg = cet < 5 ? "bg-emerald-500/10" : cet < 10 ? "bg-amber-500/10" : "bg-red-500/10";
                             return (
                                 <div key={inst} className={`p-1 rounded text-center ${bg}`}>
-                                    <p className="text-[9px] text-muted-foreground">{inst}x</p>
+                                    <p className="text-[11px] text-muted-foreground">{inst}x</p>
                                     <p className={`text-[11px] font-bold ${color}`}>{formatPercent(cet)}</p>
                                 </div>
                             );
@@ -487,21 +487,21 @@ export default function PropostaPage() {
             {/* ROW 3: Machines + IPV + Agreement + Diff */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3">
                 {/* Machines Stone */}
-                <div className="md:col-span-3 glass-card rounded-xl p-4">
+                <div className="md:col-span-3 bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <SmartphoneNfc className="w-4 h-4 text-emerald-500" />
                         <h3 className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Máquinas Stone</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Qtd</label>
+                            <label className="text-[11px] text-muted-foreground uppercase block mb-px">Qtd</label>
                             <input type="number" value={sMach.quantity} onChange={(e) => setSMach((p) => ({ ...p, quantity: parseInt(e.target.value) || 0 }))}
                                 className="w-full px-2 py-1 rounded-md bg-secondary border border-border text-foreground text-xs text-center" />
                         </div>
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Aluguel</label>
+                            <label className="text-[11px] text-muted-foreground uppercase block mb-px">Aluguel</label>
                             <div className="relative">
-                                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">R$</span>
+                                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">R$</span>
                                 <input type="number" step="0.01" value={sMach.rental} onChange={(e) => setSMach((p) => ({ ...p, rental: parseFloat(e.target.value) || 0 }))}
                                     className="w-full pl-5 pr-1 py-1 rounded-md bg-secondary border border-border text-foreground text-xs text-right" />
                             </div>
@@ -514,27 +514,27 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Machines Comp — 3 cols */}
-                <div className="md:col-span-3 glass-card rounded-xl p-4">
+                <div className="md:col-span-3 bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <SmartphoneNfc className="w-4 h-4" style={{ color: comp.color }} />
                         <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: comp.color }}>Máquinas {comp.name}</h3>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Qtd</label>
+                            <label className="text-[11px] text-muted-foreground uppercase block mb-px">Qtd</label>
                             <input type="number" value={cMach.quantity} onChange={(e) => setCMach((p) => ({ ...p, quantity: parseInt(e.target.value) || 0 }))}
                                 className="w-full px-2 py-1 rounded-md bg-secondary border border-border text-foreground text-xs text-center" />
                         </div>
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Aluguel</label>
+                            <label className="text-[11px] text-muted-foreground uppercase block mb-px">Aluguel</label>
                             <div className="relative">
-                                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">R$</span>
+                                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">R$</span>
                                 <input type="number" step="0.01" value={cMach.rental} onChange={(e) => setCMach((p) => ({ ...p, rental: parseFloat(e.target.value) || 0 }))}
                                     className="w-full pl-5 pr-1 py-1 rounded-md bg-secondary border border-border text-foreground text-xs text-right" />
                             </div>
                         </div>
                         <div>
-                            <label className="text-[9px] text-muted-foreground uppercase block mb-px">Isentas</label>
+                            <label className="text-[11px] text-muted-foreground uppercase block mb-px">Isentas</label>
                             <input type="number" min={0} value={cExempt} onChange={(e) => setCExempt(parseInt(e.target.value) || 0)}
                                 className="w-full px-2 py-1 rounded-md bg-secondary border border-border text-foreground text-xs text-center" />
                         </div>
@@ -545,7 +545,7 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Agreement — 3 cols */}
-                <div className="md:col-span-3 glass-card rounded-xl p-4">
+                <div className="md:col-span-3 bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <FileSignature className="w-4 h-4 text-foreground" />
                         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Acordo</h3>
@@ -564,16 +564,16 @@ export default function PropostaPage() {
                         <div className="space-y-1.5">
                             <div className="grid grid-cols-2 gap-1.5">
                                 <div>
-                                    <label className="text-[9px] text-muted-foreground uppercase block mb-px">Meses</label>
+                                    <label className="text-[11px] text-muted-foreground uppercase block mb-px">Meses</label>
                                     <select value={fidMonths} onChange={(e) => setFidMonths(parseInt(e.target.value))}
                                         className="w-full px-1 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px]">
                                         {[6, 12, 13, 24, 36].map((m) => <option key={m} value={m}>{m}m</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-[9px] text-muted-foreground uppercase block mb-px">Meta TPV</label>
+                                    <label className="text-[11px] text-muted-foreground uppercase block mb-px">Meta TPV</label>
                                     <div className="relative">
-                                        <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[8px] text-muted-foreground">R$</span>
+                                        <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">R$</span>
                                         <input type="number" value={metaTPV} onChange={(e) => setMetaTPV(parseFloat(e.target.value) || 0)}
                                             className="w-full pl-5 pr-1 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] text-right" />
                                     </div>
@@ -588,12 +588,12 @@ export default function PropostaPage() {
                         <div className="space-y-1.5">
                             <div className="grid grid-cols-2 gap-1.5">
                                 <div>
-                                    <label className="text-[9px] text-muted-foreground uppercase block mb-px">Qtd Máquinas</label>
+                                    <label className="text-[11px] text-muted-foreground uppercase block mb-px">Qtd Máquinas</label>
                                     <input type="number" min={1} value={adesaoQty} onChange={(e) => setAdesaoQty(parseInt(e.target.value) || 1)}
                                         className="w-full px-2 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] text-center" />
                                 </div>
                                 <div>
-                                    <label className="text-[9px] text-muted-foreground uppercase block mb-px">Total Entrada</label>
+                                    <label className="text-[11px] text-muted-foreground uppercase block mb-px">Total Entrada</label>
                                     <div className="px-2 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] text-center font-semibold">
                                         R$ {(478.80 * adesaoQty).toFixed(2).replace(".", ",")}
                                     </div>
@@ -605,7 +605,7 @@ export default function PropostaPage() {
                 </div>
 
                 {/* Cost Diff — 3 cols */}
-                <div className="md:col-span-3 glass-card rounded-xl p-4">
+                <div className="md:col-span-3 bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                         <TrendingDown className="w-4 h-4 text-foreground" />
                         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Diferença</h3>

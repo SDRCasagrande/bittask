@@ -327,7 +327,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                 <div className="lg:col-span-4 space-y-3">
 
                     {/* Proposal Type + Fidelidade */}
-                    <div className="glass-card rounded-xl p-3 border-l-2 border-purple-500/30">
+                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-purple-500/30">
                         <h3 className="text-[10px] font-bold text-purple-400 uppercase mb-1.5">Tipo de Proposta</h3>
                         <select value={proposalType} onChange={(e) => handleProposalChange(e.target.value)}
                             className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-[11px] font-medium focus:ring-1 focus:ring-purple-500">
@@ -336,7 +336,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                             ))}
                         </select>
                         {promoInfo && proposalType !== "custom" && (
-                            <p className="text-[9px] text-purple-400 bg-purple-500/10 rounded-md px-2 py-1 mt-1.5">{promoInfo.desc}</p>
+                            <p className="text-[11px] text-purple-400 bg-purple-500/10 rounded-md px-2 py-1 mt-1.5">{promoInfo.desc}</p>
                         )}
                         {/* Fidelidade toggle */}
                         <div className="mt-2 pt-2 border-t border-border">
@@ -348,7 +348,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                                 <span className="text-[10px] text-foreground font-medium">Termo de Fidelidade</span>
                             </label>
                             {fidelidade && (
-                                <p className="text-[9px] text-blue-400 bg-blue-500/10 rounded-md px-2 py-1 mt-1.5">1º mês isento + 12 Meses = 13 Meses total</p>
+                                <p className="text-[11px] text-blue-400 bg-blue-500/10 rounded-md px-2 py-1 mt-1.5">1º mês isento + 12 Meses = 13 Meses total</p>
                             )}
                         </div>
                     </div>
@@ -357,7 +357,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                     <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-cyan-500/30">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[10px] font-bold text-cyan-400 uppercase">TPV Mensal Acordado</h3>
-                            {(() => { const ex = calculateExemptMachines(tpv); return ex > 0 ? <span className="text-[9px] text-emerald-400 font-bold">{ex} maq. isentas</span> : null; })()}
+                            {(() => { const ex = calculateExemptMachines(tpv); return ex > 0 ? <span className="text-[11px] text-emerald-400 font-bold">{ex} maq. isentas</span> : null; })()}
                         </div>
                         <div className="mt-1">
                             <div className="relative">
@@ -377,7 +377,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                             {ALL_BRANDS.map((b) => (
                                 <div key={b} className="relative group">
                                     <button onClick={() => { setActiveBrand(b); if (!enabledBrands[b]) toggleBrand(b); }}
-                                        className={`px-1.5 py-0.5 text-[8px] rounded font-semibold transition-all ${activeBrand === b
+                                        className={`px-1.5 py-0.5 text-[10px] rounded font-semibold transition-all ${activeBrand === b
                                             ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40"
                                             : enabledBrands[b]
                                                 ? "bg-secondary text-foreground hover:bg-muted"
@@ -418,7 +418,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                                             if (e.key === "Escape") { setNewBrandInput(""); setShowNewBrand(false); }
                                         }}
                                         placeholder="NOME"
-                                        className="w-20 px-1 py-0.5 text-[8px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-emerald-500" />
+                                        className="w-20 px-1 py-0.5 text-[10px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-emerald-500" />
                                     <button onClick={() => {
                                         const name = newBrandInput.trim();
                                         if (name && !brandRates[name]) {
@@ -427,18 +427,18 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                                             setActiveBrand(name);
                                         }
                                         setNewBrandInput(""); setShowNewBrand(false);
-                                    }} className="text-[8px] text-emerald-400">OK</button>
+                                    }} className="text-[10px] text-emerald-400">OK</button>
                                     <button onClick={() => { setNewBrandInput(""); setShowNewBrand(false); }}
-                                        className="text-[8px] text-red-400">X</button>
+                                        className="text-[10px] text-red-400">X</button>
                                 </div>
                             ) : (
                                 <button onClick={() => setShowNewBrand(true)}
-                                    className="px-1.5 py-0.5 text-[8px] rounded font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">+</button>
+                                    className="px-1.5 py-0.5 text-[10px] rounded font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">+</button>
                             )}
                         </div>
 
                         {/* Active count */}
-                        <p className="text-[8px] text-muted-foreground mb-1.5">{ACTIVE_BRANDS.length} de {ALL_BRANDS.length} ativas (hover p/ ativar/desativar)</p>
+                        <p className="text-[10px] text-muted-foreground mb-1.5">{ACTIVE_BRANDS.length} de {ALL_BRANDS.length} ativas (hover p/ ativar/desativar)</p>
 
                         <div className="grid grid-cols-2 gap-1.5">
                             <RI l="Debito" v={sr.debit} set={(v) => setBrandRates({ ...brandRates, [activeBrand]: { ...sr, debit: v } })} />
@@ -454,7 +454,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                         <h3 className="text-[10px] font-bold text-amber-500 uppercase mb-1.5">Antecipacao (RAV)</h3>
                         <div className="grid grid-cols-2 gap-1.5 mb-1.5">
                             <div>
-                                <label className="text-[9px] text-muted-foreground uppercase block mb-px">Tipo</label>
+                                <label className="text-[11px] text-muted-foreground uppercase block mb-px">Tipo</label>
                                 <select value={ravTipo} onChange={(e) => setRavTipo(e.target.value as "automatico" | "pontual")}
                                     className="w-full px-1 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] focus:ring-1 focus:ring-amber-500">
                                     <option value="automatico">Automatico</option>
@@ -463,7 +463,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                             </div>
                             {ravTipo === "automatico" && (
                                 <div>
-                                    <label className="text-[9px] text-muted-foreground uppercase block mb-px">Recebimento</label>
+                                    <label className="text-[11px] text-muted-foreground uppercase block mb-px">Recebimento</label>
                                     <select value={ravTiming} onChange={(e) => setRavTiming(e.target.value as "md" | "ds" | "du")}
                                         className="w-full px-1 py-1 rounded-md bg-secondary border border-border text-foreground text-[10px] focus:ring-1 focus:ring-amber-500">
                                         <option value="md">Mesmo Dia</option>
@@ -478,7 +478,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                             <RI l="RAV Pontual" v={ravPontual} set={setRavPontual} />
                         </div>
                         {ravTipo === "pontual" && (
-                            <p className="text-[9px] text-amber-400 bg-amber-500/10 rounded-md px-2 py-1 mt-1.5">Sem antecipacao — CET = apenas MDR</p>
+                            <p className="text-[11px] text-amber-400 bg-amber-500/10 rounded-md px-2 py-1 mt-1.5">Sem antecipacao — CET = apenas MDR</p>
                         )}
                     </div>
 
@@ -488,19 +488,19 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                         <div className="grid grid-cols-2 gap-1.5">
                             <RI l="PIX" v={pixRate} set={setPixRate} />
                             <div>
-                                <label className="text-[9px] text-muted-foreground uppercase block mb-px">Aluguel/maq (R$)</label>
+                                <label className="text-[11px] text-muted-foreground uppercase block mb-px">Aluguel/maq (R$)</label>
                                 <input type="number" min={0} step="0.01" value={rental || ''} onFocus={(e) => e.target.select()} onChange={(e) => setRental(parseFloat(e.target.value) || 0)}
                                     className="w-full px-1.5 py-1 rounded-md bg-secondary border border-border text-foreground text-[11px] font-medium text-right focus:ring-1 focus:ring-blue-500" />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-1.5 mt-1.5">
                             <div>
-                                <label className="text-[9px] text-muted-foreground uppercase block mb-px">Maquinas</label>
+                                <label className="text-[11px] text-muted-foreground uppercase block mb-px">Maquinas</label>
                                 <input type="number" min={1} value={machines} onFocus={(e) => e.target.select()} onChange={(e) => setMachines(parseInt(e.target.value) || 1)}
                                     className="w-full px-1.5 py-1 rounded-md bg-secondary border border-border text-foreground text-[11px] font-medium text-right focus:ring-1 focus:ring-blue-500" />
                             </div>
                             <div>
-                                <label className="text-[9px] text-muted-foreground uppercase block mb-px flex items-center gap-1">
+                                <label className="text-[11px] text-muted-foreground uppercase block mb-px flex items-center gap-1">
                                     Termos Adesão
                                     <span className="text-[7px] text-blue-400">(R$ {adesaoValor.toFixed(2)}/un)</span>
                                 </label>
@@ -546,7 +546,7 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                                             <span className="font-bold text-amber-400">{formatCurrency(totalRental)}/mês</span>
                                         </div>
                                     ) : machines > 0 ? (
-                                        <p className="text-[9px] text-emerald-400">✓ Proposta: todas isentas pelo IPV</p>
+                                        <p className="text-[11px] text-emerald-400">✓ Proposta: todas isentas pelo IPV</p>
                                     ) : null}
                                 </div>
                             );
@@ -579,12 +579,12 @@ td{padding:2px 6px;border-bottom:1px solid #f0f0f0}
                                         <span className="text-xs text-muted-foreground">Debito: <span className="font-bold text-foreground">{formatPercent(rates.debit)}</span></span>
                                     </div>
                                     <div className="p-1.5">
-                                        <table className="w-full border-collapse text-[9px]">
+                                        <table className="w-full border-collapse text-[11px]">
                                             <thead>
                                                 <tr>
-                                                    <th className="text-[8px] text-muted-foreground font-medium px-1 py-0.5 border-b border-border text-left w-10">Parc.</th>
-                                                    <th className="text-[8px] text-muted-foreground font-medium px-1 py-0.5 border-b border-border text-right">MDR</th>
-                                                    <th className="text-[8px] text-muted-foreground font-medium px-1 py-0.5 border-b border-border text-right">CET</th>
+                                                    <th className="text-[10px] text-muted-foreground font-medium px-1 py-0.5 border-b border-border text-left w-10">Parc.</th>
+                                                    <th className="text-[10px] text-muted-foreground font-medium px-1 py-0.5 border-b border-border text-right">MDR</th>
+                                                    <th className="text-[10px] text-muted-foreground font-medium px-1 py-0.5 border-b border-border text-right">CET</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

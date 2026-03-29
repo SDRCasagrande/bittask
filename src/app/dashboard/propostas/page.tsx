@@ -81,7 +81,7 @@ export default function MinhasPropostasPage() {
 
             {/* Proposals List */}
             {proposals.length === 0 ? (
-                <div className="glass-card rounded-2xl p-12 text-center">
+                <div className="bg-card border border-border rounded-2xl p-12 text-center">
                     <p className="text-4xl mb-4">📁</p>
                     <p className="font-semibold text-foreground">Nenhuma proposta salva</p>
                     <p className="text-sm text-muted-foreground mt-2">
@@ -99,7 +99,7 @@ export default function MinhasPropostasPage() {
                     {proposals.map((proposal) => (
                         <div
                             key={proposal.id}
-                            className="glass-card rounded-2xl p-5 flex items-center gap-4"
+                            className="bg-card border border-border rounded-2xl p-5 flex items-center gap-4"
                         >
                             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                                 <span className="text-xl">📋</span>
