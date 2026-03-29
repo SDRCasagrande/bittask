@@ -24,8 +24,49 @@ model User {
   simulations       Simulation[]
   sharedSimulations SimulationShare[]
   clients           Client[]
+  taskLists         TaskList[]
+  createdTasks      Task[]   @relation("TaskCreator")
+  assignedTasks     Task[]   @relation("TaskAssignee")
 
   @@map("users")
+}
+
+model TaskList {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@index([userId])
+  @@map("task_lists")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  completed   Boolean  @default(false)
+  date        String   @default("")
+  time        String   @default("")
+  starred     Boolean  @default(false)
+  scheduled   Boolean  @default(false)
+  listId      String
+  createdById String
+  assigneeId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  list      TaskList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("TaskCreator", fields: [createdById], references: [id])
+  assignee  User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  @@index([listId])
+  @@index([createdById])
+  @@index([assigneeId])
+  @@map("tasks")
 }
 
 model Role {
