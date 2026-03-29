@@ -74,11 +74,7 @@ export async function GET() {
             take: 6,
         });
 
-        // Pending tasks count
         let pendingTasks = 0;
-        try {
-            pendingTasks = await prisma.task.count({ where: { userId: uid, status: { not: "done" } } });
-        } catch { /* tasks table may not exist yet */ }
 
         // TPV portfolio — current month volumes
         const now = new Date();
