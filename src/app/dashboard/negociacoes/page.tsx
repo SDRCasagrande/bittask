@@ -349,7 +349,7 @@ export default function NegociacoesPage() {
             {view === "board" ? (
                 /* ═══ KANBAN BOARD ═══ */
                 <div className="flex-1 overflow-x-auto -mx-4 lg:-mx-6 px-4 lg:px-6">
-                    <div className="flex gap-3 min-h-[calc(100vh-220px)] pb-4" style={{ minWidth: `${STAGES.length * 280}px` }}>
+                    <div className="flex gap-3 min-h-[calc(100vh-220px)] pb-4 pr-4" style={{ minWidth: `${STAGES.length * 280}px` }}>
                         {STAGES.map(stage => {
                             const stageNegs = filtered.filter(n => normalizeStatus(n.status) === stage.id);
                             const isDragOver = dragOverStage === stage.id;
