@@ -28,6 +28,7 @@ model User {
   createdTasks      Task[]   @relation("TaskCreator")
   assignedTasks     Task[]   @relation("TaskAssignee")
   negotiations      Negotiation[] @relation("NegotiationAssignee")
+  teamGroups        TeamGroupMember[]
 
   @@map("users")
 }
@@ -59,17 +60,46 @@ model Task {
   listId      String
   createdById String
   assigneeId  String?
+  groupId     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  list      TaskList @relation(fields: [listId], references: [id], onDelete: Cascade)
-  createdBy User     @relation("TaskCreator", fields: [createdById], references: [id])
-  assignee  User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  list      TaskList   @relation(fields: [listId], references: [id], onDelete: Cascade)
+  createdBy User       @relation("TaskCreator", fields: [createdById], references: [id])
+  assignee  User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  group     TeamGroup? @relation(fields: [groupId], references: [id])
 
   @@index([listId])
   @@index([createdById])
   @@index([assigneeId])
+  @@index([groupId])
   @@map("tasks")
+}
+
+model TeamGroup {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members TeamGroupMember[]
+  tasks   Task[]
+
+  @@map("team_groups")
+}
+
+model TeamGroupMember {
+  id      String   @id @default(cuid())
+  groupId String
+  userId  String
+  createdAt DateTime @default(now())
+
+  group TeamGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("team_group_members")
 }
 
 model Role {

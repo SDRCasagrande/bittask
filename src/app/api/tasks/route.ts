@@ -38,10 +38,44 @@ export async function GET() {
                 assignee: { select: { id: true, name: true, email: true } },
                 createdBy: { select: { id: true, name: true } },
                 list: { select: { name: true } },
+                group: { select: { id: true, name: true } },
             },
         });
 
-        return NextResponse.json({ lists, assignedTasks });
+        // Tasks assigned to groups the user belongs to
+        const userGroups = await prisma.teamGroupMember.findMany({
+            where: { userId: session.userId },
+            select: { groupId: true },
+        });
+        const groupIds = userGroups.map(g => g.groupId);
+
+        let groupTasks: any[] = [];
+        if (groupIds.length > 0) {
+            groupTasks = await prisma.task.findMany({
+                where: {
+                    groupId: { in: groupIds },
+                    createdById: { not: session.userId },
+                    assigneeId: { not: session.userId },
+                },
+                include: {
+                    assignee: { select: { id: true, name: true, email: true } },
+                    createdBy: { select: { id: true, name: true } },
+                    list: { select: { name: true } },
+                    group: { select: { id: true, name: true } },
+                },
+            });
+        }
+
+        // User's groups for the UI
+        const teams = await prisma.teamGroup.findMany({
+            include: {
+                members: { include: { user: { select: { id: true, name: true } } } },
+                _count: { select: { tasks: true } },
+            },
+            orderBy: { name: "asc" },
+        });
+
+        return NextResponse.json({ lists, assignedTasks, groupTasks, teams });
     } catch (error) {
         console.error('GET /api/tasks error:', error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
