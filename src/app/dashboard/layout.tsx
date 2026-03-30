@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 /* ═══ Navigation Items ═══ */
-const NAV_ITEMS = [
+const MAIN_NAV = [
     { href: "/dashboard", label: "Início", icon: LayoutDashboard, mobileLabel: "Início" },
     { href: "/dashboard/cet", label: "Calculador CET", icon: Calculator, mobileLabel: "CET" },
     { href: "/dashboard/proposta", label: "Simulador", icon: FileBarChart, mobileLabel: "Simulador" },
@@ -20,9 +20,14 @@ const NAV_ITEMS = [
     { href: "/dashboard/negociacoes", label: "Pipeline", icon: Handshake, mobileLabel: "Pipeline" },
     { href: "/dashboard/clientes", label: "Clientes", icon: Briefcase, mobileLabel: "Clientes" },
     { href: "/dashboard/tarefas", label: "Tarefas", icon: CheckSquare, mobileLabel: "Tarefas" },
-    { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
+];
+const ADMIN_NAV = [
     { href: "/dashboard/usuarios", label: "Equipe", icon: Users },
 ];
+const PERSONAL_NAV = [
+    { href: "/dashboard/configuracoes", label: "Meu Perfil", icon: Settings },
+];
+const NAV_ITEMS = [...MAIN_NAV, ...ADMIN_NAV, ...PERSONAL_NAV];
 
 // Bottom nav shows first 4 + "More" overflow
 const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
@@ -101,7 +106,7 @@ export default function DashboardLayout({
                     <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                         Menu Principal
                     </p>
-                    {NAV_ITEMS.slice(0, 6).map((item) => {
+                    {MAIN_NAV.map((item) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link
@@ -133,7 +138,36 @@ export default function DashboardLayout({
                             Administração
                         </p>
                     </div>
-                    {NAV_ITEMS.slice(6).map((item) => {
+                    {ADMIN_NAV.map((item) => {
+                        const isActive = pathname === item.href;
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                                    ${isActive
+                                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-500/15"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                                    }`}
+                            >
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0 ${
+                                    isActive
+                                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                        : "bg-muted/50 text-muted-foreground group-hover:bg-muted group-hover:text-foreground"
+                                }`}>
+                                    <item.icon className="w-4 h-4" />
+                                </div>
+                                <span>{item.label}</span>
+                            </Link>
+                        );
+                    })}
+
+                    <div className="pt-4 pb-2">
+                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                            Pessoal
+                        </p>
+                    </div>
+                    {PERSONAL_NAV.map((item) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link
@@ -158,10 +192,10 @@ export default function DashboardLayout({
                     })}
                 </nav>
 
-                {/* User Profile Footer */}
+                {/* User Profile Footer — clickable to go to profile page */}
                 <div className="p-3 border-t border-border space-y-2 shrink-0">
                     {user && (
-                        <div className="flex items-center gap-3 px-3 py-2">
+                        <Link href="/dashboard/configuracoes" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-muted/80 transition-colors cursor-pointer group">
                             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/10 flex items-center justify-center text-sm font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
@@ -169,7 +203,8 @@ export default function DashboardLayout({
                                 <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
                                 <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
                             </div>
-                        </div>
+                            <Settings className="w-4 h-4 text-muted-foreground/40 group-hover:text-foreground transition-colors" />
+                        </Link>
                     )}
                     <button
                         onClick={handleLogout}
@@ -246,7 +281,7 @@ export default function DashboardLayout({
                                     <item.icon className={`w-5 h-5 ${isActive ? "stroke-[2.5]" : ""}`} />
                                 </div>
                                 <span className={`text-[10px] font-medium leading-none ${isActive ? "font-bold" : ""}`}>
-                                    {item.mobileLabel || item.label}
+                                    {(item as typeof item & { mobileLabel?: string }).mobileLabel || item.label}
                                 </span>
                             </Link>
                         );
