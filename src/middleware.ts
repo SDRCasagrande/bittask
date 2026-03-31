@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
     const isAuth = await isAuthenticated(token);
 
     // Public paths
-    const publicPaths = ['/login', '/api/auth/login', '/api/auth/forgot-password', '/api/seed'];
+    const publicPaths = ['/login', '/api/auth/login', '/api/auth/forgot-password', '/api/seed', '/api/google-calendar/callback'];
     if (publicPaths.some(p => pathname.startsWith(p))) {
         if (pathname === '/login' && isAuth) {
             return NextResponse.redirect(new URL('/dashboard', request.url));
