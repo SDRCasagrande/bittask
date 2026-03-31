@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { createCalendarEvent } from '@/lib/google-calendar';
 
 // POST create a task inside a list
 export async function POST(request: Request, { params }: { params: Promise<{ listId: string }> }) {
@@ -32,6 +33,27 @@ export async function POST(request: Request, { params }: { params: Promise<{ lis
                 createdBy: { select: { id: true, name: true } },
             },
         });
+
+        // Google Calendar sync — create event if user is connected and task has a date
+        if (date) {
+            try {
+                const eventId = await createCalendarEvent(session.userId, {
+                    title: title.trim(),
+                    description: description || '',
+                    date,
+                    time: time || undefined,
+                });
+                if (eventId) {
+                    await prisma.task.update({
+                        where: { id: task.id },
+                        data: { googleCalendarEventId: eventId, scheduled: true },
+                    });
+                }
+            } catch (gcalError) {
+                console.error('[GCal] Error creating event (non-blocking):', gcalError);
+                // Non-blocking: task was created successfully, calendar sync just failed
+            }
+        }
 
         return NextResponse.json(task, { status: 201 });
     } catch (error) {

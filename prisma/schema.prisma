@@ -29,6 +29,7 @@ model User {
   assignedTasks     Task[]   @relation("TaskAssignee")
   negotiations      Negotiation[] @relation("NegotiationAssignee")
   teamGroups        TeamGroupMember[]
+  googleCalendarToken GoogleCalendarToken?
 
   @@map("users")
 }
@@ -57,6 +58,7 @@ model Task {
   starred     Boolean  @default(false)
   scheduled   Boolean  @default(false)
   priority    String   @default("medium")
+  googleCalendarEventId String @default("")
   listId      String
   createdById String
   assigneeId  String?
@@ -228,5 +230,20 @@ model Negotiation {
   @@index([clientId])
   @@index([assigneeId])
   @@map("negotiations")
+}
+
+model GoogleCalendarToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  calendarId   String   @default("primary")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("google_calendar_tokens")
 }
 

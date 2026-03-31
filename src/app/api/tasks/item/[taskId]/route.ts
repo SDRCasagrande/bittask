@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { updateCalendarEvent, deleteCalendarEvent, createCalendarEvent } from '@/lib/google-calendar';
 
 // PUT update a task (toggle complete, star, reschedule, reassign)
 export async function PUT(request: Request, { params }: { params: Promise<{ taskId: string }> }) {
@@ -10,6 +11,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ task
 
         const { taskId } = await params;
         const body = await request.json();
+
+        // Get existing task first (for calendar sync)
+        const existingTask = await prisma.task.findUnique({
+            where: { id: taskId },
+            select: { googleCalendarEventId: true, title: true, date: true, time: true, description: true, completed: true },
+        });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data: any = {};
@@ -32,6 +39,60 @@ export async function PUT(request: Request, { params }: { params: Promise<{ task
             },
         });
 
+        // Google Calendar sync
+        try {
+            if (existingTask) {
+                const eventId = existingTask.googleCalendarEventId;
+
+                if (body.completed === true && eventId) {
+                    // Task completed → delete calendar event
+                    await deleteCalendarEvent(session.userId, eventId);
+                    await prisma.task.update({
+                        where: { id: taskId },
+                        data: { googleCalendarEventId: '' },
+                    });
+                } else if (body.completed === false && !eventId && task.date) {
+                    // Task un-completed → re-create calendar event
+                    const newEventId = await createCalendarEvent(session.userId, {
+                        title: task.title,
+                        description: task.description,
+                        date: task.date,
+                        time: task.time || undefined,
+                    });
+                    if (newEventId) {
+                        await prisma.task.update({
+                            where: { id: taskId },
+                            data: { googleCalendarEventId: newEventId, scheduled: true },
+                        });
+                    }
+                } else if (eventId && (body.title || body.date || body.time || body.description)) {
+                    // Task updated → update calendar event
+                    await updateCalendarEvent(session.userId, eventId, {
+                        title: task.title,
+                        description: task.description,
+                        date: task.date,
+                        time: task.time || undefined,
+                    });
+                } else if (!eventId && task.date && !task.completed) {
+                    // Task now has a date but no event → create one
+                    const newEventId = await createCalendarEvent(session.userId, {
+                        title: task.title,
+                        description: task.description,
+                        date: task.date,
+                        time: task.time || undefined,
+                    });
+                    if (newEventId) {
+                        await prisma.task.update({
+                            where: { id: taskId },
+                            data: { googleCalendarEventId: newEventId, scheduled: true },
+                        });
+                    }
+                }
+            }
+        } catch (gcalError) {
+            console.error('[GCal] Sync error (non-blocking):', gcalError);
+        }
+
         return NextResponse.json(task);
     } catch (error) {
         console.error('PUT /api/tasks/item/[taskId] error:', error);
@@ -46,6 +107,22 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ taskId:
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { taskId } = await params;
+
+        // Get task before deleting (for calendar sync)
+        const task = await prisma.task.findUnique({
+            where: { id: taskId },
+            select: { googleCalendarEventId: true },
+        });
+
+        // Delete calendar event if exists
+        if (task?.googleCalendarEventId) {
+            try {
+                await deleteCalendarEvent(session.userId, task.googleCalendarEventId);
+            } catch (gcalError) {
+                console.error('[GCal] Delete sync error (non-blocking):', gcalError);
+            }
+        }
+
         await prisma.task.delete({ where: { id: taskId } });
         return NextResponse.json({ ok: true });
     } catch (error) {
