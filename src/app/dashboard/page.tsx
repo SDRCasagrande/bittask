@@ -32,7 +32,7 @@ const STAGE_LABELS: Record<string, { label: string; color: string; dot: string }
     prospeccao: { label: "Prospecção", color: "text-slate-500 bg-slate-500/10", dot: "bg-slate-500" },
     proposta_enviada: { label: "Proposta", color: "text-blue-500 bg-blue-500/10", dot: "bg-blue-500" },
     aguardando_cliente: { label: "Aguardando", color: "text-amber-500 bg-amber-500/10", dot: "bg-amber-500" },
-    aprovado: { label: "Aprovado", color: "text-[#00A868] bg-[#00A868]/10", dot: "bg-emerald-500" },
+    aprovado: { label: "Aprovado", color: "text-[#00A868] bg-[#00A868]/10", dot: "bg-[#00A868]" },
     recusado: { label: "Recusado", color: "text-red-500 bg-red-500/10", dot: "bg-red-500" },
     fechado: { label: "Fechado", color: "text-purple-500 bg-purple-500/10", dot: "bg-purple-500" },
 };
@@ -198,7 +198,7 @@ export default function DashboardPage() {
                                 const pct = (count / (metrics?.totalNegotiations || 1)) * 100;
                                 const colors: Record<string, string> = {
                                     prospeccao: "bg-slate-500", proposta_enviada: "bg-blue-500", aguardando_cliente: "bg-amber-500",
-                                    aprovado: "bg-emerald-500", recusado: "bg-red-500", fechado: "bg-purple-500",
+                                    aprovado: "bg-[#00A868]", recusado: "bg-red-500", fechado: "bg-purple-500",
                                 };
                                 return (
                                     <div key={key} className={`h-full ${colors[key]} flex items-center justify-center text-[9px] font-bold text-white transition-all`}

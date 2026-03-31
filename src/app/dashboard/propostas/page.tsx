@@ -72,7 +72,7 @@ export default function MinhasPropostasPage() {
                     </button>
                     <Link
                         href="/dashboard/proposta"
-                        className="px-4 py-2 text-sm rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-sm"
+                        className="px-4 py-2 text-sm rounded-xl bg-[#00A868] text-white hover:from-[#00A868] hover:to-[#00A868] transition-all shadow-sm"
                     >
                         ➕ Nova Proposta
                     </Link>
@@ -89,7 +89,7 @@ export default function MinhasPropostasPage() {
                     </p>
                     <Link
                         href="/dashboard/proposta"
-                        className="inline-block mt-4 px-6 py-2.5 text-sm rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-500 hover:to-emerald-400 transition-all"
+                        className="inline-block mt-4 px-6 py-2.5 text-sm rounded-xl bg-[#00A868] text-white hover:from-[#00A868] hover:to-[#00A868] transition-all"
                     >
                         Criar Proposta
                     </Link>

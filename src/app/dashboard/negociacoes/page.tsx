@@ -66,7 +66,7 @@ const STAGES = [
     { id: "prospeccao", label: "Prospecção", color: "slate", bg: "bg-slate-500/10", text: "text-slate-500", border: "border-slate-500/20", dot: "bg-slate-500" },
     { id: "proposta_enviada", label: "Proposta Enviada", color: "blue", bg: "bg-blue-500/10", text: "text-blue-500", border: "border-blue-500/20", dot: "bg-blue-500" },
     { id: "aguardando_cliente", label: "Aguardando Cliente", color: "amber", bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/20", dot: "bg-amber-500" },
-    { id: "aprovado", label: "Aprovado", color: "emerald", bg: "bg-[#00A868]/10", text: "text-[#00A868]", border: "border-[#00A868]/20", dot: "bg-emerald-500" },
+    { id: "aprovado", label: "Aprovado", color: "emerald", bg: "bg-[#00A868]/10", text: "text-[#00A868]", border: "border-[#00A868]/20", dot: "bg-[#00A868]" },
     { id: "recusado", label: "Recusado", color: "red", bg: "bg-red-500/10", text: "text-red-500", border: "border-red-500/20", dot: "bg-red-500" },
     { id: "fechado", label: "Fechado", color: "purple", bg: "bg-purple-500/10", text: "text-purple-500", border: "border-purple-500/20", dot: "bg-purple-500" },
 ];

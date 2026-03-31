@@ -32,7 +32,7 @@ export function RI({ l, v, set }: { l: string; v: number; set: (n: number) => vo
                         if (!isNaN(n)) { set(n); setTxt(String(n)); }
                         else { set(0); setTxt("0"); }
                     }}
-                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm font-semibold text-right pr-7 focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
+                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm font-semibold text-right pr-7 focus:ring-2 focus:ring-[#00A868]/40 focus:border-[#00A868] transition-all" />
                 <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">%</span>
             </div>
         </div>

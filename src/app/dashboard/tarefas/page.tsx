@@ -35,7 +35,7 @@ function initials(name: string) { return name.split(" ").map(n => n[0]).slice(0,
 const PRIORITY_MAP: Record<string, { label: string; color: string; bg: string; icon: typeof Flag }> = {
     high: { label: "Alta", color: "text-red-500", bg: "bg-red-500/10", icon: Flag },
     medium: { label: "Média", color: "text-amber-500", bg: "bg-amber-500/10", icon: Flag },
-    low: { label: "Baixa", color: "text-blue-400", bg: "bg-blue-500/10", icon: Flag },
+    low: { label: "Baixa", color: "text-[#00A868]", bg: "bg-[#00A868]/10", icon: Flag },
 };
 
 export default function TarefasPage() {
@@ -139,7 +139,7 @@ export default function TarefasPage() {
         <div className="h-full flex flex-col">
             <div className="flex items-center justify-between px-1 pb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20"><CheckSquare className="w-4 h-4" /></div>
+                    <div className="w-9 h-9 rounded-xl bg-[#00A868] flex items-center justify-center text-white shadow-lg shadow-[#00A868]/20"><CheckSquare className="w-4 h-4" /></div>
                     <h1 className="text-lg font-bold text-foreground">Tarefas</h1>
                 </div>
                 <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export default function TarefasPage() {
             <div className="flex flex-1 gap-4 min-h-0 overflow-hidden flex-col lg:flex-row">
                 {/* ═══ Mobile Filter Strip ═══ */}
                 <div className="flex gap-1.5 overflow-x-auto pb-1 lg:hidden shrink-0 -mx-1 px-1">
-                    <button onClick={() => setSidebarFilter("all")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${sidebarFilter === "all" ? "bg-blue-600 text-white" : "bg-secondary text-muted-foreground"}`}>
+                    <button onClick={() => setSidebarFilter("all")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${sidebarFilter === "all" ? "bg-[#00A868] text-white" : "bg-secondary text-muted-foreground"}`}>
                         <CheckSquare className="w-3.5 h-3.5" /> Todas {totalPending > 0 && <span className="opacity-70">{totalPending}</span>}
                     </button>
                     <button onClick={() => setSidebarFilter("starred")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${sidebarFilter === "starred" ? "bg-amber-500/20 text-amber-500" : "bg-secondary text-muted-foreground"}`}>
@@ -171,7 +171,7 @@ export default function TarefasPage() {
 
                 {/* Sidebar */}
                 <div className="w-52 shrink-0 hidden lg:flex flex-col gap-0.5 overflow-y-auto">
-                    <button onClick={() => setSidebarFilter("all")} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sidebarFilter === "all" ? "bg-blue-600 text-white" : "text-muted-foreground hover:bg-muted"}`}>
+                    <button onClick={() => setSidebarFilter("all")} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sidebarFilter === "all" ? "bg-[#00A868] text-white" : "text-muted-foreground hover:bg-muted"}`}>
                         <CheckSquare className="w-4 h-4" /> Todas as tarefas
                         {totalPending > 0 && <span className="ml-auto text-[10px] opacity-70">{totalPending}</span>}
                     </button>
@@ -193,7 +193,7 @@ export default function TarefasPage() {
                             const teamTasksCount = getTeamTasks(u.id).filter(t => !t.completed).length;
                             return (
                                 <button key={u.id} onClick={() => setSidebarFilter(`team_${u.id}`)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sidebarFilter === `team_${u.id}` ? "bg-indigo-500/20 text-indigo-400" : "text-muted-foreground hover:bg-muted"}`}>
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sidebarFilter === `team_${u.id}` ? "bg-[#00A868]/20 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}>
                                     <div className="w-5 h-5 rounded-full bg-[#00A868] flex items-center justify-center text-[8px] text-white font-bold shrink-0">{initials(u.name)}</div>
                                     <span className="truncate">{u.name.split(" ")[0]}</span>
                                     {teamTasksCount > 0 && <span className="ml-auto text-[10px] opacity-70">{teamTasksCount}</span>}
@@ -214,7 +214,7 @@ export default function TarefasPage() {
                         <div className="px-1 mt-1 flex gap-1">
                             <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => e.key === "Enter" && createList()} autoFocus placeholder="Nome..."
                                 className="flex-1 px-2 py-1 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none min-w-0" />
-                            <button onClick={createList} className="px-2 py-1 bg-blue-600 text-white rounded-lg text-xs">OK</button>
+                            <button onClick={createList} className="px-2 py-1 bg-[#00A868] text-white rounded-lg text-xs">OK</button>
                         </div>
                     ) : (
                         <button onClick={() => setShowNewList(true)} className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"><Plus className="w-3.5 h-3.5" /> Criar nova lista</button>
@@ -269,7 +269,7 @@ export default function TarefasPage() {
                                             <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => e.key === "Enter" && createList()} autoFocus placeholder="Nome da lista..."
                                                 className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none" />
                                             <div className="flex gap-2">
-                                                <button onClick={createList} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium">Criar</button>
+                                                <button onClick={createList} className="px-4 py-1.5 bg-[#00A868] text-white rounded-lg text-sm font-medium">Criar</button>
                                                 <button onClick={() => { setShowNewList(false); setNewListName(""); }} className="px-4 py-1.5 bg-muted text-muted-foreground rounded-lg text-sm">Cancelar</button>
                                             </div>
                                         </div>
@@ -295,12 +295,12 @@ export default function TarefasPage() {
                                 {calDays.map((cell, i) => {
                                     const isToday = cell.date === today();
                                     return (
-                                        <div key={i} className={`min-h-[80px] border-b border-r border-border p-1.5 ${cell.day === 0 ? "bg-muted/10" : isToday ? "bg-blue-500/5" : ""}`}>
+                                        <div key={i} className={`min-h-[80px] border-b border-r border-border p-1.5 ${cell.day === 0 ? "bg-muted/10" : isToday ? "bg-[#00A868]/5" : ""}`}>
                                             {cell.day > 0 && (<>
-                                                <span className={`text-xs font-bold ${isToday ? "bg-blue-500 text-white w-6 h-6 rounded-full inline-flex items-center justify-center" : "text-foreground"}`}>{cell.day}</span>
+                                                <span className={`text-xs font-bold ${isToday ? "bg-[#00A868] text-white w-6 h-6 rounded-full inline-flex items-center justify-center" : "text-foreground"}`}>{cell.day}</span>
                                                 <div className="space-y-0.5 mt-1">
                                                     {cell.tasks.slice(0, 3).map(t => (
-                                                        <div key={t.id} onClick={() => setDetailTask(t)} className={`text-[10px] truncate px-1.5 py-0.5 rounded-md font-medium cursor-pointer hover:opacity-80 ${t.starred ? "bg-amber-500/15 text-amber-600" : "bg-blue-500/10 text-blue-600"}`}>
+                                                        <div key={t.id} onClick={() => setDetailTask(t)} className={`text-[10px] truncate px-1.5 py-0.5 rounded-md font-medium cursor-pointer hover:opacity-80 ${t.starred ? "bg-amber-500/15 text-amber-600" : "bg-[#00A868]/10 text-[#00A868]"}`}>
                                                             {t.time && <span className="font-bold">{t.time} </span>}{t.title}
                                                         </div>
                                                     ))}
@@ -375,7 +375,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
                     <div className="flex items-center gap-2">
                         <button onClick={() => onUpdate({ completed: !task.completed })}
-                            className={`${task.completed ? "text-[#00A868]" : "text-muted-foreground hover:text-blue-500"} transition-colors`}>
+                            className={`${task.completed ? "text-[#00A868]" : "text-muted-foreground hover:text-[#00A868]"} transition-colors`}>
                             {task.completed ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
                         </button>
                         <span className="text-sm font-bold text-foreground">Detalhes da Tarefa</span>
@@ -389,9 +389,9 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                         <input value={title} onChange={e => { setTitle(e.target.value); markDirty(); }} autoFocus
                             onBlur={() => setEditingTitle(false)}
                             onKeyDown={e => { if (e.key === "Enter") setEditingTitle(false); if (e.key === "Escape") { setTitle(task.title); setEditingTitle(false); } }}
-                            className="w-full text-lg font-bold text-foreground bg-transparent border-b-2 border-blue-500 focus:outline-none pb-1" />
+                            className="w-full text-lg font-bold text-foreground bg-transparent border-b-2 border-[#00A868] focus:outline-none pb-1" />
                     ) : (
-                        <h2 onClick={() => setEditingTitle(true)} className={`text-lg font-bold cursor-pointer hover:text-blue-500 transition-colors ${task.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{title || task.title}</h2>
+                        <h2 onClick={() => setEditingTitle(true)} className={`text-lg font-bold cursor-pointer hover:text-[#00A868] transition-colors ${task.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{title || task.title}</h2>
                     )}
 
                     {/* Meta Grid */}
@@ -468,7 +468,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                     <button onClick={handleSave}
                         className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg ${
                             saved
-                                ? "bg-emerald-500 text-white scale-105 shadow-emerald-500/30"
+                                ? "bg-[#00A868] text-white scale-105 shadow-[#00A868]/30"
                                 : dirty
                                     ? "bg-[#00A868] hover:bg-[#00A868] text-white shadow-[#00A868]/20 animate-pulse"
                                     : "bg-[#00A868] hover:bg-[#00A868] text-white shadow-[#00A868]/20"
@@ -588,12 +588,12 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                             </select>
                         </div>
                         <div className="flex gap-1.5">
-                            <button onClick={handleAdd} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium">Adicionar</button>
+                            <button onClick={handleAdd} className="px-3 py-1.5 bg-[#00A868] hover:bg-[#008f58] text-white rounded-lg text-xs font-medium">Adicionar</button>
                             <button onClick={() => { setAdding(false); setNewTitle(""); }} className="px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs">Cancelar</button>
                         </div>
                     </div>
                 ) : !isSpecialView ? (
-                    <button onClick={() => setAdding(true)} className="w-full flex items-center gap-2 text-sm text-blue-500 hover:text-blue-400 py-1"><Plus className="w-4 h-4" /> Adicionar uma tarefa</button>
+                    <button onClick={() => setAdding(true)} className="w-full flex items-center gap-2 text-sm text-[#00A868] hover:text-[#008f58] py-1"><Plus className="w-4 h-4" /> Adicionar uma tarefa</button>
                 ) : null}
             </div>
 
@@ -604,7 +604,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                     return (
                     <div key={task.id} className="group flex items-start gap-2 px-2 py-2 rounded-xl hover:bg-muted/40 transition-colors relative cursor-pointer"
                         onClick={() => onOpenDetail(task)}>
-                        <button onClick={(e) => { e.stopPropagation(); onToggle(task.id); }} className="shrink-0 mt-0.5 text-muted-foreground hover:text-blue-500"><Circle className="w-[18px] h-[18px]" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); onToggle(task.id); }} className="shrink-0 mt-0.5 text-muted-foreground hover:text-[#00A868]"><Circle className="w-[18px] h-[18px]" /></button>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground leading-snug">{task.title}</p>
                             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -633,7 +633,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                             <button onClick={(e) => { e.stopPropagation(); onStar(task.id); }} className={`p-1 rounded-md ${task.starred ? "text-amber-500 opacity-100" : "text-muted-foreground hover:text-amber-500"}`}>
                                 <Star className={`w-3.5 h-3.5 ${task.starred ? "fill-amber-500" : ""}`} />
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); onSchedule(task); }} className="p-1 rounded-md text-muted-foreground hover:text-blue-500" title="Google Calendar"><ExternalLink className="w-3.5 h-3.5" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onSchedule(task); }} className="p-1 rounded-md text-muted-foreground hover:text-[#00A868]" title="Google Calendar"><ExternalLink className="w-3.5 h-3.5" /></button>
                             <button onClick={(e) => { e.stopPropagation(); onDelete(task.id); }} className="p-1 rounded-md text-muted-foreground hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                         </div>
                         {task.starred && <Star className="w-3 h-3 text-amber-500 fill-amber-500 absolute right-2 top-2 group-hover:hidden" />}

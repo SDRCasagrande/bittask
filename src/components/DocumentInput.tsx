@@ -81,7 +81,7 @@ export function DocumentInput({
     const borderColor = !showValidation
         ? "border-border"
         : validation.valido
-            ? "border-emerald-500"
+            ? "border-[#00A868]"
             : "border-red-500";
 
     if (compact) {
@@ -101,12 +101,12 @@ export function DocumentInput({
                     onChange={(e) => handleChange(e.target.value)}
                     placeholder={placeholder}
                     maxLength={18}
-                    className={`w-full pl-6 pr-6 py-1.5 rounded-md bg-secondary border ${borderColor} text-foreground text-[11px] placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-emerald-500/50`}
+                    className={`w-full pl-6 pr-6 py-1.5 rounded-md bg-secondary border ${borderColor} text-foreground text-[11px] placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-[#00A868]/50`}
                 />
                 {showValidation && (
                     <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
                         {validation.valido ? (
-                            <Check className="w-3 h-3 text-emerald-500" />
+                            <Check className="w-3 h-3 text-[#00A868]" />
                         ) : (
                             <AlertCircle className="w-3 h-3 text-red-400" />
                         )}
@@ -136,13 +136,13 @@ export function DocumentInput({
                     onChange={(e) => handleChange(e.target.value)}
                     placeholder={placeholder}
                     maxLength={18}
-                    className={`w-full pl-9 pr-9 py-2.5 rounded-xl bg-secondary border ${borderColor} text-foreground text-sm placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-emerald-500/50`}
+                    className={`w-full pl-9 pr-9 py-2.5 rounded-xl bg-secondary border ${borderColor} text-foreground text-sm placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-[#00A868]/50`}
                 />
                 {showValidation && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         {validation.valido ? (
                             <div className="flex items-center gap-1">
-                                <Check className="w-4 h-4 text-emerald-500" />
+                                <Check className="w-4 h-4 text-[#00A868]" />
                                 {isBypass && <span className="text-[9px] text-amber-400">bypass</span>}
                             </div>
                         ) : (
@@ -152,7 +152,7 @@ export function DocumentInput({
                 )}
             </div>
             {showValidation && validation.mensagem && (
-                <p className={`text-[10px] px-1 ${validation.valido ? "text-emerald-500" : "text-red-400"}`}>
+                <p className={`text-[10px] px-1 ${validation.valido ? "text-[#00A868]" : "text-red-400"}`}>
                     {validation.mensagem}
                 </p>
             )}

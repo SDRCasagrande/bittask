@@ -72,7 +72,7 @@ export function PhoneInput({ value, onChange, placeholder, className = "", compa
             {showValidation && (
                 <div className={`absolute ${compact ? 'right-1 top-1/2 -translate-y-1/2' : 'right-2 top-1/2 -translate-y-1/2'}`}>
                     {isValid ? (
-                        <Check className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} text-emerald-500`} />
+                        <Check className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} text-[#00A868]`} />
                     ) : (
                         <AlertCircle className={`${compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} text-red-400`} />
                     )}

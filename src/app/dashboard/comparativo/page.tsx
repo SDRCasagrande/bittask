@@ -290,7 +290,7 @@ export default function ComparativoPage() {
                                     { tpv: "10k", qty: 1 }, { tpv: "30k", qty: 2 }, { tpv: "50k", qty: 4 },
                                     { tpv: "100k", qty: 6 }, { tpv: "150k", qty: 8 },
                                 ].map((tier) => (
-                                    <div key={tier.tpv} className={`text-center p-1 rounded text-[10px] ${stoneExempt >= tier.qty ? 'bg-emerald-500/15 text-[#00A868] font-bold' : 'bg-secondary text-muted-foreground'
+                                    <div key={tier.tpv} className={`text-center p-1 rounded text-[10px] ${stoneExempt >= tier.qty ? 'bg-[#00A868]/15 text-[#00A868] font-bold' : 'bg-secondary text-muted-foreground'
                                         }`}>
                                         <p>{tier.tpv}</p>
                                         <p>{tier.qty}x</p>
@@ -322,7 +322,7 @@ export default function ComparativoPage() {
             </div>
 
             {/* Economy */}
-            <div className={`rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center text-white shadow-lg ${economy > 0 ? "bg-gradient-to-r from-emerald-600 to-emerald-500 glow-green" :
+            <div className={`rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center text-white shadow-lg ${economy > 0 ? "bg-[#00A868] glow-green" :
                 economy < 0 ? "bg-gradient-to-r from-amber-600 to-amber-500" :
                     "bg-gradient-to-r from-slate-600 to-slate-500"
                 }`}>

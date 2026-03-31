@@ -385,7 +385,7 @@ tr:nth-child(even){background:#fafafa}
                                     </button>
                                     {/* Enable/disable toggle */}
                                     <button onClick={(e) => { e.stopPropagation(); toggleBrand(b); }}
-                                        className={`absolute -top-1.5 -left-1 w-3 h-3 rounded-full text-[6px] leading-none hidden group-hover:flex items-center justify-center ${enabledBrands[b] ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}>
+                                        className={`absolute -top-1.5 -left-1 w-3 h-3 rounded-full text-[6px] leading-none hidden group-hover:flex items-center justify-center ${enabledBrands[b] ? "bg-[#00A868] text-white" : "bg-red-500 text-white"}`}>
                                         {enabledBrands[b] ? "✓" : "✕"}
                                     </button>
                                     {/* Remove custom */}
@@ -417,7 +417,7 @@ tr:nth-child(even){background:#fafafa}
                                             if (e.key === "Escape") { setNewBrandInput(""); setShowNewBrand(false); }
                                         }}
                                         placeholder="NOME"
-                                        className="w-20 px-1 py-0.5 text-[10px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-[#00A868]" />
+                                        className="w-20 px-1 py-0.5 text-[10px] rounded bg-secondary border border-[#00A868]/40 text-foreground focus:ring-1 focus:ring-[#00A868]" />
                                     <button onClick={() => {
                                         const name = newBrandInput.trim();
                                         if (name && !brandRates[name]) {

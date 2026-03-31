@@ -115,7 +115,7 @@ export default function UsuariosPage() {
                         {keys.map(key => (
                             <label key={key} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${perms.has(key) ? "bg-[#00A868]/10 border-[#00A868]/30 text-[#00A868]" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"}`}>
                                 <input type="checkbox" checked={perms.has(key)} onChange={() => togglePerm(perms, setPerms, key)} className="sr-only" />
-                                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${perms.has(key) ? "bg-emerald-500 border-emerald-500" : "border-muted-foreground/30"}`}>
+                                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${perms.has(key) ? "bg-[#00A868] border-[#00A868]" : "border-muted-foreground/30"}`}>
                                     {perms.has(key) && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                                 </div>
                                 {PERMISSIONS[key]}
@@ -134,7 +134,7 @@ export default function UsuariosPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <div className="w-10 h-10 rounded-xl bg-[#00A868] flex items-center justify-center shadow-lg shadow-[#00A868]/20">
                         <Users className="w-5 h-5 text-white" />
                     </div>
                     <div>

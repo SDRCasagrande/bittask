@@ -394,7 +394,7 @@ export default function PropostaPage() {
                                         if (e.key === "Escape") { setNewBrandInput(""); setShowNewBrand(false); }
                                     }}
                                     placeholder="NOME"
-                                    className="w-20 px-1 py-0.5 text-[10px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-[#00A868]" />
+                                    className="w-20 px-1 py-0.5 text-[10px] rounded bg-secondary border border-[#00A868]/40 text-foreground focus:ring-1 focus:ring-[#00A868]" />
                                 <button onClick={() => {
                                     const name = newBrandInput.trim();
                                     if (name && !brandRates[name]) {
@@ -642,7 +642,7 @@ export default function PropostaPage() {
             </div>
 
             {/* ROW 4: Economy Bar */}
-            <div className={`rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 text-white shadow-lg ${economy > 0 ? "bg-gradient-to-r from-emerald-600 to-emerald-500 glow-green" :
+            <div className={`rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 text-white shadow-lg ${economy > 0 ? "bg-[#00A868] glow-green" :
                 economy < 0 ? "bg-gradient-to-r from-amber-600 to-amber-500" : "bg-gradient-to-r from-slate-600 to-slate-500"}`}>
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
