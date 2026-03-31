@@ -162,7 +162,7 @@ export default function ComparativoPage() {
                 </div>
                 <div className="flex gap-2">
                     <button onClick={pullCET}
-                        className="flex items-center gap-1.5 px-4 py-2 text-sm rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+                        className="flex items-center gap-1.5 px-4 py-2 text-sm rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-colors">
                         <Download className="w-4 h-4" /> Puxar CET
                     </button>
                 </div>
@@ -271,7 +271,7 @@ export default function ComparativoPage() {
                     {/* Stone IPV — automático */}
                     <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-4 space-y-3">
                         <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><Percent className="w-4 h-4" /> Stone (Automático)</h4>
+                            <h4 className="font-semibold text-sm text-emerald-600 flex items-center gap-1.5"><Percent className="w-4 h-4" /> Stone (Automático)</h4>
                             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
                                 {stoneExempt} isenta(s)
                             </span>

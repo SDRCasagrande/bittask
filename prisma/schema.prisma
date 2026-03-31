@@ -158,6 +158,8 @@ model Client {
   id              String   @id @default(cuid())
   userId          String
   name            String
+  brand           String   @default("STONE") // STONE ou TON
+  safra           String   @default("M0") // M0, M1, M2, M3, BASE
   stoneCode       String   @default("")
   cnpj            String   @default("")
   phone           String   @default("")
@@ -199,19 +201,26 @@ model ClientMonth {
 }
 
 model Negotiation {
-  id           String   @id @default(cuid())
-  clientId     String
-  dateNeg      String
-  dateAccept   String   @default("")
-  status       String   @default("prospeccao")
-  stageHistory Json     @default("[]")
-  assigneeId   String?
-  rates        Json
-  notes        String   @default("")
-  alertDate    String   @default("")
-  alertSent    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                String   @id @default(cuid())
+  clientId          String
+  dateNeg           String
+  dateAccept        String   @default("")
+  status            String   @default("prospeccao")
+  stageHistory      Json     @default("[]")
+  assigneeId        String?
+  rates             Json
+  notes             String   @default("")
+  alertDate         String   @default("")
+  alertSent         Boolean  @default(false)
+  
+  // Novos campos para Propostas / Calculadoras
+  simulatedTpv      Float    @default(0)
+  machineRentExempt Boolean  @default(false)
+  machinePurchase   Boolean  @default(false)
+  machinesCount     Int      @default(0)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
   assignee User?  @relation("NegotiationAssignee", fields: [assigneeId], references: [id])

@@ -302,7 +302,7 @@ tr:nth-child(even){background:#fafafa}
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 flex-1 w-full">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/10 flex items-center justify-center shrink-0">
-                        <span className="text-emerald-600 dark:text-emerald-400 text-sm font-black">CET</span>
+                        <span className="text-emerald-600 text-sm font-black">CET</span>
                     </div>
                     <div className="flex-1">
                         <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)}

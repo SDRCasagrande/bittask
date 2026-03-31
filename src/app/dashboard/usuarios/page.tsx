@@ -113,7 +113,7 @@ export default function UsuariosPage() {
                     <p className="text-[11px] font-bold uppercase text-muted-foreground mb-2 tracking-wide">{group}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                         {keys.map(key => (
-                            <label key={key} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${perms.has(key) ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"}`}>
+                            <label key={key} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${perms.has(key) ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"}`}>
                                 <input type="checkbox" checked={perms.has(key)} onChange={() => togglePerm(perms, setPerms, key)} className="sr-only" />
                                 <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${perms.has(key) ? "bg-emerald-500 border-emerald-500" : "border-muted-foreground/30"}`}>
                                     {perms.has(key) && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
@@ -156,7 +156,7 @@ export default function UsuariosPage() {
 
             {/* Message */}
             {msg && (
-                <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"}`}>
+                <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-red-500/10 text-red-600 border border-red-500/20"}`}>
                     {msg.type === "ok" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                     {msg.text}
                 </div>
@@ -207,14 +207,14 @@ export default function UsuariosPage() {
                             <div key={user.id} className={`bg-card border rounded-2xl p-4 transition-all ${user.isActive ? "border-border" : "border-red-500/20 opacity-60"}`}>
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${user.isActive ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10" : "bg-red-500/10 text-red-500 border border-red-500/10"}`}>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${user.isActive ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/10" : "bg-red-500/10 text-red-500 border border-red-500/10"}`}>
                                             {user.name.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <p className="text-sm font-semibold text-foreground">{user.name}</p>
-                                                {user.isAdmin && <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">Admin</span>}
-                                                {user.role && <span className="text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full font-bold">{user.role.name}</span>}
+                                                {user.isAdmin && <span className="text-[10px] bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full font-bold">Admin</span>}
+                                                {user.role && <span className="text-[10px] bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full font-bold">{user.role.name}</span>}
                                                 {!user.isActive && <span className="text-[10px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full font-bold">Inativo</span>}
                                             </div>
                                             <div className="flex items-center gap-2 mt-0.5">
@@ -273,7 +273,7 @@ export default function UsuariosPage() {
                             <div key={role.id} className="bg-card border border-border rounded-2xl overflow-hidden">
                                 <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => toggleExpand(role)}>
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/10 flex items-center justify-center shrink-0"><Shield className="w-5 h-5" /></div>
+                                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 border border-purple-500/10 flex items-center justify-center shrink-0"><Shield className="w-5 h-5" /></div>
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <p className="text-sm font-semibold text-foreground">{role.name}</p>

@@ -16,6 +16,7 @@ interface MonthVolume { id: string; month: string; tpvDebit: number; tpvCredit: 
 interface Negotiation { id: string; dateNeg: string; dateAccept: string; status: string; rates: any; notes: string; stageHistory?: any[]; assignee?: { id: string; name: string } | null }
 interface Client {
     id: string; name: string; stoneCode: string; cnpj: string; phone: string; email: string;
+    brand: string; safra: string;
     status: string; credentialDate: string; cancelDate: string; segment: string;
     createdAt: string; negotiations: Negotiation[]; monthlyVolumes: MonthVolume[];
 }
@@ -62,6 +63,7 @@ export default function ClientesPage() {
 
     // New client form
     const [fn, setFN] = useState(""); const [fsc, setFSC] = useState(""); const [fcnpj, setFCNPJ] = useState("");
+    const [fbrand, setFBrand] = useState("STONE"); const [fsafra, setFSafra] = useState("M0");
     const [fph, setFPH] = useState(""); const [fem, setFEM] = useState(""); const [fseg, setFSeg] = useState("");
     const [fcd, setFCD] = useState(""); const [fDocMsg, setFDocMsg] = useState(""); const [fDocOk, setFDocOk] = useState<boolean | null>(null);
     const [cnpjLoading, setCnpjLoading] = useState(false);
@@ -88,7 +90,7 @@ export default function ClientesPage() {
     const allCurrentMonthVolumes = clients.flatMap(c => c.monthlyVolumes.filter(v => v.month === currentMonth()));
     const monthSummary = allCurrentMonthVolumes.reduce((a, v) => { const c = calcCommission(v); return { tpv: a.tpv + c.tpvTotal, rev: a.rev + c.totalRevenue, agent: a.agent + c.agent }; }, { tpv: 0, rev: 0, agent: 0 });
 
-    function resetNew() { setFN(""); setFSC(""); setFCNPJ(""); setFPH(""); setFEM(""); setFSeg(""); setFCD(""); setFDocMsg(""); setFDocOk(null); }
+    function resetNew() { setFN(""); setFSC(""); setFCNPJ(""); setFPH(""); setFEM(""); setFSeg(""); setFCD(""); setFDocMsg(""); setFDocOk(null); setFBrand("STONE"); setFSafra("M0"); }
 
     async function handleCnpjFetch(data: { name?: string; fantasia?: string }) {
         if (data.name && !fn.trim()) setFN(data.name);
@@ -97,7 +99,7 @@ export default function ClientesPage() {
     async function handleSaveClient() {
         if (!fn.trim()) return;
         try {
-            const r = await fetch("/api/clients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: fn, stoneCode: fsc, cnpj: fcnpj, phone: fph, email: fem, segment: fseg, credentialDate: fcd }) });
+            const r = await fetch("/api/clients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: fn, stoneCode: fsc, cnpj: fcnpj, phone: fph, email: fem, segment: fseg, credentialDate: fcd, brand: fbrand, safra: fsafra }) });
             if (r.ok) { resetNew(); setView("grid"); loadClients(); }
         } catch { }
     }
@@ -168,7 +170,23 @@ export default function ClientesPage() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="col-span-2"><label className="text-xs font-medium text-muted-foreground block mb-1">Nome / Razão Social *</label>
                             <input value={fn} onChange={e => setFN(e.target.value)} placeholder="Nome completo" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50" /></div>
-                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Stone Code</label>
+                        
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Empresa *</label>
+                            <select value={fbrand} onChange={e => setFBrand(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50">
+                                <option value="STONE">Stone</option>
+                                <option value="TON">Ton</option>
+                            </select></div>
+                            
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Safra Comercial *</label>
+                            <select value={fsafra} onChange={e => setFSafra(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50">
+                                <option value="M0">M0 (Mês Inicial)</option>
+                                <option value="M1">M1 (Mês Seguinte)</option>
+                                <option value="M2">M2</option>
+                                <option value="M3">M3</option>
+                                <option value="BASE">Base Ativa</option>
+                            </select></div>
+
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Stone/Ton Code</label>
                             <input value={fsc} onChange={e => setFSC(e.target.value)} placeholder="123456" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50" /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">CNPJ/CPF</label>
                             <DocumentInput value={fcnpj} onChange={setFCNPJ} onCNPJData={handleCnpjFetch} allowBypass /></div>
@@ -201,9 +219,12 @@ export default function ClientesPage() {
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-3">
                         <button onClick={() => { setView("grid"); setSelId(null); }} className="p-2 rounded-xl hover:bg-muted"><ChevronLeft className="w-5 h-5" /></button>
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/10 flex items-center justify-center text-lg font-bold text-emerald-600 dark:text-emerald-400">{sel.name.charAt(0)}</div>
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/10 flex items-center justify-center text-lg font-bold text-emerald-600">{sel.name.charAt(0)}</div>
                         <div>
-                            <h1 className="text-lg font-bold flex items-center gap-2">{sel.name} <StatusBadge s={sel.status} /></h1>
+                            <h1 className="text-lg font-bold flex items-center gap-2">{sel.name} <StatusBadge s={sel.status} />
+                                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ${sel.brand === 'TON' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-green-600/10 text-green-600 border-green-600/20'}`}>{sel.brand === 'TON' ? 'TON' : 'STONE'}</span>
+                                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">Safra {sel.safra}</span>
+                            </h1>
                             <div className="flex gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
                                 {sel.stoneCode && <span className="flex items-center gap-1"><Hash className="w-3 h-3" />{sel.stoneCode}</span>}
                                 {sel.cnpj && <span>{sel.cnpj}</span>}
@@ -548,7 +569,7 @@ export default function ClientesPage() {
                                 className="bg-card border border-border rounded-xl p-4 text-left hover:border-emerald-500/30 hover:shadow-md transition-all group">
                                 <div className="flex items-start gap-3 mb-3">
                                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{c.name.charAt(0)}</span>
+                                        <span className="text-sm font-bold text-emerald-600">{c.name.charAt(0)}</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold truncate">{c.name}</p>
@@ -557,7 +578,13 @@ export default function ClientesPage() {
                                             {c.segment && <span>{c.segment}</span>}
                                         </div>
                                     </div>
-                                    <StatusBadge s={c.status} />
+                                    <div className="flex flex-col items-end gap-1 shrink-0">
+                                        <StatusBadge s={c.status} />
+                                        <div className="flex items-center gap-1 mt-1">
+                                            <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold border ${c.brand === 'TON' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-green-600/10 text-green-600 border-green-600/20'}`}>{c.brand === 'TON' ? 'TON' : 'STONE'}</span>
+                                            <span className="inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">{c.safra}</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 {comm ? (
                                     <div className="grid grid-cols-3 gap-1.5">

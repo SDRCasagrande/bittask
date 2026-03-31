@@ -102,7 +102,7 @@ function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot)
             <div className="flex gap-1.5 flex-wrap">
                 {Object.keys(br).map(b => (
                     <button key={b} type="button" onClick={() => setActiveBrand(b)}
-                        className={`px-2.5 py-1 text-xs rounded-lg font-semibold ${activeBrand === b ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/40" : "bg-secondary text-muted-foreground hover:bg-muted"}`}>{b}</button>
+                        className={`px-2.5 py-1 text-xs rounded-lg font-semibold ${activeBrand === b ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/40" : "bg-secondary text-muted-foreground hover:bg-muted"}`}>{b}</button>
                 ))}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -270,7 +270,7 @@ export default function NegociacoesPage() {
                     </div>
                 </div>
                 <div className="bg-card border border-emerald-500/20 rounded-2xl p-5 space-y-3">
-                    <h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Taxas Negociadas</h3>
+                    <h3 className="text-sm font-bold text-emerald-600 uppercase tracking-wider">Taxas Negociadas</h3>
                     <RatesForm rates={fRates} set={setFRates} />
                     <div className="grid grid-cols-2 gap-3">
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Data Negociação</label>
@@ -328,7 +328,7 @@ export default function NegociacoesPage() {
             </div>
 
             {msg && (
-                <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium mb-4 ${msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"}`}>
+                <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium mb-4 ${msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-red-500/10 text-red-600 border border-red-500/20"}`}>
                     {msg.type === "ok" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />} {msg.text}
                     <button onClick={() => setMsg(null)} className="ml-auto p-0.5 rounded hover:bg-muted"><X className="w-3.5 h-3.5" /></button>
                 </div>
@@ -459,7 +459,7 @@ export default function NegociacoesPage() {
                         ) : filtered.map(neg => (
                             <div key={neg.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4 hover:border-blue-500/30 transition-all">
                                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{neg.clientName.charAt(0)}</span>
+                                    <span className="text-sm font-bold text-emerald-600">{neg.clientName.charAt(0)}</span>
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-foreground truncate">{neg.clientName}</p>

@@ -119,8 +119,8 @@ export default function ConfiguracoesPage() {
             {msg && (
                 <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${
                     msg.type === "ok"
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                        : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                        ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                        : "bg-red-500/10 text-red-600 border border-red-500/20"
                 }`}>
                     {msg.type === "ok" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                     {msg.text}

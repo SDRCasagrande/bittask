@@ -300,7 +300,7 @@ export default function TarefasPage() {
                                                 <span className={`text-xs font-bold ${isToday ? "bg-blue-500 text-white w-6 h-6 rounded-full inline-flex items-center justify-center" : "text-foreground"}`}>{cell.day}</span>
                                                 <div className="space-y-0.5 mt-1">
                                                     {cell.tasks.slice(0, 3).map(t => (
-                                                        <div key={t.id} onClick={() => setDetailTask(t)} className={`text-[10px] truncate px-1.5 py-0.5 rounded-md font-medium cursor-pointer hover:opacity-80 ${t.starred ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"}`}>
+                                                        <div key={t.id} onClick={() => setDetailTask(t)} className={`text-[10px] truncate px-1.5 py-0.5 rounded-md font-medium cursor-pointer hover:opacity-80 ${t.starred ? "bg-amber-500/15 text-amber-600" : "bg-blue-500/10 text-blue-600"}`}>
                                                             {t.time && <span className="font-bold">{t.time} </span>}{t.title}
                                                         </div>
                                                     ))}

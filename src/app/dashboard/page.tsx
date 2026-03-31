@@ -68,23 +68,24 @@ export default function DashboardPage() {
     return (
         <div className="max-w-6xl mx-auto space-y-5">
             {/* ═══ Welcome Header ═══ */}
-            <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-blue-500/10 border border-emerald-500/10">
+            <div className="relative overflow-hidden rounded-2xl p-5 bg-[#00A868] text-white">
                 <div className="relative z-10 flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-bold text-foreground">
+                        <h1 className="text-xl font-bold">
                             {userName ? `Olá, ${userName.split(" ")[0]}!` : "Bem-vindo!"}
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">Painel de controle BitKaiser Taxas</p>
+                        <p className="text-white/70 text-sm mt-0.5">Painel de controle BitKaiser Taxas</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {(metrics?.pendingTasks || 0) > 0 && (
-                            <Link href="/dashboard/tarefas" className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 rounded-xl text-xs font-medium hover:bg-blue-500/20 transition-colors">
+                            <Link href="/dashboard/tarefas" className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 text-white rounded-xl text-xs font-medium hover:bg-white/30 transition-colors">
                                 <ListChecks className="w-3.5 h-3.5" /> {metrics?.pendingTasks} tarefas
                             </Link>
                         )}
                     </div>
                 </div>
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-emerald-500/5 blur-2xl" />
+                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
+                <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/5 blur-xl" />
             </div>
 
             {/* ═══ Renegotiation Alerts ═══ */}
@@ -95,7 +96,7 @@ export default function DashboardPage() {
                             <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center"><Bell className="w-3.5 h-3.5 text-amber-500" /></div>
                             Renegociações Próximas
                         </h3>
-                        <span className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-full font-bold">{metrics.upcomingRenegotiations.length} alerta(s)</span>
+                        <span className="text-[10px] bg-amber-500/20 text-amber-600 px-2.5 py-1 rounded-full font-bold">{metrics.upcomingRenegotiations.length} alerta(s)</span>
                     </div>
                     <div className="space-y-2">
                         {metrics.upcomingRenegotiations.map((alert) => {
@@ -114,7 +115,7 @@ export default function DashboardPage() {
                                             <p className="text-[10px] text-muted-foreground">{alert.stoneCode && `SC: ${alert.stoneCode} · `}Aceita em {fmtDate(alert.dateAccept)}</p>
                                         </div>
                                     </div>
-                                    <div className={`text-xs font-bold px-3 py-1.5 rounded-lg ${isUrgent ? 'bg-red-500/20 text-red-500' : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'}`}>
+                                    <div className={`text-xs font-bold px-3 py-1.5 rounded-lg ${isUrgent ? 'bg-red-500/20 text-red-500' : 'bg-amber-500/20 text-amber-600'}`}>
                                         {isUrgent ? 'HOJE!' : `${alert.daysLeft}d`}
                                     </div>
                                 </Link>
@@ -126,52 +127,52 @@ export default function DashboardPage() {
 
             {/* ═══ KPI Cards — Top Row ═══ */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-                <div className="bg-card border border-border rounded-2xl p-4 hover:shadow-md transition-all">
+                <div className="card-elevated p-4 hover:shadow-md transition-all">
                     <div className="flex items-center justify-between mb-2">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/10"><Briefcase className="w-4 h-4 text-white" /></div>
+                        <div className="w-9 h-9 rounded-xl bg-[#00A868]/10 flex items-center justify-center"><Briefcase className="w-4 h-4 text-[#00A868]" /></div>
                         {(metrics?.canceledClients || 0) > 0 && <span className="text-[9px] text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded-full font-bold">{metrics?.canceledClients} canc.</span>}
                     </div>
                     <p className="text-2xl font-black text-foreground">{metrics?.activeClients ?? 0}</p>
                     <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">Clientes Ativos</p>
                 </div>
-                <div className="bg-card border border-border rounded-2xl p-4 hover:shadow-md transition-all">
+                <div className="card-elevated p-4 hover:shadow-md transition-all">
                     <div className="flex items-center justify-between mb-2">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/10"><UserPlus className="w-4 h-4 text-white" /></div>
+                        <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center"><UserPlus className="w-4 h-4 text-indigo-500" /></div>
                     </div>
                     <p className="text-2xl font-black text-foreground">{metrics?.monthlyCredentialings ?? 0}</p>
                     <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">Credenciamentos Mês</p>
                 </div>
-                <div className="bg-card border border-border rounded-2xl p-4 hover:shadow-md transition-all">
+                <div className="card-elevated p-4 hover:shadow-md transition-all">
                     <div className="flex items-center justify-between mb-2">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/10"><TrendingUp className="w-4 h-4 text-white" /></div>
+                        <div className="w-9 h-9 rounded-xl bg-[#00A868]/10 flex items-center justify-center"><TrendingUp className="w-4 h-4 text-[#00A868]" /></div>
                     </div>
                     <p className="text-lg sm:text-2xl font-black text-foreground">{fmtMoney(portfolio.tpvTotal)}</p>
                     <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">TPV {fmtMonth(portfolio.month)}</p>
                 </div>
-                <div className="bg-card border border-border rounded-2xl p-4 hover:shadow-md transition-all">
+                <div className="card-elevated p-4 hover:shadow-md transition-all">
                     <div className="flex items-center justify-between mb-2">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/10"><DollarSign className="w-4 h-4 text-white" /></div>
+                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><DollarSign className="w-4 h-4 text-amber-500" /></div>
                     </div>
-                    <p className="text-lg sm:text-2xl font-black text-amber-500">{fmtMoney(portfolio.revenueTotal)}</p>
+                    <p className="text-lg sm:text-2xl font-black text-amber-600">{fmtMoney(portfolio.revenueTotal)}</p>
                     <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5">Receita Taxas</p>
                 </div>
-                <div className="bg-card border border-purple-500/20 rounded-2xl p-4 bg-gradient-to-br from-purple-500/5 to-indigo-500/5 hover:shadow-md transition-all">
+                <div className="card-elevated p-4 hover:shadow-md transition-all border-[#00A868]/20 bg-[#00A868]/[0.03]">
                     <div className="flex items-center justify-between mb-2">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/10"><Star className="w-4 h-4 text-white" /></div>
+                        <div className="w-9 h-9 rounded-xl bg-[#00A868] flex items-center justify-center shadow-sm shadow-[#00A868]/20"><Star className="w-4 h-4 text-white" /></div>
                     </div>
-                    <p className="text-lg sm:text-2xl font-black text-purple-500">{fmtMoney(portfolio.agentCommission)}</p>
-                    <p className="text-[10px] text-purple-500 uppercase font-bold tracking-wider mt-0.5">Sua Comissão</p>
+                    <p className="text-lg sm:text-2xl font-black text-[#00A868]">{fmtMoney(portfolio.agentCommission)}</p>
+                    <p className="text-[10px] text-[#00A868] uppercase font-bold tracking-wider mt-0.5">Sua Comissão</p>
                 </div>
             </div>
 
             {/* ═══ Pipeline Stage Overview ═══ */}
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="card-elevated p-5">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center"><Handshake className="w-3.5 h-3.5 text-indigo-500" /></div>
+                        <div className="w-7 h-7 rounded-lg bg-[#00A868]/10 flex items-center justify-center"><Handshake className="w-3.5 h-3.5 text-[#00A868]" /></div>
                         Pipeline de Negociações
                     </h3>
-                    <Link href="/dashboard/negociacoes" className="text-xs text-emerald-500 hover:text-emerald-400 font-medium flex items-center gap-1 transition-colors">
+                    <Link href="/dashboard/negociacoes" className="text-xs text-[#00A868] hover:text-[#008f58] font-medium flex items-center gap-1 transition-colors">
                         Kanban <ArrowUpRight className="w-3 h-3" />
                     </Link>
                 </div>
@@ -209,7 +210,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5 px-1">
                             <span>Total: {metrics?.totalNegotiations}</span>
-                            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Conversão: {(metrics?.conversionRate ?? 0).toFixed(1)}%</span>
+                            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#00A868]" /> Conversão: {(metrics?.conversionRate ?? 0).toFixed(1)}%</span>
                         </div>
                     </div>
                 )}
@@ -218,9 +219,9 @@ export default function DashboardPage() {
             {/* ═══ Row: Average Rates + Quick Actions ═══ */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Average Accepted Rates */}
-                <div className="bg-card border border-border rounded-2xl p-5">
+                <div className="card-elevated p-5">
                     <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center"><BarChart3 className="w-3.5 h-3.5 text-emerald-500" /></div>
+                        <div className="w-7 h-7 rounded-lg bg-[#00A868]/10 flex items-center justify-center"><BarChart3 className="w-3.5 h-3.5 text-[#00A868]" /></div>
                         Taxas Médias Praticadas
                     </h3>
                     {metrics && metrics.acceptedNeg > 0 ? (
@@ -230,9 +231,9 @@ export default function DashboardPage() {
                                 { l: "2-6x", v: metrics.avgRates.credit2to6 }, { l: "7-12x", v: metrics.avgRates.credit7to12 },
                                 { l: "PIX", v: metrics.avgRates.pix }, { l: "RAV", v: metrics.avgRates.rav },
                             ].map((r) => (
-                                <div key={r.l} className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-2.5 text-center">
+                                <div key={r.l} className="bg-[#00A868]/5 border border-[#00A868]/10 rounded-xl p-2.5 text-center">
                                     <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">{r.l}</p>
-                                    <p className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-0.5">{formatPercent(r.v)}</p>
+                                    <p className="text-sm font-black text-[#00A868] mt-0.5">{formatPercent(r.v)}</p>
                                 </div>
                             ))}
                         </div>
@@ -244,22 +245,22 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-card border border-border rounded-2xl p-5">
+                <div className="card-elevated p-5">
                     <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><Zap className="w-3.5 h-3.5 text-blue-500" /></div>
+                        <div className="w-7 h-7 rounded-lg bg-[#00A868]/10 flex items-center justify-center"><Zap className="w-3.5 h-3.5 text-[#00A868]" /></div>
                         Ações Rápidas
                     </h3>
                     <div className="grid grid-cols-2 gap-2">
                         {[
-                            { href: "/dashboard/clientes", label: "Carteira", icon: Briefcase, desc: "Gerenciar clientes e TPV", gradient: "from-emerald-500 to-teal-600" },
-                            { href: "/dashboard/negociacoes", label: "Pipeline", icon: Handshake, desc: "Kanban de negociações", gradient: "from-indigo-500 to-purple-600" },
-                            { href: "/dashboard/cet", label: "Calcular CET", icon: Calculator, desc: "Custo efetivo por parcela", gradient: "from-amber-500 to-orange-600" },
-                            { href: "/dashboard/comparativo", label: "Comparação", icon: GitCompare, desc: "Stone vs concorrente", gradient: "from-blue-500 to-blue-600" },
+                            { href: "/dashboard/clientes", label: "Carteira", icon: Briefcase, desc: "Gerenciar clientes e TPV" },
+                            { href: "/dashboard/negociacoes", label: "Pipeline", icon: Handshake, desc: "Kanban de negociações" },
+                            { href: "/dashboard/cet", label: "Calcular CET", icon: Calculator, desc: "Custo efetivo por parcela" },
+                            { href: "/dashboard/comparativo", label: "Comparação", icon: GitCompare, desc: "Stone vs concorrente" },
                         ].map((a) => (
                             <Link key={a.href} href={a.href}
-                                className="group flex items-start gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted border border-transparent hover:border-emerald-500/20 transition-all">
-                                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${a.gradient} flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow`}>
-                                    <a.icon className="w-4 h-4 text-white" />
+                                className="group flex items-start gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary border border-transparent hover:border-[#00A868]/20 transition-all touch-target">
+                                <div className="w-9 h-9 rounded-lg bg-[#00A868]/10 flex items-center justify-center shrink-0 group-hover:bg-[#00A868]/15 transition-colors">
+                                    <a.icon className="w-4 h-4 text-[#00A868]" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-xs font-bold text-foreground leading-tight">{a.label}</p>
@@ -273,13 +274,13 @@ export default function DashboardPage() {
 
             {/* ═══ Recent Clients ═══ */}
             {metrics && metrics.recentClients.length > 0 && (
-                <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                <div className="card-elevated overflow-hidden">
                     <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                         <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><Users className="w-3.5 h-3.5 text-blue-500" /></div>
+                            <div className="w-7 h-7 rounded-lg bg-[#00A868]/10 flex items-center justify-center"><Users className="w-3.5 h-3.5 text-[#00A868]" /></div>
                             Clientes Recentes
                         </h3>
-                        <Link href="/dashboard/clientes" className="text-xs text-emerald-500 hover:text-emerald-400 font-medium flex items-center gap-1 transition-colors">
+                        <Link href="/dashboard/clientes" className="text-xs text-[#00A868] hover:text-[#008f58] font-medium flex items-center gap-1 transition-colors">
                             Ver todos <ArrowUpRight className="w-3 h-3" />
                         </Link>
                     </div>
@@ -302,8 +303,8 @@ export default function DashboardPage() {
                                 <Link key={c.id} href="/dashboard/clientes"
                                     className="flex items-center justify-between px-5 py-3 hover:bg-muted/50 transition-colors">
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/15 to-teal-500/15 border border-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{c.name.charAt(0).toUpperCase()}</span>
+                                        <div className="w-9 h-9 rounded-xl bg-[#00A868]/10 border border-[#00A868]/10 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-xs font-bold text-[#00A868]">{c.name.charAt(0).toUpperCase()}</span>
                                         </div>
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2">

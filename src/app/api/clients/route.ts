@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await request.json();
-        const { name, stoneCode, cnpj, phone, email, segment, credentialDate, negotiation } = body;
+        const { name, stoneCode, cnpj, phone, email, segment, credentialDate, negotiation, brand, safra } = body;
 
         if (!name?.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
@@ -38,6 +38,8 @@ export async function POST(request: Request) {
             data: {
                 userId: session.userId,
                 name: name.trim(),
+                brand: brand || "STONE",
+                safra: safra || "M0",
                 stoneCode: stoneCode || "",
                 cnpj: cnpj || "",
                 phone: phone || "",

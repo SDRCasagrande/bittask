@@ -119,7 +119,7 @@ export default function PermissoesPage() {
                         {keys.map(key => (
                             <label key={key}
                                 className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${
-                                    perms.has(key) ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                                    perms.has(key) ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
                                 }`}
                             >
                                 <input type="checkbox" checked={perms.has(key)} onChange={() => togglePerm(perms, setPerms, key)}
@@ -168,7 +168,7 @@ export default function PermissoesPage() {
             {/* Message */}
             {msg && (
                 <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${
-                    msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                    msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-red-500/10 text-red-600 border border-red-500/20"
                 }`}>
                     {msg.type === "ok" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                     {msg.text}
@@ -206,7 +206,7 @@ export default function PermissoesPage() {
                     <div key={role.id} className="bg-card border border-border rounded-2xl overflow-hidden transition-all">
                         <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => toggleExpand(role)}>
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/10 flex items-center justify-center shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 border border-purple-500/10 flex items-center justify-center shrink-0">
                                     <Shield className="w-5 h-5" />
                                 </div>
                                 <div className="min-w-0">
