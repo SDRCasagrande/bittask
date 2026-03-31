@@ -22,14 +22,10 @@ export async function middleware(request: NextRequest) {
     const isAuth = await isAuthenticated(token);
 
     // Public paths
-    const publicPaths = ['/login', '/tasks/login', '/api/auth/login', '/api/auth/forgot-password', '/api/seed'];
+    const publicPaths = ['/login', '/api/auth/login', '/api/auth/forgot-password', '/api/seed'];
     if (publicPaths.some(p => pathname.startsWith(p))) {
-        // If logged in and trying to access login page, redirect appropriately
         if (pathname === '/login' && isAuth) {
             return NextResponse.redirect(new URL('/dashboard', request.url));
-        }
-        if (pathname === '/tasks/login' && isAuth) {
-            return NextResponse.redirect(new URL('/tasks', request.url));
         }
         return NextResponse.next();
     }
@@ -52,16 +48,9 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // BitTasks protected route
-    if (pathname.startsWith('/tasks') && !pathname.startsWith('/tasks/login')) {
-        if (!isAuth) {
-            return NextResponse.redirect(new URL('/tasks/login', request.url));
-        }
-    }
-
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ['/', '/login', '/tasks/:path*', '/dashboard/:path*', '/api/:path*'],
+    matcher: ['/', '/login', '/dashboard/:path*', '/api/:path*'],
 };

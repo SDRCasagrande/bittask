@@ -66,15 +66,15 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#00A868]/10 rounded-full blur-3xl" />
+                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#00A868]/5 rounded-full blur-3xl" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#00A868]/5 rounded-full blur-3xl" />
             </div>
 
             <div className="relative w-full max-w-md mx-4">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg glow-green mb-4">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[#00A868] shadow-lg glow-green mb-4">
                         <span className="text-3xl font-black text-white">BK</span>
                     </div>
                     <h1 className="text-3xl font-bold gradient-text">BitKaiser Taxas</h1>
@@ -84,7 +84,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Login / Forgot Password Card */}
-                <div className="glass-card rounded-2xl p-8">
+                <div className="card-elevated p-8">
                     {forgotMode ? (
                         /* Forgot Password Form */
                         <form onSubmit={handleForgot} className="space-y-5">
@@ -102,7 +102,7 @@ export default function LoginPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="seu@email.com"
                                     required
-                                    className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-[#00A868] focus:border-transparent transition-all duration-200"
                                 />
                             </div>
 
@@ -113,15 +113,15 @@ export default function LoginPage() {
                             )}
 
                             {forgotMsg && (
-                                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm text-center">
+                                <div className="p-3 bg-[#00A868]/10 border border-[#00A868]/20 rounded-xl text-[#00A868] text-sm text-center">
                                     ✅ {forgotMsg}
                                 </div>
                             )}
 
                             <button type="submit" disabled={loading}
-                                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold
-                                    hover:from-blue-500 hover:to-blue-400 active:scale-[0.98] disabled:opacity-60
-                                    transition-all duration-200 shadow-lg">
+                                className="w-full py-3.5 rounded-xl bg-[#00A868] text-white font-semibold
+                                    hover:bg-[#008f58] active:scale-[0.98] disabled:opacity-60
+                                    transition-all duration-200 shadow-lg shadow-[#00A868]/20">
                                 {loading ? "Enviando..." : "📧 Enviar Nova Senha"}
                             </button>
 
@@ -141,7 +141,7 @@ export default function LoginPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="seu@email.com"
                                     required
-                                    className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                                    className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-[#00A868] focus:border-transparent transition-all duration-200"
                                 />
                             </div>
                             <div>
@@ -153,7 +153,7 @@ export default function LoginPage() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
                                         required
-                                        className="w-full pl-4 pr-12 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                                        className="w-full pl-4 pr-12 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-[#00A868] focus:border-transparent transition-all duration-200"
                                     />
                                     <button 
                                         type="button" 
@@ -172,10 +172,10 @@ export default function LoginPage() {
                             )}
 
                             <button type="submit" disabled={loading}
-                                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold text-base
-                                    hover:from-emerald-500 hover:to-emerald-400 active:scale-[0.98]
+                                className="w-full py-3.5 rounded-xl bg-[#00A868] text-white font-semibold text-base
+                                    hover:bg-[#008f58] active:scale-[0.98]
                                     disabled:opacity-60 disabled:cursor-not-allowed
-                                    transition-all duration-200 shadow-lg glow-green-subtle">
+                                    transition-all duration-200 shadow-lg shadow-[#00A868]/20">
                                 {loading ? (
                                     <span className="flex items-center justify-center gap-2">
                                         <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -188,7 +188,7 @@ export default function LoginPage() {
                             </button>
 
                             <button type="button" onClick={() => { setForgotMode(true); setError(""); }}
-                                className="w-full text-sm text-muted-foreground hover:text-blue-400 transition-colors">
+                                className="w-full text-sm text-muted-foreground hover:text-[#00A868] transition-colors">
                                 Esqueceu a senha?
                             </button>
                         </form>
