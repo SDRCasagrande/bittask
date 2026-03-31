@@ -10,6 +10,7 @@ import {
     BarChart3, Target, UserPlus, Briefcase, DollarSign,
     Star, ListChecks, XCircle, CalendarPlus
 } from "lucide-react";
+import ActivityPanel from "@/components/ActivityPanel";
 
 interface RenegAlert { negId: string; clientId: string; clientName: string; stoneCode: string; dateAccept: string; renegDate: string; daysLeft: number }
 interface Pipeline { prospeccao: number; proposta_enviada: number; aguardando_cliente: number; aprovado: number; recusado: number; fechado: number }
@@ -215,6 +216,9 @@ export default function DashboardPage() {
                     </div>
                 )}
             </div>
+
+            {/* ═══ Painel de Controle (Stone-style Activity Feed) ═══ */}
+            <ActivityPanel />
 
             {/* ═══ Row: Average Rates + Quick Actions ═══ */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
