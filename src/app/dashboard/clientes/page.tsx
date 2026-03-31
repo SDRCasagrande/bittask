@@ -46,7 +46,7 @@ function calcClientTotalCommission(volumes: MonthVolume[]) {
 /* ═══ STATUS BADGE ═══ */
 function StatusBadge({ s }: { s: string }) {
     if (s === "cancelado") return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20"><XCircle className="w-2.5 h-2.5" />Cancelado</span>;
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"><CheckCircle className="w-2.5 h-2.5" />Ativo</span>;
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#00A868]/10 text-[#00A868] border border-[#00A868]/20"><CheckCircle className="w-2.5 h-2.5" />Ativo</span>;
 }
 
 /* ═══ MAIN ═══ */
@@ -156,7 +156,7 @@ export default function ClientesPage() {
         window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
     }
 
-    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>;
+    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-[#00A868]" /></div>;
 
     /* ═══ NEW CLIENT ═══ */
     if (view === "new") {
@@ -166,19 +166,19 @@ export default function ClientesPage() {
                     <button onClick={() => setView("grid")} className="p-2 rounded-xl hover:bg-muted"><ChevronLeft className="w-5 h-5" /></button>
                     <h1 className="text-lg font-bold">Novo Cliente</h1>
                 </div>
-                <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
+                <div className="card-elevated p-5 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                         <div className="col-span-2"><label className="text-xs font-medium text-muted-foreground block mb-1">Nome / Razão Social *</label>
-                            <input value={fn} onChange={e => setFN(e.target.value)} placeholder="Nome completo" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                            <input value={fn} onChange={e => setFN(e.target.value)} placeholder="Nome completo" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Empresa *</label>
-                            <select value={fbrand} onChange={e => setFBrand(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50">
+                            <select value={fbrand} onChange={e => setFBrand(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50">
                                 <option value="STONE">Stone</option>
                                 <option value="TON">Ton</option>
                             </select></div>
                             
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Safra Comercial *</label>
-                            <select value={fsafra} onChange={e => setFSafra(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50">
+                            <select value={fsafra} onChange={e => setFSafra(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50">
                                 <option value="M0">M0 (Mês Inicial)</option>
                                 <option value="M1">M1 (Mês Seguinte)</option>
                                 <option value="M2">M2</option>
@@ -187,20 +187,20 @@ export default function ClientesPage() {
                             </select></div>
 
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Stone/Ton Code</label>
-                            <input value={fsc} onChange={e => setFSC(e.target.value)} placeholder="123456" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                            <input value={fsc} onChange={e => setFSC(e.target.value)} placeholder="123456" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">CNPJ/CPF</label>
                             <DocumentInput value={fcnpj} onChange={setFCNPJ} onCNPJData={handleCnpjFetch} allowBypass /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Telefone</label>
                             <PhoneInput value={fph} onChange={setFPH} /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">E-mail</label>
-                            <input value={fem} onChange={e => setFEM(e.target.value)} placeholder="email@empresa.com" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                            <input value={fem} onChange={e => setFEM(e.target.value)} placeholder="email@empresa.com" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Segmento</label>
-                            <input value={fseg} onChange={e => setFSeg(e.target.value)} placeholder="Restaurante, Loja, etc." className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                            <input value={fseg} onChange={e => setFSeg(e.target.value)} placeholder="Restaurante, Loja, etc." className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Data Credenciamento</label>
-                            <input type="date" value={fcd} onChange={e => setFCD(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                            <input type="date" value={fcd} onChange={e => setFCD(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                     </div>
                 </div>
-                <button onClick={handleSaveClient} disabled={!fn.trim()} className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 disabled:opacity-50 transition-colors">Cadastrar Cliente</button>
+                <button onClick={handleSaveClient} disabled={!fn.trim()} className="w-full py-3 rounded-xl bg-[#00A868] text-white font-bold hover:bg-[#00A868] disabled:opacity-50 transition-colors">Cadastrar Cliente</button>
             </div>
         );
     }
@@ -219,11 +219,11 @@ export default function ClientesPage() {
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-3">
                         <button onClick={() => { setView("grid"); setSelId(null); }} className="p-2 rounded-xl hover:bg-muted"><ChevronLeft className="w-5 h-5" /></button>
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/10 flex items-center justify-center text-lg font-bold text-emerald-600">{sel.name.charAt(0)}</div>
+                        <div className="w-12 h-12 rounded-2xl bg-[#00A868]/10 border border-[#00A868]/10 flex items-center justify-center text-lg font-bold text-[#00A868]">{sel.name.charAt(0)}</div>
                         <div>
                             <h1 className="text-lg font-bold flex items-center gap-2">{sel.name} <StatusBadge s={sel.status} />
                                 <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ${sel.brand === 'TON' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-green-600/10 text-green-600 border-green-600/20'}`}>{sel.brand === 'TON' ? 'TON' : 'STONE'}</span>
-                                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">Safra {sel.safra}</span>
+                                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#00A868]/10 text-[#00A868] border border-blue-500/20">Safra {sel.safra}</span>
                             </h1>
                             <div className="flex gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
                                 {sel.stoneCode && <span className="flex items-center gap-1"><Hash className="w-3 h-3" />{sel.stoneCode}</span>}
@@ -233,11 +233,11 @@ export default function ClientesPage() {
                         </div>
                     </div>
                     <div className="flex gap-1.5">
-                        <button onClick={() => shareWhatsApp(sel)} className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" title="WhatsApp"><MessageSquare className="w-4 h-4" /></button>
+                        <button onClick={() => shareWhatsApp(sel)} className="p-2 rounded-xl bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20" title="WhatsApp"><MessageSquare className="w-4 h-4" /></button>
                         {sel.status === "ativo" ? (
                             <button onClick={() => handleCancelClient(sel.id)} className="p-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20" title="Cancelar"><XCircle className="w-4 h-4" /></button>
                         ) : (
-                            <button onClick={() => handleReactivate(sel.id)} className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" title="Reativar"><CheckCircle className="w-4 h-4" /></button>
+                            <button onClick={() => handleReactivate(sel.id)} className="p-2 rounded-xl bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20" title="Reativar"><CheckCircle className="w-4 h-4" /></button>
                         )}
                         <button onClick={() => handleDelete(sel.id)} className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20" title="Excluir"><Trash2 className="w-4 h-4" /></button>
                     </div>
@@ -245,20 +245,20 @@ export default function ClientesPage() {
 
                 {/* Info cards row */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div className="bg-card border border-border rounded-xl p-3">
+                    <div className="card-elevated rounded-xl p-3">
                         <p className="text-[10px] text-muted-foreground font-medium uppercase">Credenciamento</p>
                         <p className="text-sm font-bold mt-0.5">{fmtDate(sel.credentialDate)}</p>
                         {sel.credentialDate && <p className="text-[10px] text-muted-foreground">{daysBetween(sel.credentialDate)} dias</p>}
                     </div>
-                    <div className="bg-card border border-border rounded-xl p-3">
+                    <div className="card-elevated rounded-xl p-3">
                         <p className="text-[10px] text-muted-foreground font-medium uppercase">TPV Mês Atual</p>
-                        <p className="text-sm font-bold text-emerald-500 mt-0.5">{currentComm ? fmtMoney(currentComm.tpvTotal) : "—"}</p>
+                        <p className="text-sm font-bold text-[#00A868] mt-0.5">{currentComm ? fmtMoney(currentComm.tpvTotal) : "—"}</p>
                     </div>
-                    <div className="bg-card border border-border rounded-xl p-3">
+                    <div className="card-elevated rounded-xl p-3">
                         <p className="text-[10px] text-muted-foreground font-medium uppercase">Comissão Mês</p>
                         <p className="text-sm font-bold text-purple-500 mt-0.5">{currentComm ? fmtMoney(currentComm.agent) : "—"}</p>
                     </div>
-                    <div className="bg-card border border-border rounded-xl p-3">
+                    <div className="card-elevated rounded-xl p-3">
                         <p className="text-[10px] text-muted-foreground font-medium uppercase">Negociações</p>
                         <p className="text-sm font-bold mt-0.5">{sel.negotiations.length}</p>
                     </div>
@@ -275,7 +275,7 @@ export default function ClientesPage() {
                 {tab === "resumo" && (
                     <div className="space-y-4">
                         {/* Contact info */}
-                        <div className="bg-card border border-border rounded-xl p-4">
+                        <div className="card-elevated rounded-xl p-4">
                             <h3 className="text-xs font-bold text-muted-foreground uppercase mb-3">Dados de Contato</h3>
                             <div className="grid grid-cols-2 gap-3 text-sm">
                                 {sel.phone && <div className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-muted-foreground" />{sel.phone}</div>}
@@ -286,8 +286,8 @@ export default function ClientesPage() {
 
                         {/* Current rates from last negotiation */}
                         {lastNeg && (
-                            <div className="bg-card border border-emerald-500/20 rounded-xl p-4">
-                                <h3 className="text-xs font-bold text-emerald-500 uppercase mb-3">Taxas Vigentes</h3>
+                            <div className="bg-card border border-[#00A868]/20 rounded-xl p-4">
+                                <h3 className="text-xs font-bold text-[#00A868] uppercase mb-3">Taxas Vigentes</h3>
                                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                                     {[{ l: "Débito", v: lastNeg.rates?.debit }, { l: "1x", v: lastNeg.rates?.credit1x }, { l: "2-6x", v: lastNeg.rates?.credit2to6 }, { l: "7-12x", v: lastNeg.rates?.credit7to12 }, { l: "PIX", v: lastNeg.rates?.pix }, { l: "RAV", v: lastNeg.rates?.rav }].map(r => (
                                         <div key={r.l} className="bg-secondary/50 rounded-lg p-2 text-center">
@@ -300,7 +300,7 @@ export default function ClientesPage() {
                         )}
 
                         {/* TPV History  */}
-                        <div className="bg-card border border-border rounded-xl p-4">
+                        <div className="card-elevated rounded-xl p-4">
                             <h3 className="text-xs font-bold text-muted-foreground uppercase mb-3">Histórico TPV & Comissões</h3>
                             {volumes.length === 0 ? (
                                 <p className="text-sm text-muted-foreground text-center py-6">Nenhum TPV registrado. Use a aba "Registrar TPV" para adicionar.</p>
@@ -380,7 +380,7 @@ export default function ClientesPage() {
 
                         {/* Month selector */}
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Mês</label>
-                            <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50 [color-scheme:dark]" /></div>
+                            <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" /></div>
 
                         {/* TPV Total — Primary Input */}
                         <div className="bg-gradient-to-br from-blue-500/5 to-indigo-500/5 border border-blue-500/20 rounded-xl p-4">
@@ -388,7 +388,7 @@ export default function ClientesPage() {
                             <input type="number" value={showBreakdown ? "" : tpvTotal} onChange={e => setTpvTotal(e.target.value)}
                                 disabled={showBreakdown}
                                 placeholder="Ex: 100000.00"
-                                className="w-full px-4 py-3 rounded-xl bg-card border border-border text-lg font-bold text-foreground focus:outline-none focus:border-blue-500/50 disabled:opacity-40" />
+                                className="w-full px-4 py-3 rounded-xl bg-card border border-border text-lg font-bold text-foreground focus:outline-none focus:border-[#00A868]/50 disabled:opacity-40" />
                             {!showBreakdown && totalVal > 0 && (
                                 <div className="flex gap-3 mt-2 text-[10px] text-muted-foreground">
                                     <span>Déb (30%): {fmtMoney(autoD)}</span>
@@ -411,11 +411,11 @@ export default function ClientesPage() {
                         {showBreakdown && (
                             <div className="grid grid-cols-3 gap-3">
                                 <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Débito (R$)</label>
-                                    <input type="number" value={tpvD} onChange={e => setTpvD(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                    <input type="number" value={tpvD} onChange={e => setTpvD(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                                 <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Crédito (R$)</label>
-                                    <input type="number" value={tpvC} onChange={e => setTpvC(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                    <input type="number" value={tpvC} onChange={e => setTpvC(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                                 <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV PIX (R$)</label>
-                                    <input type="number" value={tpvP} onChange={e => setTpvP(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                    <input type="number" value={tpvP} onChange={e => setTpvP(e.target.value)} placeholder="0.00" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                             </div>
                         )}
 
@@ -423,11 +423,11 @@ export default function ClientesPage() {
                         <p className="text-xs text-muted-foreground">Taxas: preenchidas automaticamente da última negociação, ou personalize:</p>
                         <div className="grid grid-cols-3 gap-3">
                             <div><label className="text-xs font-medium text-muted-foreground block mb-1">Taxa Débito (%)</label>
-                                <input type="number" step="0.01" value={rD} onChange={e => setRD(e.target.value)} placeholder={lastNeg?.rates?.debit?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                <input type="number" step="0.01" value={rD} onChange={e => setRD(e.target.value)} placeholder={lastNeg?.rates?.debit?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                             <div><label className="text-xs font-medium text-muted-foreground block mb-1">Taxa Crédito (%)</label>
-                                <input type="number" step="0.01" value={rC} onChange={e => setRC(e.target.value)} placeholder={lastNeg?.rates?.credit1x?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                <input type="number" step="0.01" value={rC} onChange={e => setRC(e.target.value)} placeholder={lastNeg?.rates?.credit1x?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                             <div><label className="text-xs font-medium text-muted-foreground block mb-1">Taxa PIX (%)</label>
-                                <input type="number" step="0.01" value={rP} onChange={e => setRP(e.target.value)} placeholder={lastNeg?.rates?.pix?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                <input type="number" step="0.01" value={rP} onChange={e => setRP(e.target.value)} placeholder={lastNeg?.rates?.pix?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         </div>
 
                         {/* Preview */}
@@ -454,19 +454,19 @@ export default function ClientesPage() {
                 {tab === "negs" && (
                     <div className="space-y-3">
                         {sel.negotiations.length === 0 ? (
-                            <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
+                            <div className="card-elevated rounded-xl p-8 text-center text-muted-foreground">
                                 <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
                                 <p className="text-sm">Nenhuma negociação. Acesse o Pipeline para iniciar.</p>
                             </div>
                         ) : sel.negotiations.map((neg, i) => {
                             const stLabel: Record<string, string> = { prospeccao: "Prospecção", proposta_enviada: "Proposta Enviada", aguardando_cliente: "Aguardando Cliente", aprovado: "Aprovado", recusado: "Recusado", fechado: "Fechado", pendente: "Pendente", aceita: "Aprovado", recusada: "Recusado" };
-                            const stColor: Record<string, string> = { prospeccao: "bg-slate-500/10 text-slate-500", proposta_enviada: "bg-blue-500/10 text-blue-500", aguardando_cliente: "bg-amber-500/10 text-amber-500", aprovado: "bg-emerald-500/10 text-emerald-500", recusado: "bg-red-500/10 text-red-500", fechado: "bg-purple-500/10 text-purple-500", pendente: "bg-amber-500/10 text-amber-500", aceita: "bg-emerald-500/10 text-emerald-500", recusada: "bg-red-500/10 text-red-500" };
+                            const stColor: Record<string, string> = { prospeccao: "bg-slate-500/10 text-slate-500", proposta_enviada: "bg-[#00A868]/10 text-[#00A868]", aguardando_cliente: "bg-amber-500/10 text-amber-500", aprovado: "bg-[#00A868]/10 text-[#00A868]", recusado: "bg-red-500/10 text-red-500", fechado: "bg-purple-500/10 text-purple-500", pendente: "bg-amber-500/10 text-amber-500", aceita: "bg-[#00A868]/10 text-[#00A868]", recusada: "bg-red-500/10 text-red-500" };
                             return (
-                                <div key={neg.id} className={`bg-card border rounded-xl p-4 ${i === 0 ? "border-emerald-500/20" : "border-border"}`}>
+                                <div key={neg.id} className={`bg-card border rounded-xl p-4 ${i === 0 ? "border-[#00A868]/20" : "border-border"}`}>
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
                                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${stColor[neg.status] || "bg-muted text-muted-foreground"}`}>{stLabel[neg.status] || neg.status}</span>
-                                            {i === 0 && <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">Mais recente</span>}
+                                            {i === 0 && <span className="text-[10px] font-bold text-[#00A868] bg-[#00A868]/10 px-2 py-0.5 rounded-full">Mais recente</span>}
                                             {neg.assignee && <span className="text-[10px] text-purple-500 bg-purple-500/10 px-2 py-0.5 rounded-full">{neg.assignee.name}</span>}
                                         </div>
                                         <span className="text-xs text-muted-foreground">{fmtDate(neg.dateNeg)}</span>
@@ -508,28 +508,28 @@ export default function ClientesPage() {
             {/* Header */}
             <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20"><Users className="w-4 h-4" /></div>
+                    <div className="w-9 h-9 rounded-xl bg-[#00A868] flex items-center justify-center text-white shadow-lg shadow-[#00A868]/20"><Users className="w-4 h-4" /></div>
                     <div>
                         <h1 className="text-lg font-bold">Carteira de Clientes</h1>
                         <p className="text-xs text-muted-foreground">{totalPortfolio} ativos · TPV mês: {fmtMoney(monthSummary.tpv)} · Comissão: {fmtMoney(monthSummary.agent)}</p>
                     </div>
                 </div>
-                <button onClick={() => { resetNew(); setView("new"); }} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium shadow-lg shadow-emerald-600/20">
+                <button onClick={() => { resetNew(); setView("new"); }} className="flex items-center gap-2 px-4 py-2 bg-[#00A868] hover:bg-[#00A868] text-white rounded-xl text-sm font-medium shadow-lg shadow-[#00A868]/20">
                     <Plus className="w-4 h-4" /> Novo Cliente
                 </button>
             </div>
 
             {/* Summary cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="bg-card border border-border rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-1"><Users className="w-4 h-4 text-emerald-500" /><span className="text-[10px] font-bold text-muted-foreground uppercase">Carteira Ativa</span></div>
+                <div className="card-elevated rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1"><Users className="w-4 h-4 text-[#00A868]" /><span className="text-[10px] font-bold text-muted-foreground uppercase">Carteira Ativa</span></div>
                     <p className="text-2xl font-black text-foreground">{totalPortfolio}</p>
                 </div>
-                <div className="bg-card border border-border rounded-xl p-4">
+                <div className="card-elevated rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-1"><TrendingUp className="w-4 h-4 text-blue-500" /><span className="text-[10px] font-bold text-muted-foreground uppercase">TPV Mês</span></div>
                     <p className="text-lg sm:text-2xl font-black text-foreground">{fmtMoney(monthSummary.tpv)}</p>
                 </div>
-                <div className="bg-card border border-border rounded-xl p-4">
+                <div className="card-elevated rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-1"><DollarSign className="w-4 h-4 text-amber-500" /><span className="text-[10px] font-bold text-muted-foreground uppercase">Receita Taxas</span></div>
                     <p className="text-lg sm:text-2xl font-black text-amber-500">{fmtMoney(monthSummary.rev)}</p>
                 </div>
@@ -543,7 +543,7 @@ export default function ClientesPage() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <div className="relative flex-1"><Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome, CNPJ ou Stone Code..."
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                 <div className="flex gap-1 bg-secondary/50 rounded-xl p-0.5">
                     {([["all", "Todos"], ["ativo", "Ativos"], ["cancelado", "Cancelados"]] as const).map(([key, lbl]) => (
                         <button key={key} onClick={() => setFilter(key)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filter === key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>{lbl}</button>
@@ -553,7 +553,7 @@ export default function ClientesPage() {
 
             {/* Client cards */}
             {filtered.length === 0 ? (
-                <div className="bg-card border border-border rounded-2xl p-12 text-center">
+                <div className="card-elevated p-12 text-center">
                     <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground/20" />
                     <p className="font-semibold">Nenhum cliente encontrado</p>
                     <p className="text-sm text-muted-foreground mt-1">Cadastre clientes para montar sua carteira.</p>
@@ -566,10 +566,10 @@ export default function ClientesPage() {
                         const lastNeg = c.negotiations[0];
                         return (
                             <button key={c.id} onClick={() => { setSelId(c.id); setView("detail"); setTab("resumo"); }}
-                                className="bg-card border border-border rounded-xl p-4 text-left hover:border-emerald-500/30 hover:shadow-md transition-all group">
+                                className="card-elevated rounded-xl p-4 text-left hover:border-[#00A868]/30 hover:shadow-md transition-all group">
                                 <div className="flex items-start gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                        <span className="text-sm font-bold text-emerald-600">{c.name.charAt(0)}</span>
+                                    <div className="w-10 h-10 rounded-xl bg-[#00A868]/10 flex items-center justify-center shrink-0">
+                                        <span className="text-sm font-bold text-[#00A868]">{c.name.charAt(0)}</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold truncate">{c.name}</p>
@@ -582,7 +582,7 @@ export default function ClientesPage() {
                                         <StatusBadge s={c.status} />
                                         <div className="flex items-center gap-1 mt-1">
                                             <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold border ${c.brand === 'TON' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-green-600/10 text-green-600 border-green-600/20'}`}>{c.brand === 'TON' ? 'TON' : 'STONE'}</span>
-                                            <span className="inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">{c.safra}</span>
+                                            <span className="inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold bg-[#00A868]/10 text-[#00A868] border border-blue-500/20">{c.safra}</span>
                                         </div>
                                     </div>
                                 </div>

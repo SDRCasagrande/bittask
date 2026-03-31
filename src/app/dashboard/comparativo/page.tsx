@@ -152,7 +152,7 @@ export default function ComparativoPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
+                    <div className="w-10 h-10 rounded-xl bg-[#00A868] flex items-center justify-center shadow-lg shadow-[#00A868]/20 text-white">
                         <Activity className="w-5 h-5" />
                     </div>
                     <div>
@@ -162,19 +162,19 @@ export default function ComparativoPage() {
                 </div>
                 <div className="flex gap-2">
                     <button onClick={pullCET}
-                        className="flex items-center gap-1.5 px-4 py-2 text-sm rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-colors">
+                        className="flex items-center gap-1.5 px-4 py-2 text-sm rounded-xl bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20 transition-colors">
                         <Download className="w-4 h-4" /> Puxar CET
                     </button>
                 </div>
             </div>
 
             {/* Volume por VALOR + Concorrente */}
-            <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+            <div className="card-elevated p-5 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="flex-1">
                         <label className="text-xs font-medium text-foreground mb-1 block">Concorrente</label>
                         <select value={competitorId} onChange={(e) => setCompetitorId(e.target.value)}
-                            className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:ring-2 focus:ring-emerald-500">
+                            className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:ring-2 focus:ring-[#00A868]">
                             {COMPETITORS.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
@@ -197,7 +197,7 @@ export default function ComparativoPage() {
                                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">R$</span>
                                 <input type="number" value={item.value}
                                     onChange={(e) => item.setter(parseFloat(e.target.value) || 0)}
-                                    className="w-full pl-8 pr-2 py-2 rounded-lg bg-card border border-border text-foreground text-sm font-bold text-right focus:ring-2 focus:ring-emerald-500" />
+                                    className="w-full pl-8 pr-2 py-2 rounded-lg bg-card border border-border text-foreground text-sm font-bold text-right focus:ring-2 focus:ring-[#00A868]" />
                             </div>
                             <p className="text-center text-xs text-muted-foreground mt-1.5">
                                 <span className="font-semibold text-foreground">{item.share.toFixed(1)}%</span> do total
@@ -224,7 +224,7 @@ export default function ComparativoPage() {
                     costs={compCosts}
                 />
                 {/* Diff */}
-                <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                <div className="card-elevated overflow-hidden">
                     <div className="px-4 py-3 bg-gradient-to-r from-slate-500/10 to-transparent border-b border-border flex items-center gap-2">
                         <TrendingDown className="w-4 h-4 text-foreground" />
                         <h3 className="font-bold text-foreground text-sm">Diferença</h3>
@@ -237,14 +237,14 @@ export default function ComparativoPage() {
                         ].map((item) => (
                             <div key={item.label} className="flex justify-between">
                                 <span className="text-muted-foreground">{item.label}:</span>
-                                <span className={`font-semibold ${item.diff > 0 ? "text-emerald-500" : item.diff < 0 ? "text-red-500" : "text-foreground"}`}>
+                                <span className={`font-semibold ${item.diff > 0 ? "text-[#00A868]" : item.diff < 0 ? "text-red-500" : "text-foreground"}`}>
                                     {item.diff > 0 ? "+" : ""}{formatCurrency(item.diff)}
                                 </span>
                             </div>
                         ))}
                         <div className="flex justify-between font-bold border-t border-border pt-2 mt-2">
                             <span>Total Taxas:</span>
-                            <span className={compCosts.total - stoneCosts.total > 0 ? "text-emerald-500" : "text-red-500"}>
+                            <span className={compCosts.total - stoneCosts.total > 0 ? "text-[#00A868]" : "text-red-500"}>
                                 {compCosts.total - stoneCosts.total > 0 ? "+" : ""}{formatCurrency(compCosts.total - stoneCosts.total)}
                             </span>
                         </div>
@@ -261,7 +261,7 @@ export default function ComparativoPage() {
             </div>
 
             {/* IPV — Isenção Por Volume */}
-            <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+            <div className="card-elevated p-5 space-y-4">
                 <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-foreground" />
                     <h3 className="font-bold text-foreground text-sm">IPV — Isenção Por Volume</h3>
@@ -269,18 +269,18 @@ export default function ComparativoPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* Stone IPV — automático */}
-                    <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-4 space-y-3">
+                    <div className="rounded-xl bg-[#00A868]/5 border border-[#00A868]/20 p-4 space-y-3">
                         <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-sm text-emerald-600 flex items-center gap-1.5"><Percent className="w-4 h-4" /> Stone (Automático)</h4>
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                            <h4 className="font-semibold text-sm text-[#00A868] flex items-center gap-1.5"><Percent className="w-4 h-4" /> Stone (Automático)</h4>
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#00A868]/10 text-[#00A868]">
                                 {stoneExempt} isenta(s)
                             </span>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                             <div className="flex justify-between"><span className="text-muted-foreground">Máquinas total:</span><span className="font-semibold text-foreground">{stoneMachines.quantity}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Isentas (IPV):</span><span className="font-semibold text-emerald-500">{Math.min(stoneExempt, stoneMachines.quantity)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Isentas (IPV):</span><span className="font-semibold text-[#00A868]">{Math.min(stoneExempt, stoneMachines.quantity)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Pagantes:</span><span className="font-semibold text-foreground">{stonePaidMachines}</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Aluguel efetivo:</span><span className={`font-semibold ${stoneEffectiveRental === 0 ? 'text-emerald-500' : 'text-foreground'}`}>{formatCurrency(stoneEffectiveRental)}/mês</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Aluguel efetivo:</span><span className={`font-semibold ${stoneEffectiveRental === 0 ? 'text-[#00A868]' : 'text-foreground'}`}>{formatCurrency(stoneEffectiveRental)}/mês</span></div>
                         </div>
                         {/* Tier table */}
                         <div className="space-y-0.5">
@@ -290,7 +290,7 @@ export default function ComparativoPage() {
                                     { tpv: "10k", qty: 1 }, { tpv: "30k", qty: 2 }, { tpv: "50k", qty: 4 },
                                     { tpv: "100k", qty: 6 }, { tpv: "150k", qty: 8 },
                                 ].map((tier) => (
-                                    <div key={tier.tpv} className={`text-center p-1 rounded text-[10px] ${stoneExempt >= tier.qty ? 'bg-emerald-500/15 text-emerald-500 font-bold' : 'bg-secondary text-muted-foreground'
+                                    <div key={tier.tpv} className={`text-center p-1 rounded text-[10px] ${stoneExempt >= tier.qty ? 'bg-emerald-500/15 text-[#00A868] font-bold' : 'bg-secondary text-muted-foreground'
                                         }`}>
                                         <p>{tier.tpv}</p>
                                         <p>{tier.qty}x</p>
@@ -309,7 +309,7 @@ export default function ComparativoPage() {
                             <label className="text-[10px] text-muted-foreground uppercase block mb-0.5">Máquinas Isentas (informar manualmente)</label>
                             <input type="number" min={0} value={compExemptManual}
                                 onChange={(e) => setCompExemptManual(parseInt(e.target.value) || 0)}
-                                className="w-full px-3 py-2 rounded-lg bg-card border border-border text-foreground text-sm text-center focus:ring-2 focus:ring-emerald-500" />
+                                className="w-full px-3 py-2 rounded-lg bg-card border border-border text-foreground text-sm text-center focus:ring-2 focus:ring-[#00A868]" />
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                             <div className="flex justify-between"><span className="text-muted-foreground">Máquinas total:</span><span className="font-semibold text-foreground">{compMachines.quantity}</span></div>
@@ -365,7 +365,7 @@ function RateCard({ title, color, rates, onChange, costs }: {
     ];
 
     return (
-        <div className="bg-card border border-border rounded-2xl overflow-hidden" style={{ borderColor: color + '33' }}>
+        <div className="card-elevated overflow-hidden" style={{ borderColor: color + '33' }}>
             <div className="px-4 py-3 border-b border-border flex items-center gap-2"
                 style={{ background: `linear-gradient(to right, ${color}15, transparent)` }}>
                 <Percent className="w-4 h-4" style={{ color }} />
@@ -379,7 +379,7 @@ function RateCard({ title, color, rates, onChange, costs }: {
                             <div className="relative">
                                 <input type="number" step="0.01" value={rates[f.key]}
                                     onChange={(e) => onChange({ ...rates, [f.key]: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1.5 rounded-lg bg-secondary border border-border text-foreground text-xs font-medium text-right pr-5 focus:ring-2 focus:ring-emerald-500" />
+                                    className="w-full px-2 py-1.5 rounded-lg bg-secondary border border-border text-foreground text-xs font-medium text-right pr-5 focus:ring-2 focus:ring-[#00A868]" />
                                 <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">%</span>
                             </div>
                         </div>
@@ -402,7 +402,7 @@ function MachineCard({ label, color, config, onChange }: {
     onChange: (c: MachineConfig) => void;
 }) {
     return (
-        <div className="bg-card border border-border rounded-2xl p-4">
+        <div className="card-elevated p-4">
             <div className="flex items-center gap-2 mb-3">
                 <SmartphoneNfc className="w-4 h-4" style={{ color }} />
                 <h3 className="font-bold text-sm" style={{ color }}>Máquinas {label}</h3>

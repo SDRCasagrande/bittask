@@ -133,7 +133,7 @@ export default function TarefasPage() {
     }, [calMonth, calYear, allTasks]);
     const monthLabel = new Date(calYear, calMonth).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
-    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>;
+    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-[#00A868]" /></div>;
 
     return (
         <div className="h-full flex flex-col">
@@ -143,8 +143,8 @@ export default function TarefasPage() {
                     <h1 className="text-lg font-bold text-foreground">Tarefas</h1>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={() => setView("board")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${view === "board" ? "bg-blue-500/10 text-blue-500" : "text-muted-foreground hover:bg-muted"}`}><ListTodo className="w-3.5 h-3.5" /> Board</button>
-                    <button onClick={() => setView("calendar")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${view === "calendar" ? "bg-blue-500/10 text-blue-500" : "text-muted-foreground hover:bg-muted"}`}><CalendarDays className="w-3.5 h-3.5" /> Calendário</button>
+                    <button onClick={() => setView("board")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${view === "board" ? "bg-[#00A868]/10 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}><ListTodo className="w-3.5 h-3.5" /> Board</button>
+                    <button onClick={() => setView("calendar")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${view === "calendar" ? "bg-[#00A868]/10 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}><CalendarDays className="w-3.5 h-3.5" /> Calendário</button>
                 </div>
             </div>
 
@@ -194,7 +194,7 @@ export default function TarefasPage() {
                             return (
                                 <button key={u.id} onClick={() => setSidebarFilter(`team_${u.id}`)}
                                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sidebarFilter === `team_${u.id}` ? "bg-indigo-500/20 text-indigo-400" : "text-muted-foreground hover:bg-muted"}`}>
-                                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[8px] text-white font-bold shrink-0">{initials(u.name)}</div>
+                                    <div className="w-5 h-5 rounded-full bg-[#00A868] flex items-center justify-center text-[8px] text-white font-bold shrink-0">{initials(u.name)}</div>
                                     <span className="truncate">{u.name.split(" ")[0]}</span>
                                     {teamTasksCount > 0 && <span className="ml-auto text-[10px] opacity-70">{teamTasksCount}</span>}
                                 </button>
@@ -265,7 +265,7 @@ export default function TarefasPage() {
                             {sidebarFilter === "all" && (
                                 <div className="w-72 shrink-0">
                                     {showNewList ? (
-                                        <div className="bg-card border border-border rounded-2xl p-4 space-y-2">
+                                        <div className="card-elevated p-4 space-y-2">
                                             <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => e.key === "Enter" && createList()} autoFocus placeholder="Nome da lista..."
                                                 className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none" />
                                             <div className="flex gap-2">
@@ -282,7 +282,7 @@ export default function TarefasPage() {
                     </div>
                 ) : (
                     <div className="flex-1 overflow-auto">
-                        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                        <div className="card-elevated overflow-hidden">
                             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                                 <button onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); } else setCalMonth(calMonth - 1); }} className="p-1.5 rounded-lg hover:bg-muted"><ChevronLeft className="w-4 h-4" /></button>
                                 <span className="text-sm font-bold text-foreground capitalize">{monthLabel}</span>
@@ -370,12 +370,12 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <div className="relative w-full max-w-lg max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl flex flex-col animate-in zoom-in-95 fade-in duration-200" onClick={e => e.stopPropagation()}>
+            <div className="relative w-full max-w-lg max-h-[90vh] card-elevated shadow-2xl flex flex-col animate-in zoom-in-95 fade-in duration-200" onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
                     <div className="flex items-center gap-2">
                         <button onClick={() => onUpdate({ completed: !task.completed })}
-                            className={`${task.completed ? "text-emerald-500" : "text-muted-foreground hover:text-blue-500"} transition-colors`}>
+                            className={`${task.completed ? "text-[#00A868]" : "text-muted-foreground hover:text-blue-500"} transition-colors`}>
                             {task.completed ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
                         </button>
                         <span className="text-sm font-bold text-foreground">Detalhes da Tarefa</span>
@@ -400,7 +400,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prioridade</label>
                             <select value={priority} onChange={e => { setPriority(e.target.value); markDirty(); }}
-                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-blue-500/50">
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50">
                                 <option value="high">🔴 Alta</option>
                                 <option value="medium">🟡 Média</option>
                                 <option value="low">🔵 Baixa</option>
@@ -411,7 +411,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Responsável</label>
                             <select value={assigneeId} onChange={e => { setAssigneeId(e.target.value); markDirty(); }}
-                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-blue-500/50">
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50">
                                 <option value="">Sem responsável</option>
                                 {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                             </select>
@@ -421,14 +421,14 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Data</label>
                             <input type="date" value={date} onChange={e => { setDate(e.target.value); markDirty(); }}
-                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-blue-500/50 [color-scheme:dark]" />
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
                         </div>
 
                         {/* Time */}
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Horário</label>
                             <input type="time" value={time} onChange={e => { setTime(e.target.value); markDirty(); }}
-                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-blue-500/50 [color-scheme:dark]" />
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
                         </div>
                     </div>
 
@@ -437,7 +437,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                         <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição / Notas</label>
                         <textarea value={description} onChange={e => { setDescription(e.target.value); markDirty(); }}
                             rows={4} placeholder="Adicione detalhes, observações..."
-                            className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-blue-500/50 resize-none" />
+                            className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 resize-none" />
                     </div>
 
                     {/* Info */}
@@ -470,8 +470,8 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                             saved
                                 ? "bg-emerald-500 text-white scale-105 shadow-emerald-500/30"
                                 : dirty
-                                    ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20 animate-pulse"
-                                    : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20"
+                                    ? "bg-[#00A868] hover:bg-[#00A868] text-white shadow-[#00A868]/20 animate-pulse"
+                                    : "bg-[#00A868] hover:bg-[#00A868] text-white shadow-[#00A868]/20"
                         }`}>
                         {saved ? (
                             <><Check className="w-4 h-4" /> Salvo!</>
@@ -527,7 +527,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
     };
 
     return (
-        <div className="w-72 shrink-0 bg-card border border-border rounded-2xl flex flex-col max-h-[calc(100vh-180px)]">
+        <div className="w-72 shrink-0 card-elevated flex flex-col max-h-[calc(100vh-180px)]">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 shrink-0">
                 <h3 className="text-sm font-bold text-foreground truncate">{list.name}</h3>
@@ -567,7 +567,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                     <div className="space-y-2 mb-2">
                         <input value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") setAdding(false); }}
                             autoFocus placeholder="Título da tarefa..."
-                            className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-blue-500/50" />
+                            className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50" />
                         <div className="flex gap-1.5">
                             <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
                                 className="flex-1 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none min-w-0 [color-scheme:dark]" />
@@ -653,7 +653,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                         {showCompleted && <div className="space-y-0.5 mt-1">{completed.map(task => (
                             <div key={task.id} className="group flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-muted/40 opacity-50 cursor-pointer"
                                 onClick={() => onOpenDetail(task)}>
-                                <button onClick={(e) => { e.stopPropagation(); onToggle(task.id); }} className="shrink-0 text-emerald-500"><CheckCircle2 className="w-[18px] h-[18px]" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); onToggle(task.id); }} className="shrink-0 text-[#00A868]"><CheckCircle2 className="w-[18px] h-[18px]" /></button>
                                 <span className="text-sm text-muted-foreground line-through truncate flex-1">{task.title}</span>
                                 <button onClick={(e) => { e.stopPropagation(); onDelete(task.id); }} className="p-1 rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
                             </div>

@@ -134,13 +134,13 @@ export default function CETCalculatorPage() {
     }
 
     function getCETColor(cet: number): string {
-        if (cet < 5) return "text-emerald-500";
+        if (cet < 5) return "text-[#00A868]";
         if (cet < 10) return "text-amber-500";
         return "text-red-500";
     }
 
     function getCETBg(cet: number): string {
-        if (cet < 5) return "bg-emerald-500/10";
+        if (cet < 5) return "bg-[#00A868]/10";
         if (cet < 10) return "bg-amber-500/10";
         return "bg-red-500/10";
     }
@@ -299,10 +299,10 @@ tr:nth-child(even){background:#fafafa}
     return (
         <div className="max-w-7xl mx-auto space-y-4">
             {/* Header */}
-            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="card-elevated p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 flex-1 w-full">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/10 flex items-center justify-center shrink-0">
-                        <span className="text-emerald-600 text-sm font-black">CET</span>
+                    <div className="w-10 h-10 rounded-xl bg-[#00A868]/10 border border-[#00A868]/10 flex items-center justify-center shrink-0">
+                        <span className="text-[#00A868] text-sm font-black">CET</span>
                     </div>
                     <div className="flex-1">
                         <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)}
@@ -312,9 +312,9 @@ tr:nth-child(even){background:#fafafa}
                     </div>
                 </div>
                 <div className="flex gap-1.5 flex-wrap">
-                    <button onClick={shareWhatsApp} className="px-3 py-1.5 text-xs rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 font-medium transition-colors">WhatsApp</button>
+                    <button onClick={shareWhatsApp} className="px-3 py-1.5 text-xs rounded-lg bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20 font-medium transition-colors">WhatsApp</button>
                     <button onClick={exportPDF} className="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 font-medium transition-colors">PDF</button>
-                    <button onClick={exportExcel} className="px-3 py-1.5 text-xs rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 font-medium transition-colors">Excel</button>
+                    <button onClick={exportExcel} className="px-3 py-1.5 text-xs rounded-lg bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20 font-medium transition-colors">Excel</button>
                     <button onClick={handleReset} className="px-3 py-1.5 text-xs rounded-lg bg-secondary text-muted-foreground hover:bg-muted font-medium transition-colors">Resetar</button>
                 </div>
             </div>
@@ -326,7 +326,7 @@ tr:nth-child(even){background:#fafafa}
                 <div className="lg:col-span-4 space-y-3">
 
                     {/* Proposal Type + Fidelidade */}
-                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-purple-500/30">
+                    <div className="card-elevated rounded-xl p-3 border-l-2 border-purple-500/30">
                         <h3 className="text-[10px] font-bold text-purple-400 uppercase mb-1.5">Tipo de Proposta</h3>
                         <select value={proposalType} onChange={(e) => handleProposalChange(e.target.value)}
                             className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-foreground text-[11px] font-medium focus:ring-1 focus:ring-purple-500">
@@ -353,10 +353,10 @@ tr:nth-child(even){background:#fafafa}
                     </div>
 
                     {/* TPV */}
-                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-cyan-500/30">
+                    <div className="card-elevated rounded-xl p-3 border-l-2 border-cyan-500/30">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[10px] font-bold text-cyan-400 uppercase">TPV Mensal Acordado</h3>
-                            {(() => { const ex = calculateExemptMachines(tpv); return ex > 0 ? <span className="text-[11px] text-emerald-400 font-bold">{ex} maq. isentas</span> : null; })()}
+                            {(() => { const ex = calculateExemptMachines(tpv); return ex > 0 ? <span className="text-[11px] text-[#00A868] font-bold">{ex} maq. isentas</span> : null; })()}
                         </div>
                         <div className="mt-1">
                             <div className="relative">
@@ -368,8 +368,8 @@ tr:nth-child(even){background:#fafafa}
                     </div>
 
                     {/* Brand Tabs + Rates */}
-                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-emerald-500/30">
-                        <h3 className="text-[10px] font-bold text-emerald-500 uppercase mb-1.5">Taxas por Bandeira</h3>
+                    <div className="card-elevated rounded-xl p-3 border-l-2 border-[#00A868]/30">
+                        <h3 className="text-[10px] font-bold text-[#00A868] uppercase mb-1.5">Taxas por Bandeira</h3>
 
                         {/* Toggle chips */}
                         <div className="flex gap-0.5 mb-2 flex-wrap items-center">
@@ -377,7 +377,7 @@ tr:nth-child(even){background:#fafafa}
                                 <div key={b} className="relative group">
                                     <button onClick={() => { setActiveBrand(b); if (!enabledBrands[b]) toggleBrand(b); }}
                                         className={`px-1.5 py-0.5 text-[10px] rounded font-semibold transition-all ${activeBrand === b
-                                            ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40"
+                                            ? "bg-[#00A868]/20 text-[#00A868] ring-1 ring-[#00A868]/40"
                                             : enabledBrands[b]
                                                 ? "bg-secondary text-foreground hover:bg-muted"
                                                 : "bg-secondary/50 text-muted-foreground/50 line-through hover:bg-muted"}`}>
@@ -417,7 +417,7 @@ tr:nth-child(even){background:#fafafa}
                                             if (e.key === "Escape") { setNewBrandInput(""); setShowNewBrand(false); }
                                         }}
                                         placeholder="NOME"
-                                        className="w-20 px-1 py-0.5 text-[10px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-emerald-500" />
+                                        className="w-20 px-1 py-0.5 text-[10px] rounded bg-secondary border border-emerald-500/40 text-foreground focus:ring-1 focus:ring-[#00A868]" />
                                     <button onClick={() => {
                                         const name = newBrandInput.trim();
                                         if (name && !brandRates[name]) {
@@ -426,13 +426,13 @@ tr:nth-child(even){background:#fafafa}
                                             setActiveBrand(name);
                                         }
                                         setNewBrandInput(""); setShowNewBrand(false);
-                                    }} className="text-[10px] text-emerald-400">OK</button>
+                                    }} className="text-[10px] text-[#00A868]">OK</button>
                                     <button onClick={() => { setNewBrandInput(""); setShowNewBrand(false); }}
                                         className="text-[10px] text-red-400">X</button>
                                 </div>
                             ) : (
                                 <button onClick={() => setShowNewBrand(true)}
-                                    className="px-1.5 py-0.5 text-[10px] rounded font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20">+</button>
+                                    className="px-1.5 py-0.5 text-[10px] rounded font-semibold bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20">+</button>
                             )}
                         </div>
 
@@ -449,7 +449,7 @@ tr:nth-child(even){background:#fafafa}
                     </div>
 
                     {/* RAV */}
-                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-amber-500/30">
+                    <div className="card-elevated rounded-xl p-3 border-l-2 border-amber-500/30">
                         <h3 className="text-[10px] font-bold text-amber-500 uppercase mb-1.5">Antecipacao (RAV)</h3>
                         <div className="grid grid-cols-2 gap-1.5 mb-1.5">
                             <div>
@@ -482,7 +482,7 @@ tr:nth-child(even){background:#fafafa}
                     </div>
 
                     {/* PIX & Maquinas */}
-                    <div className="bg-card border border-border rounded-xl p-3 border-l-2 border-blue-500/30">
+                    <div className="card-elevated rounded-xl p-3 border-l-2 border-blue-500/30">
                         <h3 className="text-[10px] font-bold text-blue-400 uppercase mb-1.5">PIX & Maquinas</h3>
                         <div className="grid grid-cols-2 gap-1.5">
                             <RI l="PIX" v={pixRate} set={setPixRate} />
@@ -524,7 +524,7 @@ tr:nth-child(even){background:#fafafa}
                                     {ipv > 0 && (
                                         <div className="flex justify-between text-[10px]">
                                             <span className="text-muted-foreground">IPV (isentas volume):</span>
-                                            <span className="font-bold text-emerald-400">{Math.min(ipv, machines)} de {machines}</span>
+                                            <span className="font-bold text-[#00A868]">{Math.min(ipv, machines)} de {machines}</span>
                                         </div>
                                     )}
                                     {maqAdesao > 0 && (
@@ -545,7 +545,7 @@ tr:nth-child(even){background:#fafafa}
                                             <span className="font-bold text-amber-400">{formatCurrency(totalRental)}/mês</span>
                                         </div>
                                     ) : machines > 0 ? (
-                                        <p className="text-[11px] text-emerald-400">✓ Proposta: todas isentas pelo IPV</p>
+                                        <p className="text-[11px] text-[#00A868]">✓ Proposta: todas isentas pelo IPV</p>
                                     ) : null}
                                 </div>
                             );
@@ -554,7 +554,7 @@ tr:nth-child(even){background:#fafafa}
 
                     {/* Legend */}
                     <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground px-1">
-                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500/20" /> &lt;5% Seguro</span>
+                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#00A868]/20" /> &lt;5% Seguro</span>
                         <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500/20" /> 5-10% Atencao</span>
                         <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-red-500/20" /> &gt;10% Alto</span>
                     </div>
@@ -564,7 +564,7 @@ tr:nth-child(even){background:#fafafa}
                 <div className="lg:col-span-8">
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                         {ACTIVE_BRANDS.length === 0 && (
-                            <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
+                            <div className="card-elevated rounded-xl p-8 text-center text-muted-foreground">
                                 <p className="text-sm">Nenhuma bandeira ativa</p>
                                 <p className="text-xs">Passe o mouse sobre as bandeiras e clique ✓ para ativar</p>
                             </div>
@@ -572,8 +572,8 @@ tr:nth-child(even){background:#fafafa}
                         {ACTIVE_BRANDS.map((name) => {
                             const rates = brandRates[name];
                             return (
-                                <div key={name} className="bg-card border border-border rounded-xl overflow-hidden">
-                                    <div className="px-4 py-2.5 bg-gradient-to-r from-emerald-500/10 to-transparent border-b border-border flex items-center justify-between">
+                                <div key={name} className="card-elevated rounded-xl overflow-hidden">
+                                    <div className="px-4 py-2.5 bg-[#00A868]/10 border-b border-border flex items-center justify-between">
                                         <h3 className="text-sm font-bold text-foreground">{name}</h3>
                                         <span className="text-xs text-muted-foreground">Debito: <span className="font-bold text-foreground">{formatPercent(rates.debit)}</span></span>
                                     </div>

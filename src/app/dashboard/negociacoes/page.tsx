@@ -66,7 +66,7 @@ const STAGES = [
     { id: "prospeccao", label: "Prospecção", color: "slate", bg: "bg-slate-500/10", text: "text-slate-500", border: "border-slate-500/20", dot: "bg-slate-500" },
     { id: "proposta_enviada", label: "Proposta Enviada", color: "blue", bg: "bg-blue-500/10", text: "text-blue-500", border: "border-blue-500/20", dot: "bg-blue-500" },
     { id: "aguardando_cliente", label: "Aguardando Cliente", color: "amber", bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/20", dot: "bg-amber-500" },
-    { id: "aprovado", label: "Aprovado", color: "emerald", bg: "bg-emerald-500/10", text: "text-emerald-500", border: "border-emerald-500/20", dot: "bg-emerald-500" },
+    { id: "aprovado", label: "Aprovado", color: "emerald", bg: "bg-[#00A868]/10", text: "text-[#00A868]", border: "border-[#00A868]/20", dot: "bg-emerald-500" },
     { id: "recusado", label: "Recusado", color: "red", bg: "bg-red-500/10", text: "text-red-500", border: "border-red-500/20", dot: "bg-red-500" },
     { id: "fechado", label: "Fechado", color: "purple", bg: "bg-purple-500/10", text: "text-purple-500", border: "border-purple-500/20", dot: "bg-purple-500" },
 ];
@@ -102,7 +102,7 @@ function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot)
             <div className="flex gap-1.5 flex-wrap">
                 {Object.keys(br).map(b => (
                     <button key={b} type="button" onClick={() => setActiveBrand(b)}
-                        className={`px-2.5 py-1 text-xs rounded-lg font-semibold ${activeBrand === b ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/40" : "bg-secondary text-muted-foreground hover:bg-muted"}`}>{b}</button>
+                        className={`px-2.5 py-1 text-xs rounded-lg font-semibold ${activeBrand === b ? "bg-[#00A868]/20 text-[#00A868] ring-1 ring-[#00A868]/40" : "bg-secondary text-muted-foreground hover:bg-muted"}`}>{b}</button>
                 ))}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -244,7 +244,7 @@ export default function NegociacoesPage() {
         setDragId(null); setDragOverStage(null);
     }
 
-    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>;
+    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-[#00A868]" /></div>;
 
     /* ═══ NEW CLIENT FORM ═══ */
     if (view === "new") {
@@ -254,23 +254,23 @@ export default function NegociacoesPage() {
                     <button onClick={() => setView("board")} className="p-2 rounded-lg hover:bg-muted"><ChevronLeft className="w-5 h-5" /></button>
                     <h1 className="text-lg font-bold text-foreground">Novo Cliente + Negociação</h1>
                 </div>
-                <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
+                <div className="card-elevated p-5 space-y-3">
                     <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Dados do Cliente</h3>
                     <div className="grid grid-cols-2 gap-3">
                         <div className="col-span-2"><label className="text-xs font-medium text-muted-foreground block mb-1">Nome / Razão Social *</label>
-                            <input value={fn} onChange={e => setFN(e.target.value)} placeholder="Nome completo" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                            <input value={fn} onChange={e => setFN(e.target.value)} placeholder="Nome completo" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Stone Code</label>
-                            <input value={fsc} onChange={e => setFSC(e.target.value)} placeholder="123456" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                            <input value={fsc} onChange={e => setFSC(e.target.value)} placeholder="123456" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">CNPJ/CPF</label>
                             <DocumentInput value={fcnpj} onChange={setFCNPJ} onCNPJData={handleCnpjFetch} allowBypass /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Telefone</label>
                             <PhoneInput value={fph} onChange={setFPH} /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">E-mail</label>
-                            <input value={fem} onChange={e => setFEM(e.target.value)} placeholder="email@empresa.com" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-emerald-500/50" /></div>
+                            <input value={fem} onChange={e => setFEM(e.target.value)} placeholder="email@empresa.com" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                     </div>
                 </div>
-                <div className="bg-card border border-emerald-500/20 rounded-2xl p-5 space-y-3">
-                    <h3 className="text-sm font-bold text-emerald-600 uppercase tracking-wider">Taxas Negociadas</h3>
+                <div className="bg-card border border-[#00A868]/20 rounded-2xl p-5 space-y-3">
+                    <h3 className="text-sm font-bold text-[#00A868] uppercase tracking-wider">Taxas Negociadas</h3>
                     <RatesForm rates={fRates} set={setFRates} />
                     <div className="grid grid-cols-2 gap-3">
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Data Negociação</label>
@@ -284,7 +284,7 @@ export default function NegociacoesPage() {
                     <div><label className="text-xs font-medium text-muted-foreground block mb-1">Observações</label>
                         <textarea value={fNotes} onChange={e => setFNotes(e.target.value)} rows={2} placeholder="Detalhes..." className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm resize-none focus:outline-none" /></div>
                 </div>
-                <button onClick={handleSaveClient} disabled={!fn.trim()} className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 disabled:opacity-50">Salvar e Adicionar ao Pipeline</button>
+                <button onClick={handleSaveClient} disabled={!fn.trim()} className="w-full py-3 rounded-xl bg-[#00A868] text-white font-bold hover:bg-[#00A868] disabled:opacity-50">Salvar e Adicionar ao Pipeline</button>
             </div>
         );
     }
@@ -295,7 +295,7 @@ export default function NegociacoesPage() {
             {/* Header */}
             <div className="flex items-center justify-between pb-4 gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20"><Handshake className="w-4 h-4" /></div>
+                    <div className="w-9 h-9 rounded-xl bg-[#00A868] flex items-center justify-center text-white shadow-lg shadow-[#00A868]/20"><Handshake className="w-4 h-4" /></div>
                     <div>
                         <h1 className="text-lg font-bold text-foreground">Pipeline de Negociações</h1>
                         <p className="text-xs text-muted-foreground">{allNegs.length} negociações · {clients.length} clientes</p>
@@ -316,19 +316,19 @@ export default function NegociacoesPage() {
                     </div>
                     <div className="relative"><Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..."
-                            className="pl-8 pr-3 py-2 rounded-xl bg-secondary border border-border text-sm text-foreground w-48 focus:outline-none focus:border-blue-500/50" />
+                            className="pl-8 pr-3 py-2 rounded-xl bg-secondary border border-border text-sm text-foreground w-48 focus:outline-none focus:border-[#00A868]/50" />
                     </div>
-                    <button onClick={() => setView(view === "board" ? "list" : "board")} className={`p-2 rounded-xl ${view === "board" ? "bg-blue-500/10 text-blue-500" : "bg-muted text-muted-foreground"}`} title="Alternar vista">
+                    <button onClick={() => setView(view === "board" ? "list" : "board")} className={`p-2 rounded-xl ${view === "board" ? "bg-[#00A868]/10 text-[#00A868]" : "bg-muted text-muted-foreground"}`} title="Alternar vista">
                         {view === "board" ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
                     </button>
-                    <button onClick={() => { resetNewForm(); setView("new"); }} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium shadow-lg shadow-emerald-600/20">
+                    <button onClick={() => { resetNewForm(); setView("new"); }} className="flex items-center gap-2 px-4 py-2 bg-[#00A868] hover:bg-[#00A868] text-white rounded-xl text-sm font-medium shadow-lg shadow-[#00A868]/20">
                         <Plus className="w-4 h-4" /> Novo Cliente
                     </button>
                 </div>
             </div>
 
             {msg && (
-                <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium mb-4 ${msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-red-500/10 text-red-600 border border-red-500/20"}`}>
+                <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium mb-4 ${msg.type === "ok" ? "bg-[#00A868]/10 text-[#00A868] border border-[#00A868]/20" : "bg-red-500/10 text-red-600 border border-red-500/20"}`}>
                     {msg.type === "ok" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />} {msg.text}
                     <button onClick={() => setMsg(null)} className="ml-auto p-0.5 rounded hover:bg-muted"><X className="w-3.5 h-3.5" /></button>
                 </div>
@@ -364,7 +364,7 @@ export default function NegociacoesPage() {
                                         {visible.map(neg => (
                                             <div key={neg.id} draggable
                                                 onDragStart={() => onDragStart(neg.id)}
-                                                className={`bg-card border border-border rounded-xl p-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-500/30 transition-all group overflow-hidden ${dragId === neg.id ? "opacity-50 scale-95" : ""}`}>
+                                                className={`card-elevated rounded-xl p-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#00A868]/30 transition-all group overflow-hidden ${dragId === neg.id ? "opacity-50 scale-95" : ""}`}>
                                                 <div className="flex items-start justify-between gap-1 mb-1">
                                                     <p className="text-sm font-semibold text-foreground leading-tight truncate">{neg.clientName}</p>
                                                     <GripVertical className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0 mt-0.5" />
@@ -395,7 +395,7 @@ export default function NegociacoesPage() {
 
                                                 {/* Hover actions */}
                                                 <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/50 h-0 overflow-hidden opacity-0 group-hover:h-auto group-hover:opacity-100 transition-all">
-                                                    <button onClick={() => shareWhatsApp(neg)} className="p-1 rounded-md text-[10px] font-medium text-emerald-500 hover:bg-emerald-500/10 flex items-center gap-0.5" title="WhatsApp">
+                                                    <button onClick={() => shareWhatsApp(neg)} className="p-1 rounded-md text-[10px] font-medium text-[#00A868] hover:bg-[#00A868]/10 flex items-center gap-0.5" title="WhatsApp">
                                                         <MessageSquare className="w-3 h-3" /> Zap
                                                     </button>
                                                     <a href={gcalLink(neg)} target="_blank" rel="noopener noreferrer" className="p-1 rounded-md text-[10px] font-medium text-blue-500 hover:bg-blue-500/10 flex items-center gap-0.5" title="Agendar">
@@ -451,15 +451,15 @@ export default function NegociacoesPage() {
                 <div className="flex-1 overflow-auto">
                     <div className="space-y-2">
                         {filtered.length === 0 ? (
-                            <div className="bg-card border border-border rounded-2xl p-12 text-center">
+                            <div className="card-elevated p-12 text-center">
                                 <Handshake className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
                                 <p className="font-semibold text-foreground">Nenhuma negociação</p>
                                 <p className="text-sm text-muted-foreground">Cadastre clientes para iniciar o pipeline.</p>
                             </div>
                         ) : filtered.map(neg => (
-                            <div key={neg.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4 hover:border-blue-500/30 transition-all">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                    <span className="text-sm font-bold text-emerald-600">{neg.clientName.charAt(0)}</span>
+                            <div key={neg.id} className="card-elevated rounded-xl p-4 flex items-center gap-4 hover:border-[#00A868]/30 transition-all">
+                                <div className="w-10 h-10 rounded-xl bg-[#00A868]/10 flex items-center justify-center shrink-0">
+                                    <span className="text-sm font-bold text-[#00A868]">{neg.clientName.charAt(0)}</span>
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-foreground truncate">{neg.clientName}</p>
@@ -478,11 +478,11 @@ export default function NegociacoesPage() {
                                             <button onClick={() => {
                                                 const idx = STAGES.findIndex(s => s.id === normalizeStatus(neg.status));
                                                 if (idx < STAGES.length - 2) changeStage(neg.id, STAGES[idx + 1].id);
-                                            }} className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20" title="Avançar estágio">
+                                            }} className="p-1.5 rounded-lg bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20" title="Avançar estágio">
                                                 <ArrowRight className="w-3.5 h-3.5" />
                                             </button>
                                         )}
-                                        <button onClick={() => shareWhatsApp(neg)} className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" title="WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></button>
+                                        <button onClick={() => shareWhatsApp(neg)} className="p-1.5 rounded-lg bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20" title="WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></button>
                                         <button onClick={() => deleteNeg(neg.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20"><Trash2 className="w-3.5 h-3.5" /></button>
                                     </div>
                                 </div>

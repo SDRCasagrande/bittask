@@ -113,7 +113,7 @@ export default function UsuariosPage() {
                     <p className="text-[11px] font-bold uppercase text-muted-foreground mb-2 tracking-wide">{group}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                         {keys.map(key => (
-                            <label key={key} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${perms.has(key) ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"}`}>
+                            <label key={key} className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${perms.has(key) ? "bg-[#00A868]/10 border-[#00A868]/30 text-[#00A868]" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"}`}>
                                 <input type="checkbox" checked={perms.has(key)} onChange={() => togglePerm(perms, setPerms, key)} className="sr-only" />
                                 <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${perms.has(key) ? "bg-emerald-500 border-emerald-500" : "border-muted-foreground/30"}`}>
                                     {perms.has(key) && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
@@ -127,7 +127,7 @@ export default function UsuariosPage() {
         </div>
     );
 
-    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>;
+    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-[#00A868]" /></div>;
 
     return (
         <div className="max-w-4xl mx-auto space-y-5">
@@ -156,7 +156,7 @@ export default function UsuariosPage() {
 
             {/* Message */}
             {msg && (
-                <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-red-500/10 text-red-600 border border-red-500/20"}`}>
+                <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${msg.type === "ok" ? "bg-[#00A868]/10 text-[#00A868] border border-[#00A868]/20" : "bg-red-500/10 text-red-600 border border-red-500/20"}`}>
                     {msg.type === "ok" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                     {msg.text}
                 </div>
@@ -167,25 +167,25 @@ export default function UsuariosPage() {
                 <div className="space-y-4">
                     <div className="flex justify-end">
                         <button onClick={() => setShowNewUser(!showNewUser)}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${showNewUser ? "bg-muted text-muted-foreground" : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20"}`}>
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${showNewUser ? "bg-muted text-muted-foreground" : "bg-[#00A868] hover:bg-[#00A868] text-white shadow-lg shadow-[#00A868]/20"}`}>
                             {showNewUser ? <><X className="w-4 h-4" /> Cancelar</> : <><UserPlus className="w-4 h-4" /> Novo Usuário</>}
                         </button>
                     </div>
 
                     {showNewUser && (
-                        <div className="bg-card border border-border rounded-2xl p-6">
-                            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5 text-emerald-500" /> Criar Novo Usuário</h2>
+                        <div className="card-elevated p-6">
+                            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5 text-[#00A868]" /> Criar Novo Usuário</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div><label className="block text-xs text-muted-foreground font-medium mb-1">Nome *</label>
-                                    <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="João Silva" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-emerald-500/50" /></div>
+                                    <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="João Silva" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50" /></div>
                                 <div><label className="block text-xs text-muted-foreground font-medium mb-1">Email de login *</label>
-                                    <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="joao@casa94.com" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-emerald-500/50" /></div>
+                                    <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="joao@casa94.com" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50" /></div>
                                 <div><label className="block text-xs text-muted-foreground font-medium mb-1">Senha *</label>
-                                    <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="Mínimo 6 caracteres" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-emerald-500/50" /></div>
+                                    <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="Mínimo 6 caracteres" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50" /></div>
                                 <div><label className="block text-xs text-muted-foreground font-medium mb-1">Email de notificação</label>
-                                    <input type="email" value={newNotifEmail} onChange={(e) => setNewNotifEmail(e.target.value)} placeholder="joao@gmail.com (opcional)" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-emerald-500/50" /></div>
+                                    <input type="email" value={newNotifEmail} onChange={(e) => setNewNotifEmail(e.target.value)} placeholder="joao@gmail.com (opcional)" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50" /></div>
                             </div>
-                            <button onClick={createUser} disabled={saving} className="mt-4 flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50">
+                            <button onClick={createUser} disabled={saving} className="mt-4 flex items-center gap-2 px-6 py-2.5 bg-[#00A868] hover:bg-[#00A868] text-white rounded-xl font-medium disabled:opacity-50">
                                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} {saving ? "Criando..." : "Criar Usuário"}
                             </button>
                         </div>
@@ -207,7 +207,7 @@ export default function UsuariosPage() {
                             <div key={user.id} className={`bg-card border rounded-2xl p-4 transition-all ${user.isActive ? "border-border" : "border-red-500/20 opacity-60"}`}>
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${user.isActive ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/10" : "bg-red-500/10 text-red-500 border border-red-500/10"}`}>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${user.isActive ? "bg-[#00A868]/10 text-[#00A868] border border-[#00A868]/10" : "bg-red-500/10 text-red-500 border border-red-500/10"}`}>
                                             {user.name.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="min-w-0">
@@ -220,7 +220,7 @@ export default function UsuariosPage() {
                                             <div className="flex items-center gap-2 mt-0.5">
                                                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                                                 <select value={user.roleId || ""} onChange={e => assignRole(user.id, e.target.value || null)}
-                                                    className="text-[11px] bg-transparent border border-border rounded-lg px-2 py-0.5 text-muted-foreground focus:outline-none focus:border-emerald-500/50 max-w-[130px]">
+                                                    className="text-[11px] bg-transparent border border-border rounded-lg px-2 py-0.5 text-muted-foreground focus:outline-none focus:border-[#00A868]/50 max-w-[130px]">
                                                     <option value="">Sem cargo</option>
                                                     {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                                                 </select>
@@ -229,10 +229,10 @@ export default function UsuariosPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5 shrink-0">
-                                        <button onClick={() => toggleActive(user)} className={`p-2 rounded-lg text-xs font-medium transition-all ${user.isActive ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20" : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"}`} title={user.isActive ? "Desativar" : "Ativar"}>
+                                        <button onClick={() => toggleActive(user)} className={`p-2 rounded-lg text-xs font-medium transition-all ${user.isActive ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20" : "bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20"}`} title={user.isActive ? "Desativar" : "Ativar"}>
                                             {user.isActive ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
                                         </button>
-                                        <button onClick={() => { setResetId(user.id); setResetPw(""); }} className="p-2 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20" title="Resetar senha"><KeyRound className="w-4 h-4" /></button>
+                                        <button onClick={() => { setResetId(user.id); setResetPw(""); }} className="p-2 rounded-lg bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20" title="Resetar senha"><KeyRound className="w-4 h-4" /></button>
                                         <button onClick={() => deleteUser(user.id, user.name)} className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20" title="Excluir"><Trash2 className="w-4 h-4" /></button>
                                     </div>
                                 </div>
@@ -247,22 +247,22 @@ export default function UsuariosPage() {
                 <div className="space-y-4">
                     <div className="flex justify-end">
                         <button onClick={() => setShowNewRole(!showNewRole)}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${showNewRole ? "bg-muted text-muted-foreground" : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20"}`}>
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${showNewRole ? "bg-muted text-muted-foreground" : "bg-[#00A868] hover:bg-[#00A868] text-white shadow-lg shadow-[#00A868]/20"}`}>
                             {showNewRole ? <><X className="w-4 h-4" /> Cancelar</> : <><Plus className="w-4 h-4" /> Novo Cargo</>}
                         </button>
                     </div>
 
                     {showNewRole && (
-                        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-                            <h2 className="text-lg font-semibold flex items-center gap-2"><Plus className="w-5 h-5 text-emerald-500" /> Criar Novo Cargo</h2>
+                        <div className="card-elevated p-6 space-y-4">
+                            <h2 className="text-lg font-semibold flex items-center gap-2"><Plus className="w-5 h-5 text-[#00A868]" /> Criar Novo Cargo</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div><label className="block text-xs text-muted-foreground font-medium mb-1">Nome *</label>
-                                    <input value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="Ex: Consultor Sênior" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-emerald-500/50" /></div>
+                                    <input value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="Ex: Consultor Sênior" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50" /></div>
                                 <div><label className="block text-xs text-muted-foreground font-medium mb-1">Descrição</label>
-                                    <input value={roleDesc} onChange={(e) => setRoleDesc(e.target.value)} placeholder="Breve descrição" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-emerald-500/50" /></div>
+                                    <input value={roleDesc} onChange={(e) => setRoleDesc(e.target.value)} placeholder="Breve descrição" className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50" /></div>
                             </div>
                             <PermGrid perms={rolePerms} setPerms={setRolePerms} />
-                            <button onClick={createRole} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50">
+                            <button onClick={createRole} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-[#00A868] hover:bg-[#00A868] text-white rounded-xl font-medium disabled:opacity-50">
                                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} {saving ? "Criando..." : "Criar Cargo"}
                             </button>
                         </div>
@@ -270,14 +270,14 @@ export default function UsuariosPage() {
 
                     <div className="space-y-3">
                         {roles.map((role) => (
-                            <div key={role.id} className="bg-card border border-border rounded-2xl overflow-hidden">
+                            <div key={role.id} className="card-elevated overflow-hidden">
                                 <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => toggleExpand(role)}>
                                     <div className="flex items-center gap-3 min-w-0">
                                         <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 border border-purple-500/10 flex items-center justify-center shrink-0"><Shield className="w-5 h-5" /></div>
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <p className="text-sm font-semibold text-foreground">{role.name}</p>
-                                                <span className="text-[10px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><Users className="w-3 h-3" /> {role._count.users}</span>
+                                                <span className="text-[10px] bg-[#00A868]/10 text-[#00A868] px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><Users className="w-3 h-3" /> {role._count.users}</span>
                                                 <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{role.permissions.length} permissões</span>
                                             </div>
                                             {role.description && <p className="text-xs text-muted-foreground truncate">{role.description}</p>}

@@ -119,7 +119,7 @@ export default function PermissoesPage() {
                         {keys.map(key => (
                             <label key={key}
                                 className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${
-                                    perms.has(key) ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
+                                    perms.has(key) ? "bg-[#00A868]/10 border-[#00A868]/30 text-[#00A868]" : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
                                 }`}
                             >
                                 <input type="checkbox" checked={perms.has(key)} onChange={() => togglePerm(perms, setPerms, key)}
@@ -140,7 +140,7 @@ export default function PermissoesPage() {
 
     if (loading) return (
         <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#00A868]" />
         </div>
     );
 
@@ -159,7 +159,7 @@ export default function PermissoesPage() {
                 </div>
                 <button onClick={() => setShowNew(!showNew)}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        showNew ? "bg-muted text-muted-foreground" : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20"
+                        showNew ? "bg-muted text-muted-foreground" : "bg-[#00A868] hover:bg-[#00A868] text-white shadow-lg shadow-[#00A868]/20"
                     }`}>
                     {showNew ? <><X className="w-4 h-4" /> Cancelar</> : <><Plus className="w-4 h-4" /> Novo Cargo</>}
                 </button>
@@ -168,7 +168,7 @@ export default function PermissoesPage() {
             {/* Message */}
             {msg && (
                 <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-medium ${
-                    msg.type === "ok" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-red-500/10 text-red-600 border border-red-500/20"
+                    msg.type === "ok" ? "bg-[#00A868]/10 text-[#00A868] border border-[#00A868]/20" : "bg-red-500/10 text-red-600 border border-red-500/20"
                 }`}>
                     {msg.type === "ok" ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                     {msg.text}
@@ -177,23 +177,23 @@ export default function PermissoesPage() {
 
             {/* New Role Form */}
             {showNew && (
-                <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-                    <h2 className="text-lg font-semibold flex items-center gap-2"><Plus className="w-5 h-5 text-emerald-500" /> Criar Novo Cargo</h2>
+                <div className="card-elevated p-6 space-y-4">
+                    <h2 className="text-lg font-semibold flex items-center gap-2"><Plus className="w-5 h-5 text-[#00A868]" /> Criar Novo Cargo</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                             <label className="block text-xs text-muted-foreground font-medium mb-1">Nome *</label>
                             <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Ex: Consultor Sênior"
-                                className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-emerald-500/50 transition-colors" />
+                                className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 transition-colors" />
                         </div>
                         <div>
                             <label className="block text-xs text-muted-foreground font-medium mb-1">Descrição</label>
                             <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="Breve descrição do cargo"
-                                className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-emerald-500/50 transition-colors" />
+                                className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 transition-colors" />
                         </div>
                     </div>
                     <PermGrid perms={newPerms} setPerms={setNewPerms} />
                     <button onClick={createRole} disabled={saving}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50">
+                        className="flex items-center gap-2 px-6 py-2.5 bg-[#00A868] hover:bg-[#00A868] text-white rounded-xl font-medium transition-colors disabled:opacity-50">
                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                         {saving ? "Criando..." : "Criar Cargo"}
                     </button>
@@ -203,7 +203,7 @@ export default function PermissoesPage() {
             {/* Roles List */}
             <div className="space-y-3">
                 {roles.map((role) => (
-                    <div key={role.id} className="bg-card border border-border rounded-2xl overflow-hidden transition-all">
+                    <div key={role.id} className="card-elevated overflow-hidden transition-all">
                         <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => toggleExpand(role)}>
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 border border-purple-500/10 flex items-center justify-center shrink-0">
@@ -212,7 +212,7 @@ export default function PermissoesPage() {
                                 <div className="min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <p className="text-sm font-semibold text-foreground">{role.name}</p>
-                                        <span className="text-[10px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                        <span className="text-[10px] bg-[#00A868]/10 text-[#00A868] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
                                             <Users className="w-3 h-3" /> {role._count.users}
                                         </span>
                                         <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">

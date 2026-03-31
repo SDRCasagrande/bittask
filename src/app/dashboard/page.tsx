@@ -32,7 +32,7 @@ const STAGE_LABELS: Record<string, { label: string; color: string; dot: string }
     prospeccao: { label: "Prospecção", color: "text-slate-500 bg-slate-500/10", dot: "bg-slate-500" },
     proposta_enviada: { label: "Proposta", color: "text-blue-500 bg-blue-500/10", dot: "bg-blue-500" },
     aguardando_cliente: { label: "Aguardando", color: "text-amber-500 bg-amber-500/10", dot: "bg-amber-500" },
-    aprovado: { label: "Aprovado", color: "text-emerald-500 bg-emerald-500/10", dot: "bg-emerald-500" },
+    aprovado: { label: "Aprovado", color: "text-[#00A868] bg-[#00A868]/10", dot: "bg-emerald-500" },
     recusado: { label: "Recusado", color: "text-red-500 bg-red-500/10", dot: "bg-red-500" },
     fechado: { label: "Fechado", color: "text-purple-500 bg-purple-500/10", dot: "bg-purple-500" },
 };
@@ -56,7 +56,7 @@ export default function DashboardPage() {
     if (loading) return (
         <div className="flex items-center justify-center h-64">
             <div className="text-center space-y-3">
-                <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mx-auto" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#00A868] mx-auto" />
                 <p className="text-sm text-muted-foreground">Carregando dashboard...</p>
             </div>
         </div>
@@ -291,8 +291,8 @@ export default function DashboardPage() {
                                 prospeccao: { color: "text-slate-500 bg-slate-500/10", label: "Prospecção" },
                                 proposta_enviada: { color: "text-blue-500 bg-blue-500/10", label: "Proposta" },
                                 aguardando_cliente: { color: "text-amber-500 bg-amber-500/10", label: "Aguardando" },
-                                aprovado: { color: "text-emerald-500 bg-emerald-500/10", label: "Aprovado" },
-                                aceita: { color: "text-emerald-500 bg-emerald-500/10", label: "Aprovado" },
+                                aprovado: { color: "text-[#00A868] bg-[#00A868]/10", label: "Aprovado" },
+                                aceita: { color: "text-[#00A868] bg-[#00A868]/10", label: "Aprovado" },
                                 recusado: { color: "text-red-500 bg-red-500/10", label: "Recusado" },
                                 recusada: { color: "text-red-500 bg-red-500/10", label: "Recusado" },
                                 fechado: { color: "text-purple-500 bg-purple-500/10", label: "Fechado" },
