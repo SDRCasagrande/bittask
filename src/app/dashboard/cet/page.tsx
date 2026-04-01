@@ -396,38 +396,48 @@ tr:nth-child(even){background:#fafafa}
                         <div className={`px-3 pb-3 border-t border-border/30 space-y-2 ${openSection === "taxas" ? "block" : "hidden lg:block"}`}>
                             {/* Brand Toggle Grid */}
                             <div className="grid grid-cols-2 gap-1.5 mt-2">
-                                {ALL_BRANDS.map((b) => (
-                                    <button key={b}
-                                        onClick={() => { setActiveBrand(b); if (!enabledBrands[b]) toggleBrand(b); }}
-                                        className={`relative flex items-center gap-2 px-2.5 py-2 rounded-xl text-left transition-all ${
-                                            enabledBrands[b]
-                                                ? activeBrand === b
+                                {ALL_BRANDS.map((b) => {
+                                    const isEnabled = enabledBrands[b];
+                                    const isSelected = activeBrand === b && isEnabled;
+                                    return (
+                                        <button key={b}
+                                            onClick={() => {
+                                                if (!isEnabled) {
+                                                    // Inactive → activate + select
+                                                    toggleBrand(b); setActiveBrand(b);
+                                                } else if (isSelected) {
+                                                    // Already selected → deactivate
+                                                    toggleBrand(b);
+                                                    const next = ALL_BRANDS.find(k => k !== b && enabledBrands[k]);
+                                                    if (next) setActiveBrand(next);
+                                                } else {
+                                                    // Active not selected → select for editing
+                                                    setActiveBrand(b);
+                                                }
+                                            }}
+                                            className={`flex items-center gap-2 px-2.5 py-2 rounded-xl text-left transition-all ${
+                                                isSelected
                                                     ? "bg-[#00A868]/10 border-2 border-[#00A868] shadow-sm shadow-[#00A868]/10"
-                                                    : "bg-[#00A868]/5 border-2 border-[#00A868]/30 hover:border-[#00A868]/60"
-                                                : "bg-secondary/30 border-2 border-transparent opacity-50 hover:opacity-70"
-                                        }`}>
-                                        <div className={`w-3 h-3 rounded-full shrink-0 flex items-center justify-center ${enabledBrands[b] ? "bg-[#00A868]" : "bg-muted-foreground/20 border border-muted-foreground/30"}`}>
-                                            {enabledBrands[b] && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                                        </div>
-                                        <span className={`text-[11px] font-bold truncate ${enabledBrands[b] ? "text-foreground" : "text-muted-foreground/50 line-through"}`}>{b}</span>
-                                        {activeBrand === b && enabledBrands[b] && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#00A868] ring-2 ring-card" />}
-                                        {/* Disable button */}
-                                        {enabledBrands[b] && (
-                                            <div onClick={(e) => { e.stopPropagation(); toggleBrand(b); }}
-                                                className="ml-auto w-4 h-4 rounded-full flex items-center justify-center text-[8px] text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors shrink-0" title="Desativar">✕</div>
-                                        )}
-                                        {!BRAND_PRESETS[b] && !enabledBrands[b] && (
-                                            <div onClick={(e) => {
-                                                e.stopPropagation();
-                                                const next = { ...brandRates }; delete next[b];
-                                                setBrandRates(next);
-                                                const ne = { ...enabledBrands }; delete ne[b];
-                                                setEnabledBrands(ne);
-                                                if (activeBrand === b) setActiveBrand(Object.keys(next)[0]);
-                                            }} className="ml-auto w-4 h-4 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-[8px] hover:bg-red-500/20 transition-colors shrink-0">🗑</div>
-                                        )}
-                                    </button>
-                                ))}
+                                                    : isEnabled
+                                                        ? "bg-[#00A868]/5 border-2 border-[#00A868]/30 hover:border-[#00A868]/60"
+                                                        : "bg-secondary/30 border-2 border-transparent opacity-40 hover:opacity-60"
+                                            }`}>
+                                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isEnabled ? "bg-[#00A868]" : "bg-muted-foreground/20"}`} />
+                                            <span className={`text-[11px] font-bold truncate ${isEnabled ? "text-foreground" : "text-muted-foreground/50 line-through"}`}>{b}</span>
+                                            {/* Only custom brands (not in presets) show delete when disabled */}
+                                            {!BRAND_PRESETS[b] && !isEnabled && (
+                                                <div onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const next = { ...brandRates }; delete next[b];
+                                                    setBrandRates(next);
+                                                    const ne = { ...enabledBrands }; delete ne[b];
+                                                    setEnabledBrands(ne);
+                                                    if (activeBrand === b) setActiveBrand(Object.keys(next)[0]);
+                                                }} className="ml-auto w-4 h-4 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-[8px] hover:bg-red-500/20 transition-colors shrink-0">🗑</div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
                                 {/* Add Brand */}
                                 {showNewBrand ? (
                                     <div className="flex items-center gap-1.5 p-2 rounded-xl bg-[#00A868]/5 border border-[#00A868]/20">

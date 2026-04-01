@@ -94,27 +94,66 @@ function StageBadge({ status }: { status: string }) {
 /* ═══ RATES FORM (simplified for Kanban modal) ═══ */
 function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot) => void }) {
     const [activeBrand, setActiveBrand] = useState("VISA/MASTER");
+    const [enabledBrands, setEnabledBrands] = useState<Record<string, boolean>>(() => {
+        const eb: Record<string, boolean> = {};
+        Object.keys(rates.brandRates || defaultBrandRates()).forEach(b => eb[b] = ["VISA/MASTER", "ELO"].includes(b));
+        return eb;
+    });
     const br = rates.brandRates || defaultBrandRates();
     const cb = br[activeBrand] || { debit: rates.debit, credit1x: rates.credit1x, credit2to6: rates.credit2to6, credit7to12: rates.credit7to12 };
     function up(f: string, v: number) { const n = { ...br, [activeBrand]: { ...cb, [f]: v } }; const vm = n["VISA/MASTER"] || cb; set({ ...rates, brandRates: n, debit: vm.debit, credit1x: vm.credit1x, credit2to6: vm.credit2to6, credit7to12: vm.credit7to12 }); }
+
+    function handleBrandClick(b: string) {
+        const isEnabled = enabledBrands[b] !== false;
+        const isSelected = activeBrand === b;
+
+        if (!isEnabled) {
+            // Inactive → activate + select
+            setEnabledBrands(prev => ({ ...prev, [b]: true }));
+            setActiveBrand(b);
+        } else if (isSelected) {
+            // Already selected → deactivate
+            setEnabledBrands(prev => ({ ...prev, [b]: false }));
+            const next = Object.keys(br).find(k => k !== b && enabledBrands[k]);
+            if (next) setActiveBrand(next);
+        } else {
+            // Active but not selected → select for editing
+            setActiveBrand(b);
+        }
+    }
+
     return (
         <div className="space-y-3">
             <div className="flex gap-1.5 flex-wrap">
-                {Object.keys(br).map(b => (
-                    <button key={b} type="button" onClick={() => setActiveBrand(b)}
-                        className={`px-2.5 py-1 text-xs rounded-lg font-semibold ${activeBrand === b ? "bg-[#00A868]/20 text-[#00A868] ring-1 ring-[#00A868]/40" : "bg-secondary text-muted-foreground hover:bg-muted"}`}>{b}</button>
-                ))}
+                {Object.keys(br).map(b => {
+                    const isEnabled = enabledBrands[b] !== false;
+                    const isSelected = activeBrand === b && isEnabled;
+                    return (
+                        <button key={b} type="button" onClick={() => handleBrandClick(b)}
+                            className={`px-3 py-1.5 text-xs rounded-xl font-bold transition-all ${
+                                isSelected
+                                    ? "bg-[#00A868]/15 text-[#00A868] border-2 border-[#00A868] shadow-sm shadow-[#00A868]/10"
+                                    : isEnabled
+                                        ? "bg-[#00A868]/5 text-foreground border-2 border-[#00A868]/25 hover:border-[#00A868]/50"
+                                        : "bg-secondary/30 text-muted-foreground/40 border-2 border-transparent line-through opacity-40 hover:opacity-60"
+                            }`}>{b}</button>
+                    );
+                })}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <RI l="Débito" v={cb.debit} set={v => up("debit", v)} />
-                <RI l="Crédito 1x" v={cb.credit1x} set={v => up("credit1x", v)} />
-                <RI l="2-6x" v={cb.credit2to6} set={v => up("credit2to6", v)} />
-                <RI l="7-12x" v={cb.credit7to12} set={v => up("credit7to12", v)} />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-                <RI l="PIX" v={rates.pix} set={v => set({ ...rates, pix: v })} />
-                <RI l="RAV" v={rates.ravRate ?? rates.rav} set={v => set({ ...rates, ravRate: v, rav: v })} />
-            </div>
+            {enabledBrands[activeBrand] !== false && (
+                <>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <RI l="Débito" v={cb.debit} set={v => up("debit", v)} />
+                        <RI l="Crédito 1x" v={cb.credit1x} set={v => up("credit1x", v)} />
+                        <RI l="2-6x" v={cb.credit2to6} set={v => up("credit2to6", v)} />
+                        <RI l="7-12x" v={cb.credit7to12} set={v => up("credit7to12", v)} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        <RI l="PIX" v={rates.pix} set={v => set({ ...rates, pix: v })} />
+                        <RI l="RAV" v={rates.ravRate ?? rates.rav} set={v => set({ ...rates, ravRate: v, rav: v })} />
+                    </div>
+                </>
+            )}
         </div>
     );
 }

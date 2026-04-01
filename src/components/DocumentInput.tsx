@@ -75,7 +75,7 @@ export function DocumentInput({
 
     useEffect(() => {
         if (nums.length === 14) fetchCNPJ(value);
-    }, [nums.length === 14]);
+    }, [nums]);
 
     function handleChange(raw: string) {
         const formatted = formatarDocumento(raw);
