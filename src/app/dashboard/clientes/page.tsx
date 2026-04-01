@@ -82,6 +82,7 @@ export default function ClientesPage() {
     const [negStatus, setNegStatus] = useState("prospeccao");
     const [negRates, setNegRates] = useState<NegRatesForm>({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
     const [negNotes, setNegNotes] = useState("");
+    const [negAlertDate, setNegAlertDate] = useState("");
     const [negSaving, setNegSaving] = useState(false);
 
     const handleAddNeg = async () => {
@@ -92,6 +93,7 @@ export default function ClientesPage() {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     dateNeg: negDate, status: negStatus, notes: negNotes,
+                    alertDate: negAlertDate || undefined,
                     rates: {
                         debit: parseFloat(negRates.debit) || 0, credit1x: parseFloat(negRates.credit1x) || 0,
                         credit2to6: parseFloat(negRates.credit2to6) || 0, credit7to12: parseFloat(negRates.credit7to12) || 0,
@@ -102,7 +104,7 @@ export default function ClientesPage() {
             loadClients();
             setShowNewNeg(false);
             setNegRates({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
-            setNegNotes("");
+            setNegNotes(""); setNegAlertDate("");
             setNegStatus("prospeccao");
         } catch { /* */ } finally { setNegSaving(false); }
     };
@@ -268,6 +270,9 @@ export default function ClientesPage() {
                         </div>
                     </div>
                     <div className="flex gap-1.5">
+                        <button onClick={() => { setTab("negs"); setShowNewNeg(true); }} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#00A868] text-white text-xs font-bold hover:bg-[#008f58] shadow-sm shadow-[#00A868]/20" title="Nova Renegociação">
+                            <TrendingUp className="w-3.5 h-3.5" /> Renegociar
+                        </button>
                         <button onClick={() => shareWhatsApp(sel)} className="p-2 rounded-xl bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20" title="WhatsApp"><MessageSquare className="w-4 h-4" /></button>
                         {sel.status === "ativo" ? (
                             <button onClick={() => handleCancelClient(sel.id)} className="p-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20" title="Cancelar"><XCircle className="w-4 h-4" /></button>
@@ -523,6 +528,22 @@ export default function ClientesPage() {
                                 <div><label className="text-xs font-medium text-muted-foreground block mb-1">Observações</label>
                                     <textarea value={negNotes} onChange={e => setNegNotes(e.target.value)} rows={2} placeholder="Notas sobre a renegociação..."
                                         className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-sm focus:outline-none resize-none" /></div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div><label className="text-xs font-medium text-muted-foreground block mb-1">🔔 Alerta de Renegociação</label>
+                                        <input type="date" value={negAlertDate} onChange={e => setNegAlertDate(e.target.value)}
+                                            className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-sm focus:outline-none [color-scheme:dark]" />
+                                        <p className="text-[9px] text-muted-foreground/60 mt-0.5">Agendar lembrete para renegociar</p>
+                                    </div>
+                                    {negAlertDate && (
+                                        <div className="flex items-end pb-1">
+                                            <a href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Renegociar — ${sel?.name}`)}&dates=${negAlertDate.replace(/-/g, '')}T090000Z/${negAlertDate.replace(/-/g, '')}T100000Z&details=${encodeURIComponent(`Cliente: ${sel?.name}\nCNPJ: ${sel?.cnpj}\n\n— BitTask`)}`}
+                                                target="_blank" rel="noopener noreferrer"
+                                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/10 text-blue-500 text-xs font-bold hover:bg-blue-500/20 transition-colors">
+                                                <Calendar className="w-3.5 h-3.5" /> Google Calendar
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
                                 <button onClick={handleAddNeg} disabled={negSaving}
                                     className="w-full py-2.5 bg-[#00A868] text-white rounded-xl text-sm font-bold hover:bg-[#008f58] disabled:opacity-50 flex items-center justify-center gap-2">
                                     {negSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Salvar Renegociação
