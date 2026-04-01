@@ -7,8 +7,9 @@ import Image from "next/image";
 import {
     LayoutDashboard, Calculator, FileBarChart, GitCompare,
     Handshake, Settings, Users, LogOut, Menu, X, ChevronRight,
-    CheckSquare, Briefcase, MoreHorizontal, Plus
+    CheckSquare, Briefcase, MoreHorizontal, Plus, Search, Bell
 } from "lucide-react";
+import CommandPalette from "@/components/CommandPalette";
 
 /* ═══ Navigation Items ═══ */
 const MAIN_NAV = [
@@ -209,6 +210,15 @@ export default function DashboardLayout({
 
                     {/* Right side */}
                     <div className="flex items-center gap-2">
+                        <button onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted/50 border border-border rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
+                            <Search className="w-3.5 h-3.5" />
+                            <span className="text-xs">Buscar...</span>
+                            <kbd className="hidden md:inline text-[9px] font-mono bg-background px-1.5 py-0.5 rounded border border-border">Ctrl+K</kbd>
+                        </button>
+                        <button onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))} className="sm:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground">
+                            <Search className="w-4 h-4" />
+                        </button>
                         {user && (
                             <Link href="/dashboard/configuracoes" className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-[#00A868]/10 flex items-center justify-center text-xs font-bold text-[#00A868]">
@@ -224,6 +234,9 @@ export default function DashboardLayout({
                 <main className="flex-1 p-4 lg:p-6 overflow-y-auto main-content">
                     {children}
                 </main>
+
+                {/* Command Palette (Ctrl+K) */}
+                <CommandPalette />
             </div>
 
             {/* ═══ MOBILE: Bottom Navigation Bar (< lg) ═══ */}

@@ -217,7 +217,90 @@ export default function DashboardPage() {
                 )}
             </div>
 
-            {/* ═══ Painel de Controle (Stone-style Activity Feed) ═══ */}
+            {/* ═══ Visual Charts Row ═══ */}
+            {metrics && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Conversion Donut */}
+                    <div className="card-elevated p-5">
+                        <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-[#00A868]/10 flex items-center justify-center"><Target className="w-3.5 h-3.5 text-[#00A868]" /></div>
+                            Taxa de Conversão
+                        </h3>
+                        <div className="flex items-center gap-6">
+                            <div className="relative w-24 h-24 shrink-0">
+                                <svg className="w-24 h-24 -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="3" className="text-muted/30" />
+                                    <circle cx="18" cy="18" r="14" fill="none" stroke="#00A868" strokeWidth="3"
+                                        strokeDasharray={`${(metrics.conversionRate || 0) * 0.88} 88`}
+                                        strokeLinecap="round" className="transition-all duration-1000" />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-lg font-black text-[#00A868]">{(metrics.conversionRate || 0).toFixed(0)}%</span>
+                                </div>
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#00A868]" /> Aprovadas</span>
+                                    <span className="font-bold text-foreground">{metrics.acceptedNeg}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500" /> Recusadas</span>
+                                    <span className="font-bold text-foreground">{metrics.rejectedNeg}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-500" /> Pendentes</span>
+                                    <span className="font-bold text-foreground">{metrics.pendingNeg}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-xs pt-1 border-t border-border">
+                                    <span className="text-muted-foreground">Total</span>
+                                    <span className="font-bold text-foreground">{metrics.totalNegotiations}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Portfolio TPV Breakdown */}
+                    <div className="card-elevated p-5">
+                        <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center"><DollarSign className="w-3.5 h-3.5 text-indigo-500" /></div>
+                            Portfolio {portfolio.month ? `— ${fmtMonth(portfolio.month)}` : ""}
+                        </h3>
+                        {portfolio.tpvTotal > 0 ? (
+                            <div className="space-y-3">
+                                <div className="text-center mb-3">
+                                    <p className="text-2xl font-black text-foreground">{fmtMoney(portfolio.tpvTotal)}</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">TPV Total</p>
+                                </div>
+                                <div className="flex h-8 rounded-xl overflow-hidden bg-muted">
+                                    <div className="bg-[#00A868] flex items-center justify-center text-[9px] font-bold text-white" style={{ width: `${Math.max((portfolio.revenueTotal / (portfolio.tpvTotal || 1)) * 100, 5)}%` }}>
+                                        Receita
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div className="bg-indigo-500/5 rounded-lg p-2">
+                                        <p className="text-xs font-black text-indigo-500">{fmtMoney(portfolio.revenueTotal)}</p>
+                                        <p className="text-[9px] text-muted-foreground font-bold uppercase">Receita</p>
+                                    </div>
+                                    <div className="bg-purple-500/5 rounded-lg p-2">
+                                        <p className="text-xs font-black text-purple-500">{fmtMoney(portfolio.agentCommission)}</p>
+                                        <p className="text-[9px] text-muted-foreground font-bold uppercase">Comissão</p>
+                                    </div>
+                                    <div className="bg-[#00A868]/5 rounded-lg p-2">
+                                        <p className="text-xs font-black text-[#00A868]">{((portfolio.agentCommission / (portfolio.tpvTotal || 1)) * 100).toFixed(3)}%</p>
+                                        <p className="text-[9px] text-muted-foreground font-bold uppercase">Margem</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-6 text-sm text-muted-foreground">
+                                <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" /> Nenhum TPV registrado
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ═══ Painel de Controle (Activity Feed) ═══ */}
             <ActivityPanel />
 
             {/* ═══ Row: Average Rates + Quick Actions ═══ */}

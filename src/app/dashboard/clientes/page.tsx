@@ -156,7 +156,7 @@ export default function ClientesPage() {
             txt += `Comissão Agente (10%): ${fmtMoney(comm.agent)}\n`;
         }
         txt += `\n— BitTask`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
+        window.open(`https://wa.me/${c.phone?.replace(/\D/g, "") || ""}?text=${encodeURIComponent(txt)}`, "_blank");
     }
 
     if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-[#00A868]" /></div>;
