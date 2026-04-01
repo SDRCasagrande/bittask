@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { exchangeCode } from '@/lib/google-calendar';
+import { encrypt } from '@/lib/encryption';
 
 export async function GET(request: NextRequest) {
     try {
@@ -25,18 +26,21 @@ export async function GET(request: NextRequest) {
             return NextResponse.redirect(new URL('/dashboard/configuracoes?gcal=error', request.url));
         }
 
-        // Upsert the token record
+        // Upsert the token record (encrypted)
+        const encAccessToken = encrypt(tokens.access_token);
+        const encRefreshToken = encrypt(tokens.refresh_token || '');
+
         await prisma.googleCalendarToken.upsert({
             where: { userId: state },
             update: {
-                accessToken: tokens.access_token,
-                refreshToken: tokens.refresh_token || '',
+                accessToken: encAccessToken,
+                refreshToken: encRefreshToken,
                 expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : new Date(Date.now() + 3600 * 1000),
             },
             create: {
                 userId: state,
-                accessToken: tokens.access_token,
-                refreshToken: tokens.refresh_token || '',
+                accessToken: encAccessToken,
+                refreshToken: encRefreshToken,
                 expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : new Date(Date.now() + 3600 * 1000),
             },
         });

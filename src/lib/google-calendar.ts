@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { prisma } from './prisma';
+import { encrypt, decrypt, isEncrypted } from './encryption';
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 
@@ -40,8 +41,8 @@ export async function getCalendarClient(userId: string) {
 
     const client = getOAuthClient();
     client.setCredentials({
-        access_token: tokenRecord.accessToken,
-        refresh_token: tokenRecord.refreshToken,
+        access_token: isEncrypted(tokenRecord.accessToken) ? decrypt(tokenRecord.accessToken) : tokenRecord.accessToken,
+        refresh_token: isEncrypted(tokenRecord.refreshToken) ? decrypt(tokenRecord.refreshToken) : tokenRecord.refreshToken,
         expiry_date: tokenRecord.expiresAt.getTime(),
     });
 
@@ -52,7 +53,7 @@ export async function getCalendarClient(userId: string) {
             await prisma.googleCalendarToken.update({
                 where: { userId },
                 data: {
-                    accessToken: credentials.access_token || tokenRecord.accessToken,
+                    accessToken: encrypt(credentials.access_token || (isEncrypted(tokenRecord.accessToken) ? decrypt(tokenRecord.accessToken) : tokenRecord.accessToken)),
                     expiresAt: credentials.expiry_date ? new Date(credentials.expiry_date) : tokenRecord.expiresAt,
                 },
             });
