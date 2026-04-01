@@ -83,7 +83,10 @@ export default function ClientesPage() {
     const [negRates, setNegRates] = useState<NegRatesForm>({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
     const [negNotes, setNegNotes] = useState("");
     const [negAlertDate, setNegAlertDate] = useState("");
+    const [negCreateTask, setNegCreateTask] = useState(true);
+    const [negTaskAssignee, setNegTaskAssignee] = useState("");
     const [negSaving, setNegSaving] = useState(false);
+    const [teamUsers, setTeamUsers] = useState<{id: string; name: string; email: string}[]>([]);
 
     const handleAddNeg = async () => {
         if (!sel) return;
@@ -94,6 +97,8 @@ export default function ClientesPage() {
                 body: JSON.stringify({
                     dateNeg: negDate, status: negStatus, notes: negNotes,
                     alertDate: negAlertDate || undefined,
+                    createTask: negCreateTask,
+                    taskAssigneeId: negTaskAssignee || undefined,
                     rates: {
                         debit: parseFloat(negRates.debit) || 0, credit1x: parseFloat(negRates.credit1x) || 0,
                         credit2to6: parseFloat(negRates.credit2to6) || 0, credit7to12: parseFloat(negRates.credit7to12) || 0,
@@ -105,12 +110,13 @@ export default function ClientesPage() {
             setShowNewNeg(false);
             setNegRates({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
             setNegNotes(""); setNegAlertDate("");
-            setNegStatus("prospeccao");
+            setNegStatus("prospeccao"); setNegCreateTask(true); setNegTaskAssignee("");
         } catch { /* */ } finally { setNegSaving(false); }
     };
 
     const loadClients = useCallback(async () => { try { const r = await fetch("/api/clients"); const d = await r.json(); if (Array.isArray(d)) setClients(d); } catch { } finally { setLoading(false); } }, []);
-    useEffect(() => { loadClients(); }, [loadClients]);
+    const loadUsers = useCallback(async () => { try { const r = await fetch("/api/admin/users"); const d = await r.json(); if (Array.isArray(d)) setTeamUsers(d.map((u: any) => ({ id: u.id, name: u.name, email: u.email }))); } catch { } }, []);
+    useEffect(() => { loadClients(); loadUsers(); }, [loadClients, loadUsers]);
 
     const sel = clients.find(c => c.id === selId);
     const filtered = clients.filter(c => {
@@ -541,6 +547,29 @@ export default function ClientesPage() {
                                                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/10 text-blue-500 text-xs font-bold hover:bg-blue-500/20 transition-colors">
                                                 <Calendar className="w-3.5 h-3.5" /> Google Calendar
                                             </a>
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Task auto-creation */}
+                                <div className={`rounded-xl p-3 transition-all ${negCreateTask ? "bg-blue-500/5 border border-blue-500/20" : "bg-secondary/30 border border-border/30"}`}>
+                                    <label className="flex items-center gap-2.5 cursor-pointer">
+                                        <div className={`relative w-9 h-5 rounded-full transition-colors ${negCreateTask ? 'bg-blue-500' : 'bg-secondary border border-border'}`}
+                                            onClick={() => setNegCreateTask(!negCreateTask)}>
+                                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${negCreateTask ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                        </div>
+                                        <div>
+                                            <span className="text-xs font-bold text-foreground">📋 Criar Tarefa de Acompanhamento</span>
+                                            <p className="text-[9px] text-muted-foreground/60">Gera tarefa automática para validar/acompanhar</p>
+                                        </div>
+                                    </label>
+                                    {negCreateTask && (
+                                        <div className="mt-2 pt-2 border-t border-border/30">
+                                            <label className="text-[10px] font-medium text-muted-foreground block mb-1">Atribuir tarefa para</label>
+                                            <select value={negTaskAssignee} onChange={e => setNegTaskAssignee(e.target.value)}
+                                                className="w-full px-2.5 py-1.5 rounded-lg bg-secondary border border-border text-xs focus:outline-none">
+                                                <option value="">Eu mesmo</option>
+                                                {teamUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                            </select>
                                         </div>
                                     )}
                                 </div>

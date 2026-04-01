@@ -31,6 +31,52 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             include: { assignee: { select: { id: true, name: true, email: true } } },
         });
 
+        // Auto-create task if requested
+        if (body.createTask) {
+            const assigneeId = body.taskAssigneeId || body.assigneeId || null;
+            const statusLabels: Record<string, string> = {
+                prospeccao: "Prospecção", proposta_enviada: "Proposta Enviada",
+                aguardando_cliente: "Aguardando Cliente", aprovado: "Aprovado",
+                recusado: "Recusado", fechado: "Fechado",
+            };
+            const stLabel = statusLabels[status] || status;
+
+            // Find or create a default list for the current user
+            let list = await prisma.taskList.findFirst({
+                where: { userId: session.userId },
+                orderBy: { createdAt: "asc" },
+            });
+            if (!list) {
+                list = await prisma.taskList.create({
+                    data: { name: "Minhas Tarefas", userId: session.userId },
+                });
+            }
+
+            const rates = body.rates || {};
+            const taskTitle = `📋 Renegociação — ${client.name} [${stLabel}]`;
+            const taskDesc = [
+                `Cliente: ${client.name}`,
+                client.stoneCode ? `Stone Code: ${client.stoneCode}` : "",
+                client.cnpj ? `CNPJ: ${client.cnpj}` : "",
+                `Taxas: Déb ${rates.debit || 0}% | 1x ${rates.credit1x || 0}% | PIX ${rates.pix || 0}%`,
+                body.notes ? `Obs: ${body.notes}` : "",
+                `\n— Criado automaticamente pelo BitTask`,
+            ].filter(Boolean).join("\n");
+
+            await prisma.task.create({
+                data: {
+                    title: taskTitle,
+                    description: taskDesc,
+                    date: body.alertDate || body.dateNeg || "",
+                    time: "",
+                    priority: status === "aprovado" ? "high" : "medium",
+                    listId: list.id,
+                    createdById: session.userId,
+                    assigneeId,
+                },
+            });
+        }
+
         return NextResponse.json(negotiation, { status: 201 });
     } catch (error) {
         console.error("POST negotiations error:", error);
