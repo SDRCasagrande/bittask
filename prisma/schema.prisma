@@ -170,6 +170,7 @@ model Client {
   credentialDate  String   @default("")
   cancelDate      String   @default("")
   segment         String   @default("")
+  category        String   @default("")  // Custom group: Stone, Ton, Cervantes, etc.
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

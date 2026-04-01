@@ -59,12 +59,14 @@ export default function ClientesPage() {
     const [selId, setSelId] = useState<string | null>(null);
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState<"all" | "ativo" | "cancelado">("all");
+    const [brandFilter, setBrandFilter] = useState<string>("all");
     const [tab, setTab] = useState<"resumo" | "tpv" | "negs">("resumo");
 
     // New client form
     const [fn, setFN] = useState(""); const [fsc, setFSC] = useState(""); const [fcnpj, setFCNPJ] = useState("");
     const [fbrand, setFBrand] = useState("STONE"); const [fsafra, setFSafra] = useState("M0");
     const [fph, setFPH] = useState(""); const [fem, setFEM] = useState(""); const [fseg, setFSeg] = useState("");
+    const [fcategory, setFCategory] = useState("");
     const [fcd, setFCD] = useState(""); const [fDocMsg, setFDocMsg] = useState(""); const [fDocOk, setFDocOk] = useState<boolean | null>(null);
     const [cnpjLoading, setCnpjLoading] = useState(false);
 
@@ -122,6 +124,7 @@ export default function ClientesPage() {
     const filtered = clients.filter(c => {
         if (filter === "ativo" && c.status !== "ativo") return false;
         if (filter === "cancelado" && c.status !== "cancelado") return false;
+        if (brandFilter !== "all" && c.brand !== brandFilter) return false;
         if (search) { const q = search.toLowerCase(); return c.name.toLowerCase().includes(q) || c.cnpj.includes(q) || c.stoneCode.includes(q); }
         return true;
     });
@@ -130,7 +133,7 @@ export default function ClientesPage() {
     const allCurrentMonthVolumes = clients.flatMap(c => c.monthlyVolumes.filter(v => v.month === currentMonth()));
     const monthSummary = allCurrentMonthVolumes.reduce((a, v) => { const c = calcCommission(v); return { tpv: a.tpv + c.tpvTotal, rev: a.rev + c.totalRevenue, agent: a.agent + c.agent }; }, { tpv: 0, rev: 0, agent: 0 });
 
-    function resetNew() { setFN(""); setFSC(""); setFCNPJ(""); setFPH(""); setFEM(""); setFSeg(""); setFCD(""); setFDocMsg(""); setFDocOk(null); setFBrand("STONE"); setFSafra("M0"); }
+    function resetNew() { setFN(""); setFSC(""); setFCNPJ(""); setFPH(""); setFEM(""); setFSeg(""); setFCD(""); setFDocMsg(""); setFDocOk(null); setFBrand("STONE"); setFSafra("M0"); setFCategory(""); }
 
     async function handleCnpjFetch(data: { name?: string; fantasia?: string; telefone?: string; email?: string; endereco?: string; situacao?: string }) {
         if (data.name && !fn.trim()) setFN(data.fantasia || data.name);
@@ -142,7 +145,7 @@ export default function ClientesPage() {
     async function handleSaveClient() {
         if (!fn.trim()) return;
         try {
-            const r = await fetch("/api/clients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: fn, stoneCode: fsc, cnpj: fcnpj, phone: fph, email: fem, segment: fseg, credentialDate: fcd, brand: fbrand, safra: fsafra }) });
+            const r = await fetch("/api/clients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: fn, stoneCode: fsc, cnpj: fcnpj, phone: fph, email: fem, segment: fseg, credentialDate: fcd, brand: fbrand, safra: fsafra, category: fcategory }) });
             if (r.ok) { resetNew(); setView("grid"); loadClients(); }
         } catch { }
     }
@@ -239,6 +242,8 @@ export default function ClientesPage() {
                             <input value={fem} onChange={e => setFEM(e.target.value)} placeholder="email@empresa.com" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Segmento</label>
                             <input value={fseg} onChange={e => setFSeg(e.target.value)} placeholder="Restaurante, Loja, etc." className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Categoria / Grupo</label>
+                            <input value={fcategory} onChange={e => setFCategory(e.target.value)} placeholder="Ex: VIP, Parceiro, Indicação..." className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                         <div><label className="text-xs font-medium text-muted-foreground block mb-1">Data Credenciamento</label>
                             <input type="date" value={fcd} onChange={e => setFCD(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
                     </div>
@@ -679,6 +684,11 @@ export default function ClientesPage() {
                 <div className="flex gap-1 bg-secondary/50 rounded-xl p-0.5">
                     {([["all", "Todos"], ["ativo", "Ativos"], ["cancelado", "Cancelados"]] as const).map(([key, lbl]) => (
                         <button key={key} onClick={() => setFilter(key)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filter === key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>{lbl}</button>
+                    ))}
+                </div>
+                <div className="flex gap-1 bg-secondary/50 rounded-xl p-0.5">
+                    {[["all", "🏢 Todos"], ["STONE", "🟢 Stone"], ["TON", "🔵 Ton"]].map(([key, lbl]) => (
+                        <button key={key} onClick={() => setBrandFilter(key)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${brandFilter === key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>{lbl}</button>
                     ))}
                 </div>
             </div>
