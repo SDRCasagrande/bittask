@@ -14,16 +14,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
         const body = await request.json();
+        const status = body.status || (body.dateAccept ? "aceita" : "prospeccao");
+
         const negotiation = await prisma.negotiation.create({
             data: {
                 clientId: id,
                 dateNeg: body.dateNeg || new Date().toISOString().split("T")[0],
-                dateAccept: body.dateAccept || "",
-                status: body.dateAccept ? "aceita" : "pendente",
+                dateAccept: body.dateAccept || (status === "aprovado" ? new Date().toISOString().split("T")[0] : ""),
+                status,
                 rates: body.rates || {},
                 notes: body.notes || "",
                 alertDate: body.alertDate || "",
+                assigneeId: body.assigneeId || null,
+                stageHistory: [{ from: "", to: status, timestamp: new Date().toISOString(), userName: session.name || "Sistema" }],
             },
+            include: { assignee: { select: { id: true, name: true, email: true } } },
         });
 
         return NextResponse.json(negotiation, { status: 201 });

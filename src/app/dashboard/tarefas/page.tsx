@@ -253,13 +253,26 @@ export default function TarefasPage() {
                             {sidebarFilter === "all" && lists.map(list => (
                                 <ListColumn key={list.id} list={list} users={users}
                                     onAdd={(title, date, time, assigneeId, priority) => addTask(list.id, title, date, time, assigneeId, priority)}
-                                    onToggle={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
-                                    onStar={(id) => { const t = allTasks.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
+                                    onToggle={(id) => { const t = allTasks.find(x => x.id === id) || assignedToMe.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
+                                    onStar={(id) => { const t = allTasks.find(x => x.id === id) || assignedToMe.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
                                     onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
                                     onOpenDetail={setDetailTask}
                                     onDeleteList={lists.length > 1 ? () => deleteList(list.id, list.name) : undefined}
                                     onClearCompleted={() => { list.tasks.filter(t => t.completed).forEach(t => deleteTask(t.id)); }} />
                             ))}
+                            {/* Show assigned-to-me tasks that are NOT in user's own lists */}
+                            {sidebarFilter === "all" && (() => {
+                                const ownTaskIds = new Set(allTasks.map(t => t.id));
+                                const extraAssigned = assignedToMe.filter(t => !ownTaskIds.has(t.id));
+                                if (extraAssigned.length === 0) return null;
+                                return (
+                                    <ListColumn key="assigned-inline" list={{ id: "assigned-inline", name: "Atribuídas a mim", tasks: extraAssigned }} users={users}
+                                        onAdd={() => {}} onToggle={(id) => { const t = extraAssigned.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
+                                        onStar={(id) => { const t = extraAssigned.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
+                                        onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
+                                        onOpenDetail={setDetailTask} isSpecialView />
+                                );
+                            })()}
                             {sidebarFilter === "all" && (
                                 <div className="w-72 shrink-0">
                                     {showNewList ? (

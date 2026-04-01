@@ -75,6 +75,38 @@ export default function ClientesPage() {
     const [showBreakdown, setShowBreakdown] = useState(false);
     const [tpvTotal, setTpvTotal] = useState("");
 
+    // New negotiation form
+    interface NegRatesForm { debit: string; credit1x: string; credit2to6: string; credit7to12: string; pix: string; rav: string }
+    const [showNewNeg, setShowNewNeg] = useState(false);
+    const [negDate, setNegDate] = useState(new Date().toISOString().split("T")[0]);
+    const [negStatus, setNegStatus] = useState("prospeccao");
+    const [negRates, setNegRates] = useState<NegRatesForm>({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
+    const [negNotes, setNegNotes] = useState("");
+    const [negSaving, setNegSaving] = useState(false);
+
+    const handleAddNeg = async () => {
+        if (!sel) return;
+        setNegSaving(true);
+        try {
+            await fetch(`/api/clients/${sel.id}/negotiations`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    dateNeg: negDate, status: negStatus, notes: negNotes,
+                    rates: {
+                        debit: parseFloat(negRates.debit) || 0, credit1x: parseFloat(negRates.credit1x) || 0,
+                        credit2to6: parseFloat(negRates.credit2to6) || 0, credit7to12: parseFloat(negRates.credit7to12) || 0,
+                        pix: parseFloat(negRates.pix) || 0, rav: parseFloat(negRates.rav) || 0,
+                    },
+                }),
+            });
+            loadClients();
+            setShowNewNeg(false);
+            setNegRates({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
+            setNegNotes("");
+            setNegStatus("prospeccao");
+        } catch { /* */ } finally { setNegSaving(false); }
+    };
+
     const loadClients = useCallback(async () => { try { const r = await fetch("/api/clients"); const d = await r.json(); if (Array.isArray(d)) setClients(d); } catch { } finally { setLoading(false); } }, []);
     useEffect(() => { loadClients(); }, [loadClients]);
 
@@ -456,10 +488,57 @@ export default function ClientesPage() {
                 {/* TAB: Negociações */}
                 {tab === "negs" && (
                     <div className="space-y-3">
-                        {sel.negotiations.length === 0 ? (
+                        {/* Nova Renegociação Form */}
+                        {showNewNeg ? (
+                            <div className="card-elevated rounded-xl p-5 space-y-3 border border-[#00A868]/20">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-bold text-[#00A868] uppercase flex items-center gap-2">
+                                        <Plus className="w-4 h-4" /> Nova Renegociação
+                                    </h3>
+                                    <button onClick={() => setShowNewNeg(false)} className="p-1 rounded-lg hover:bg-muted"><X className="w-4 h-4 text-muted-foreground" /></button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div><label className="text-xs font-medium text-muted-foreground block mb-1">Data</label>
+                                        <input type="date" value={negDate} onChange={e => setNegDate(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-sm focus:outline-none [color-scheme:dark]" /></div>
+                                    <div><label className="text-xs font-medium text-muted-foreground block mb-1">Status</label>
+                                        <select value={negStatus} onChange={e => setNegStatus(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-sm focus:outline-none">
+                                            <option value="prospeccao">Prospecção</option><option value="proposta_enviada">Proposta Enviada</option>
+                                            <option value="aguardando_cliente">Aguardando Cliente</option><option value="aprovado">Aprovado</option>
+                                            <option value="recusado">Recusado</option><option value="fechado">Fechado</option>
+                                        </select></div>
+                                </div>
+                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                                    {[["Débito", negRates.debit, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, debit: v }))],
+                                      ["Créd 1x", negRates.credit1x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit1x: v }))],
+                                      ["2-6x", negRates.credit2to6, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit2to6: v }))],
+                                      ["7-12x", negRates.credit7to12, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit7to12: v }))],
+                                      ["PIX", negRates.pix, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, pix: v }))],
+                                      ["RAV", negRates.rav, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, rav: v }))]
+                                    ].map(([label, val, setter]) => (
+                                        <div key={label as string}><label className="text-[10px] font-medium text-muted-foreground block mb-0.5">{label as string} (%)</label>
+                                            <input type="number" step="0.01" value={val as string} onChange={e => (setter as (v: string) => void)(e.target.value)} placeholder="0.00"
+                                                className="w-full px-2 py-1.5 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-[#00A868]/50" /></div>
+                                    ))}
+                                </div>
+                                <div><label className="text-xs font-medium text-muted-foreground block mb-1">Observações</label>
+                                    <textarea value={negNotes} onChange={e => setNegNotes(e.target.value)} rows={2} placeholder="Notas sobre a renegociação..."
+                                        className="w-full px-3 py-2 rounded-xl bg-secondary border border-border text-sm focus:outline-none resize-none" /></div>
+                                <button onClick={handleAddNeg} disabled={negSaving}
+                                    className="w-full py-2.5 bg-[#00A868] text-white rounded-xl text-sm font-bold hover:bg-[#008f58] disabled:opacity-50 flex items-center justify-center gap-2">
+                                    {negSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Salvar Renegociação
+                                </button>
+                            </div>
+                        ) : (
+                            <button onClick={() => setShowNewNeg(true)}
+                                className="w-full py-3 border-2 border-dashed border-[#00A868]/30 rounded-xl text-sm font-semibold text-[#00A868] hover:bg-[#00A868]/5 transition-colors flex items-center justify-center gap-2">
+                                <Plus className="w-4 h-4" /> Nova Renegociação
+                            </button>
+                        )}
+
+                        {sel.negotiations.length === 0 && !showNewNeg ? (
                             <div className="card-elevated rounded-xl p-8 text-center text-muted-foreground">
                                 <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                                <p className="text-sm">Nenhuma negociação. Acesse o Pipeline para iniciar.</p>
+                                <p className="text-sm">Nenhuma negociação registrada.</p>
                             </div>
                         ) : sel.negotiations.map((neg, i) => {
                             const stLabel: Record<string, string> = { prospeccao: "Prospecção", proposta_enviada: "Proposta Enviada", aguardando_cliente: "Aguardando Cliente", aprovado: "Aprovado", recusado: "Recusado", fechado: "Fechado", pendente: "Pendente", aceita: "Aprovado", recusada: "Recusado" };
