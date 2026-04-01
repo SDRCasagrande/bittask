@@ -2,9 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BitTask — Gestão de Negociações & Propostas Stone",
-  description: "Plataforma profissional de gestão de carteira, simulação de taxas e propostas comerciais para agentes Stone.",
+  title: "BitTask — Gestão Inteligente de Negociações & Propostas",
+  description: "Plataforma profissional de gestão de carteira, pipeline de negociações, simulação de taxas CET e propostas comerciais para agentes de adquirência.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/logo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
         <tr><td align="center" style="padding-bottom:24px;">
-          <div style="display:inline-block;background:#10b981;color:white;font-weight:900;font-size:20px;width:48px;height:48px;line-height:48px;text-align:center;border-radius:14px;">BK</div>
+          <div style="display:inline-block;background:#10b981;color:white;font-weight:900;font-size:20px;width:48px;height:48px;line-height:48px;text-align:center;border-radius:14px;">BT</div>
         </td></tr>
         <tr><td style="background:#3b82f6;border-radius:16px 16px 0 0;padding:24px 32px;text-align:center;">
           <div style="font-size:36px;margin-bottom:8px;">🔒</div>
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
           </p>
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr><td align="center">
-              <a href="https://casa94.bkaiser.com.br/login" 
+              <a href="https://app.bittask.com.br/login" 
                  style="display:inline-block;background:#3b82f6;color:white;text-decoration:none;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;">
                 Fazer Login →
               </a>

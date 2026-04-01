@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
     LayoutDashboard, Calculator, FileBarChart, GitCompare,
     Handshake, Settings, Users, LogOut, Menu, X, ChevronRight,
@@ -81,9 +82,7 @@ export default function DashboardLayout({
                 {/* Logo Header */}
                 <div className="h-16 flex items-center px-5 border-b border-border shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-[#00A868] flex items-center justify-center shadow-md shadow-[#00A868]/20">
-                            <span className="text-sm font-black text-white">BT</span>
-                        </div>
+                        <Image src="/logo.png" alt="BitTask" width={36} height={36} className="rounded-xl" />
                         <div>
                             <h1 className="font-bold text-sm text-foreground leading-tight">BitTask</h1>
                             <p className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">Gestão & Propostas</p>
@@ -191,9 +190,7 @@ export default function DashboardLayout({
                     <div className="flex items-center gap-2">
                         {/* Mobile: Logo only */}
                         <div className="lg:hidden flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-[#00A868] flex items-center justify-center shadow-sm shadow-[#00A868]/20">
-                                <span className="text-xs font-black text-white">BT</span>
-                            </div>
+                            <Image src="/logo.png" alt="BitTask" width={32} height={32} className="rounded-lg" />
                             <div>
                                 <h2 className="font-bold text-sm text-foreground leading-tight">{currentNav?.label || "BitTask"}</h2>
                             </div>

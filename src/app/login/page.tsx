@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -74,12 +75,10 @@ export default function LoginPage() {
             <div className="relative w-full max-w-md mx-4">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[#00A868] shadow-lg glow-green mb-4">
-                        <span className="text-3xl font-black text-white">BT</span>
-                    </div>
+                    <Image src="/logo.png" alt="BitTask" width={80} height={80} className="mx-auto mb-4" priority />
                     <h1 className="text-3xl font-bold gradient-text">BitTask</h1>
                     <p className="text-muted-foreground mt-2 text-sm">
-                        Gestão de negociações & propostas para agentes Stone
+                        Gestão inteligente de negociações & propostas
                     </p>
                 </div>
 

@@ -42,7 +42,7 @@ export async function sendRenegotiationAlert(
         
         <!-- Logo -->
         <tr><td align="center" style="padding-bottom:24px;">
-          <div style="display:inline-block;background:#10b981;color:white;font-weight:900;font-size:20px;width:48px;height:48px;line-height:48px;text-align:center;border-radius:14px;">BK</div>
+          <div style="display:inline-block;background:#10b981;color:white;font-weight:900;font-size:20px;width:48px;height:48px;line-height:48px;text-align:center;border-radius:14px;">BT</div>
         </td></tr>
 
         <!-- Header -->
@@ -94,7 +94,7 @@ export async function sendRenegotiationAlert(
           <!-- CTA Button -->
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr><td align="center" style="padding-top:8px;">
-              <a href="https://casa94.bkaiser.com.br/dashboard/negociacoes" 
+              <a href="https://app.bittask.com.br/dashboard/negociacoes" 
                  style="display:inline-block;background:#10b981;color:white;text-decoration:none;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;">
                 Acessar Negociações →
               </a>
