@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Shield } from "lucide-react";
 import Image from "next/image";
 
 export default function LoginPage() {
@@ -13,7 +13,13 @@ export default function LoginPage() {
     const [forgotMode, setForgotMode] = useState(false);
     const [forgotMsg, setForgotMsg] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        const host = window.location.hostname;
+        setIsAdmin(host.startsWith('admin.') || host === 'admin.localhost');
+    }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -31,7 +37,7 @@ export default function LoginPage() {
                 setError(data.error || "Erro ao fazer login");
                 return;
             }
-            router.push("/dashboard");
+            router.push(isAdmin ? "/admin" : "/dashboard");
         } catch {
             setError("Erro de conexão");
         } finally {
@@ -75,11 +81,25 @@ export default function LoginPage() {
             <div className="relative w-full max-w-md mx-4">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <Image src="/logo.png" alt="BitTask" width={80} height={80} className="mx-auto mb-4" priority />
-                    <h1 className="text-3xl font-bold gradient-text">BitTask</h1>
-                    <p className="text-muted-foreground mt-2 text-sm">
-                        Gestão inteligente de negociações & propostas
-                    </p>
+                    {isAdmin ? (
+                        <>
+                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center mx-auto mb-4 shadow-xl shadow-slate-900/30">
+                                <Shield className="w-10 h-10 text-[#00A868]" />
+                            </div>
+                            <h1 className="text-3xl font-bold text-foreground">BitTask <span className="text-[#00A868]">Admin</span></h1>
+                            <p className="text-muted-foreground mt-2 text-sm">
+                                Painel Administrativo — Acesso restrito
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <Image src="/logo.png" alt="BitTask" width={80} height={80} className="mx-auto mb-4" priority />
+                            <h1 className="text-3xl font-bold gradient-text">BitTask</h1>
+                            <p className="text-muted-foreground mt-2 text-sm">
+                                Gestão inteligente de negociações & propostas
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 {/* Login / Forgot Password Card */}
@@ -196,7 +216,11 @@ export default function LoginPage() {
 
                 {/* Footer */}
                 <p className="text-center text-xs text-muted-foreground mt-6">
-                    Powered by <span className="font-semibold text-foreground">BKaiser Solution</span>
+                    {isAdmin ? (
+                        <span>🔐 Acesso exclusivo para administradores <span className="font-semibold text-foreground">BKaiser Solution</span></span>
+                    ) : (
+                        <span>Powered by <span className="font-semibold text-foreground">BKaiser Solution</span></span>
+                    )}
                 </p>
             </div>
         </div>

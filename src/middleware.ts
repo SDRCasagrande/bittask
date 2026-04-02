@@ -50,6 +50,13 @@ export async function middleware(request: NextRequest) {
 
     // ─── APP SUBDOMAIN (app.bittask.com.br) ───
 
+    // Block /admin on main domain — must use admin.bittask.com.br
+    if (pathname.startsWith('/admin')) {
+        const adminUrl = new URL(pathname, `https://${ADMIN_HOSTNAME}`);
+        adminUrl.search = request.nextUrl.search;
+        return NextResponse.redirect(adminUrl);
+    }
+
     // Public paths
     const publicPaths = ['/login', '/convite', '/primeiro-acesso', '/api/auth/login', '/api/auth/forgot-password', '/api/seed', '/api/google-calendar/callback', '/api/billing/webhook', '/api/admin/promote'];
     if (publicPaths.some(p => pathname.startsWith(p))) {
