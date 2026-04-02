@@ -282,10 +282,18 @@ export default function DashboardLayout({
                                     {gcalConnected && <span className="w-2 h-2 rounded-full bg-[#00A868] animate-pulse" />}
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    <button onClick={() => { setCalModalOpen(false); window.location.href = "/dashboard/tarefas"; }}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00A868] text-white hover:bg-[#008f58] shadow-sm transition-all active:scale-95">
+                                        <Plus className="w-3 h-3" /> Nova Tarefa
+                                    </button>
+                                    <button onClick={() => { setCalModalOpen(false); window.location.href = "/dashboard/tarefas"; }}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                                        <CheckSquare className="w-3 h-3" /> Ver Tarefas
+                                    </button>
                                     {gcalConnected && (
                                         <button onClick={() => window.open("https://calendar.google.com", "_blank")}
                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                                            <ExternalLink className="w-3 h-3" /> Abrir no Google
+                                            <ExternalLink className="w-3 h-3" /> <span className="hidden sm:inline">Abrir no Google</span>
                                         </button>
                                     )}
                                     <button onClick={() => setCalModalOpen(false)}
