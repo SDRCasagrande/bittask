@@ -83,15 +83,19 @@ export async function PUT(request: Request) {
             userId: updated.id,
             email: updated.email,
             name: updated.name,
+            orgId: session.orgId,
+            userRole: session.userRole,
         });
 
         const response = NextResponse.json(updated);
+        const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
         response.cookies.set('auth-token', newToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60, // 7 days
+            maxAge: 7 * 24 * 60 * 60,
             path: '/',
+            ...(cookieDomain ? { domain: cookieDomain } : {}),
         });
 
         return response;
