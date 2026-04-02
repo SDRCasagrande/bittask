@@ -122,12 +122,19 @@ export default function ActivityPanel() {
                 </div>
             )}
 
-            {loading ? (
+            {/* Loading Overlay for subsequent fetches */}
+            {loading && data && (
+                <div className="absolute inset-0 top-[60px] z-10 flex items-center justify-center bg-background/40 backdrop-blur-[1px]">
+                    <Loader2 className="w-6 h-6 animate-spin text-[#00A868]" />
+                </div>
+            )}
+
+            {!data && loading ? (
                 <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-6 h-6 animate-spin text-[#00A868]" />
                 </div>
             ) : (
-                <>
+                <div className={loading ? "opacity-60 pointer-events-none transition-opacity" : "transition-opacity"}>
                     {/* Counter Cards Row */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border">
                         {COUNTER_CARDS.map(card => (
@@ -283,7 +290,7 @@ export default function ActivityPanel() {
                             Ver pipeline completo <ChevronRight className="w-3 h-3" />
                         </Link>
                     </div>
-                </>
+                </div>
             )}
         </div>
     );
