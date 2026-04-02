@@ -12,6 +12,7 @@ import {
     AlertCircle, Loader2, ExternalLink, GripVertical, ArrowRight, FileDown
 } from "lucide-react";
 import { generateProposalPDF } from "@/lib/proposal-pdf";
+import { BrandIcon } from "@/components/BrandIcons";
 
 const BRAND_NAMES = Object.keys(BRAND_PRESETS);
 interface BrandRateSet { [brand: string]: { debit: number; credit1x: number; credit2to6: number; credit7to12: number } }
@@ -131,13 +132,16 @@ function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot)
                     const isSelected = activeBrand === b && isEnabled;
                     return (
                         <button key={b} type="button" onClick={() => handleBrandClick(b)}
-                            className={`px-3 py-1.5 text-xs rounded-xl font-bold transition-all ${
+                            className={`px-3 py-1.5 text-xs rounded-xl font-bold transition-all flex items-center gap-1.5 ${
                                 isSelected
                                     ? "bg-[#00A868]/15 text-[#00A868] border-2 border-[#00A868] shadow-sm shadow-[#00A868]/10"
                                     : isEnabled
                                         ? "bg-[#00A868]/5 text-foreground border-2 border-[#00A868]/25 hover:border-[#00A868]/50"
                                         : "bg-secondary/30 text-muted-foreground/40 border-2 border-transparent line-through opacity-40 hover:opacity-60"
-                            }`}>{b}</button>
+                            }`}>
+                            <BrandIcon brand={b} size={14} />
+                            {b}
+                        </button>
                     );
                 })}
             </div>

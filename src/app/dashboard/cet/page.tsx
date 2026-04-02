@@ -10,6 +10,7 @@ import {
     type BrandRates,
 } from "@/lib/calculator";
 import { RI } from "@/components/rate-input";
+import { BrandIcon } from "@/components/BrandIcons";
 
 const STORAGE_KEY = "bitkaiser_cet_calc";
 
@@ -423,6 +424,7 @@ tr:nth-child(even){background:#fafafa}
                                                 }}
                                                 className="w-full flex items-center gap-2 px-3 py-2">
                                                 <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isEnabled ? "bg-[#00A868]" : "bg-muted-foreground/20"}`} />
+                                                <BrandIcon brand={b} size={12} />
                                                 <span className={`text-xs font-bold truncate ${isEnabled ? "text-foreground" : "text-muted-foreground/50 line-through"}`}>{b}</span>
                                                 {isEnabled && (
                                                     <span className="ml-auto text-[9px] text-muted-foreground">
@@ -645,8 +647,8 @@ tr:nth-child(even){background:#fafafa}
                                     {/* Brand Header */}
                                     <div className="px-3 py-2.5 bg-gradient-to-r from-[#00A868]/10 to-transparent border-b border-border/50 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-md bg-[#00A868] flex items-center justify-center">
-                                                <span className="text-[8px] font-black text-white">{name.slice(0, 2)}</span>
+                                            <div className="w-6 h-6 rounded-md flex items-center justify-center overflow-hidden">
+                                                <BrandIcon brand={name} size={18} />
                                             </div>
                                             <h3 className="text-xs font-bold text-foreground">{name}</h3>
                                         </div>

@@ -42,6 +42,7 @@ import {
 import { RI } from "@/components/rate-input";
 import { DocumentInput } from "@/components/DocumentInput";
 import { PhoneInput } from "@/components/PhoneInput";
+import { BrandIcon } from "@/components/BrandIcons";
 
 const STORAGE_KEY = "bitkaiser_proposta_v2";
 const CRM_STORAGE_KEY = "bitkaiser_negociacoes";
@@ -363,10 +364,11 @@ export default function PropostaPage() {
                         {BRANDS.map((b) => (
                             <div key={b} className="relative group">
                                 <button onClick={() => setActiveBrand(b)}
-                                    className={`px-1.5 py-0.5 text-[10px] rounded font-semibold transition-all ${activeBrand === b
+                                    className={`px-1.5 py-0.5 text-[10px] rounded font-semibold transition-all flex items-center gap-1 ${activeBrand === b
                                         ? "bg-[#00A868]/20 text-[#00A868] ring-1 ring-[#00A868]/40"
                                         : "bg-secondary text-muted-foreground hover:bg-muted"
                                         }`}>
+                                    <BrandIcon brand={b} size={10} />
                                     {b}
                                 </button>
                                 {!BRAND_PRESETS[b] && (
