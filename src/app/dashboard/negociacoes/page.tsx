@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { generateProposalPDF } from "@/lib/proposal-pdf";
 import { BrandIcon } from "@/components/BrandIcons";
+import { useConfirm } from "@/components/ConfirmModal";
+import { BrandStrip, BrandSelectorModal } from "@/components/BrandSelectorModal";
 
 const BRAND_NAMES = Object.keys(BRAND_PRESETS);
 interface BrandRateSet { [brand: string]: { debit: number; credit1x: number; credit2to6: number; credit7to12: number } }
@@ -96,6 +98,7 @@ function StageBadge({ status }: { status: string }) {
 /* ═══ RATES FORM (simplified for Kanban modal) ═══ */
 function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot) => void }) {
     const [activeBrand, setActiveBrand] = useState("VISA/MASTER");
+    const [showBrandModal, setShowBrandModal] = useState(false);
     const [enabledBrands, setEnabledBrands] = useState<Record<string, boolean>>(() => {
         const eb: Record<string, boolean> = {};
         Object.keys(rates.brandRates || defaultBrandRates()).forEach(b => eb[b] = ["VISA/MASTER", "ELO"].includes(b));
@@ -107,44 +110,33 @@ function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot)
 
     function handleBrandClick(b: string) {
         const isEnabled = enabledBrands[b] !== false;
-        const isSelected = activeBrand === b;
-
-        if (!isEnabled) {
-            // Inactive → activate + select
-            setEnabledBrands(prev => ({ ...prev, [b]: true }));
+        if (isEnabled) {
             setActiveBrand(b);
-        } else if (isSelected) {
-            // Already selected → deactivate
-            setEnabledBrands(prev => ({ ...prev, [b]: false }));
-            const next = Object.keys(br).find(k => k !== b && enabledBrands[k]);
-            if (next) setActiveBrand(next);
         } else {
-            // Active but not selected → select for editing
+            setEnabledBrands(prev => ({ ...prev, [b]: true }));
             setActiveBrand(b);
         }
     }
 
     return (
         <div className="space-y-3">
-            <div className="flex gap-1.5 flex-wrap">
-                {Object.keys(br).map(b => {
-                    const isEnabled = enabledBrands[b] !== false;
-                    const isSelected = activeBrand === b && isEnabled;
-                    return (
-                        <button key={b} type="button" onClick={() => handleBrandClick(b)}
-                            className={`px-3 py-1.5 text-xs rounded-xl font-bold transition-all flex items-center gap-1.5 ${
-                                isSelected
-                                    ? "bg-[#00A868]/15 text-[#00A868] border-2 border-[#00A868] shadow-sm shadow-[#00A868]/10"
-                                    : isEnabled
-                                        ? "bg-[#00A868]/5 text-foreground border-2 border-[#00A868]/25 hover:border-[#00A868]/50"
-                                        : "bg-secondary/30 text-muted-foreground/40 border-2 border-transparent line-through opacity-40 hover:opacity-60"
-                            }`}>
-                            <BrandIcon brand={b} size={14} />
-                            {b}
-                        </button>
-                    );
-                })}
-            </div>
+            <BrandStrip
+                brands={Object.keys(br)}
+                enabledBrands={enabledBrands}
+                activeBrand={activeBrand}
+                onBrandClick={handleBrandClick}
+                onOpenModal={() => setShowBrandModal(true)}
+            />
+            {showBrandModal && (
+                <BrandSelectorModal
+                    brands={Object.keys(br)}
+                    enabledBrands={enabledBrands}
+                    activeBrand={activeBrand}
+                    onToggle={(b, enabled) => setEnabledBrands(prev => ({ ...prev, [b]: enabled }))}
+                    onSelect={setActiveBrand}
+                    onClose={() => setShowBrandModal(false)}
+                />
+            )}
             {enabledBrands[activeBrand] !== false && (
                 <>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -165,6 +157,7 @@ function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot)
 
 /* ═══ MAIN COMPONENT ═══ */
 export default function NegociacoesPage() {
+    const confirmAction = useConfirm();
     const [clients, setClients] = useState<Client[]>([]);
     const [users, setUsers] = useState<UserOption[]>([]);
     const [loading, setLoading] = useState(true);
@@ -238,8 +231,19 @@ export default function NegociacoesPage() {
     };
 
     const deleteNeg = async (negId: string) => {
-        if (!confirm("Excluir esta negociação?")) return;
-        try { await fetch(`/api/negotiations/${negId}`, { method: "DELETE" }); loadAll(); } catch { /* */ }
+        const { confirmed, justification } = await confirmAction({
+            title: "Excluir Negociação",
+            message: "Tem certeza que deseja excluir esta negociação? Esta ação é irreversível e será registrada no log.",
+            variant: "danger",
+            confirmText: "Excluir Negociação",
+            requireJustification: true,
+            justificationLabel: "Motivo da exclusão (obrigatório)",
+        });
+        if (!confirmed) return;
+        try {
+            await fetch(`/api/negotiations/${negId}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reason: justification }) });
+            loadAll();
+        } catch { /* */ }
     };
 
     // New client + negotiation
@@ -403,9 +407,11 @@ export default function NegociacoesPage() {
                                     {/* Cards */}
                                     <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
                                         {(() => {
+                                            const isTerminal = stage.id === "fechado" || stage.id === "recusado";
+                                            const stageLimit = isTerminal ? 5 : CARDS_LIMIT;
                                             const isExpanded = expandedStages[stage.id];
-                                            const visible = isExpanded ? stageNegs : stageNegs.slice(0, CARDS_LIMIT);
-                                            const remaining = stageNegs.length - CARDS_LIMIT;
+                                            const visible = isExpanded ? stageNegs : stageNegs.slice(0, stageLimit);
+                                            const remaining = stageNegs.length - stageLimit;
                                             return (<>
                                         {visible.map(neg => (
                                             <div key={neg.id} draggable

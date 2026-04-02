@@ -5,8 +5,10 @@ import {
     Settings, User, Lock, Save, Loader2,
     CheckCircle, AlertCircle, Calendar, ExternalLink, Unlink
 } from "lucide-react";
+import { useConfirm } from "@/components/ConfirmModal";
 
 export default function ConfiguracoesPage() {
+    const confirmAction = useConfirm();
     const [profile, setProfile] = useState<{
         name: string;
         email: string;
@@ -123,7 +125,8 @@ export default function ConfiguracoesPage() {
     };
 
     const handleGcalDisconnect = async () => {
-        if (!confirm("Desconectar Google Calendar? Tarefas existentes não serão afetadas, mas novas tarefas não serão sincronizadas.")) return;
+        const { confirmed } = await confirmAction({ title: "Desconectar Google Calendar", message: "Tarefas existentes não serão afetadas, mas novas tarefas não serão sincronizadas.", variant: "warning", confirmText: "Desconectar" });
+        if (!confirmed) return;
         setGcalDisconnecting(true);
         try {
             await fetch("/api/google-calendar/disconnect", { method: "POST" });

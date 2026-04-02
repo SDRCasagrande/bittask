@@ -6,6 +6,7 @@ import {
     Trash2, Users, ChevronDown, ChevronUp
 } from "lucide-react";
 import { PERMISSIONS, PermissionKey } from "@/lib/permissions";
+import { useConfirm } from "@/components/ConfirmModal";
 
 interface RolePermission {
     id: string;
@@ -27,6 +28,7 @@ const PERM_GROUPS: Record<string, PermissionKey[]> = {
 };
 
 export default function PermissoesPage() {
+    const confirmAction = useConfirm();
     const [roles, setRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
     const [showNew, setShowNew] = useState(false);
@@ -89,7 +91,8 @@ export default function PermissoesPage() {
     };
 
     const deleteRole = async (role: Role) => {
-        if (!confirm(`Excluir o cargo "${role.name}"?`)) return;
+        const { confirmed } = await confirmAction({ title: "Excluir Cargo", message: `Excluir o cargo "${role.name}"? Usuários com este cargo perderão as permissões.`, variant: "danger", confirmText: "Excluir Cargo" });
+        if (!confirmed) return;
         try {
             const res = await fetch(`/api/admin/roles/${role.id}`, { method: "DELETE" });
             const data = await res.json();

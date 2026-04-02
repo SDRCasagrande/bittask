@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { formatPercent } from "@/lib/calculator";
+import { formatPercent, calculateCET } from "@/lib/calculator";
 import { formatarDocumento, validarDocumento } from "@/lib/documento";
 import { DocumentInput } from "@/components/DocumentInput";
 import { PhoneInput } from "@/components/PhoneInput";
@@ -10,6 +10,7 @@ import {
     Building2, Phone, Mail, Hash, FileText, Trash2, MessageSquare, ChevronRight,
     Loader2, CheckCircle, AlertCircle, XCircle, Edit3, BarChart3, Clock, Star
 } from "lucide-react";
+import { useConfirm } from "@/components/ConfirmModal";
 
 /* ═══ TYPES ═══ */
 interface MonthVolume { id: string; month: string; tpvDebit: number; tpvCredit: number; tpvPix: number; rateDebit: number; rateCredit: number; ratePix: number; notes: string }
@@ -53,6 +54,7 @@ function StatusBadge({ s }: { s: string }) {
 type View = "grid" | "detail" | "new";
 
 export default function ClientesPage() {
+    const confirmAction = useConfirm();
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<View>("grid");
@@ -88,6 +90,7 @@ export default function ClientesPage() {
     const [negCreateTask, setNegCreateTask] = useState(true);
     const [negTaskAssignee, setNegTaskAssignee] = useState("");
     const [negSaving, setNegSaving] = useState(false);
+    const [negCetMode, setNegCetMode] = useState(false); // false = MDR separado, true = taxas já com CET
     const [teamUsers, setTeamUsers] = useState<{id: string; name: string; email: string}[]>([]);
 
     const handleAddNeg = async () => {
@@ -164,7 +167,8 @@ export default function ClientesPage() {
     }
 
     async function handleCancelClient(id: string) {
-        if (!confirm("Marcar cliente como cancelado?")) return;
+        const { confirmed } = await confirmAction({ title: "Cancelar Cliente", message: "Tem certeza que deseja marcar este cliente como cancelado?", variant: "warning", confirmText: "Cancelar Cliente" });
+        if (!confirmed) return;
         await fetch(`/api/clients/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "cancelado", cancelDate: new Date().toISOString().split("T")[0] }) });
         loadClients();
     }
@@ -175,7 +179,8 @@ export default function ClientesPage() {
     }
 
     async function handleDelete(id: string) {
-        if (!confirm("Excluir cliente permanentemente? Todos os dados serão perdidos.")) return;
+        const { confirmed } = await confirmAction({ title: "Excluir Cliente", message: "Excluir cliente permanentemente? Todos os dados, negociações e histórico serão perdidos.", variant: "danger", confirmText: "Excluir Permanentemente", requireJustification: true });
+        if (!confirmed) return;
         await fetch(`/api/clients/${id}`, { method: "DELETE" }); setView("grid"); setSelId(null); loadClients();
     }
 
@@ -546,14 +551,32 @@ export default function ClientesPage() {
                                             <option value="recusado">Recusado</option><option value="fechado">Fechado</option>
                                         </select></div>
                                 </div>
-                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                                    {[["Débito", negRates.debit, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, debit: v }))],
-                                      ["Créd 1x", negRates.credit1x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit1x: v }))],
-                                      ["2-6x", negRates.credit2to6, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit2to6: v }))],
-                                      ["7-12x", negRates.credit7to12, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit7to12: v }))],
+
+                                {/* Toggle MDR vs CET */}
+                                <div className="flex items-center gap-2 bg-secondary/50 rounded-xl p-2">
+                                    <button type="button" onClick={() => { setNegCetMode(false); setNegRates(r => ({ ...r, rav: "" })); }}
+                                        className={`flex-1 py-1.5 text-xs rounded-lg font-bold transition-all ${!negCetMode ? "bg-[#00A868] text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                                        Taxas MDR
+                                    </button>
+                                    <button type="button" onClick={() => setNegCetMode(true)}
+                                        className={`flex-1 py-1.5 text-xs rounded-lg font-bold transition-all ${negCetMode ? "bg-blue-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                                        Taxas com CET
+                                    </button>
+                                </div>
+                                <p className="text-[9px] text-muted-foreground/70 -mt-1">
+                                    {negCetMode
+                                        ? "📌 Informe as taxas finais (MDR + antecipação). O RAV já está embutido."
+                                        : "📌 Informe o MDR puro. O RAV será registrado separadamente."}
+                                </p>
+
+                                <div className={`grid gap-2 ${negCetMode ? "grid-cols-3 sm:grid-cols-5" : "grid-cols-3 sm:grid-cols-6"}`}>
+                                    {([["Débito", negRates.debit, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, debit: v }))],
+                                      [`Créd 1x${negCetMode ? " (CET)" : ""}`, negRates.credit1x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit1x: v }))],
+                                      [`2-6x${negCetMode ? " (CET)" : ""}`, negRates.credit2to6, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit2to6: v }))],
+                                      [`7-12x${negCetMode ? " (CET)" : ""}`, negRates.credit7to12, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit7to12: v }))],
                                       ["PIX", negRates.pix, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, pix: v }))],
-                                      ["RAV", negRates.rav, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, rav: v }))]
-                                    ].map(([label, val, setter]) => (
+                                      ...(!negCetMode ? [["RAV", negRates.rav, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, rav: v }))]] : []),
+                                    ] as [string, string, (v: string) => void][]).map(([label, val, setter]) => (
                                         <div key={label as string}><label className="text-[10px] font-medium text-muted-foreground block mb-0.5">{label as string} (%)</label>
                                             <input type="number" step="0.01" value={val as string} onChange={e => (setter as (v: string) => void)(e.target.value)} placeholder="0.00"
                                                 className="w-full px-2 py-1.5 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-[#00A868]/50" /></div>
@@ -639,6 +662,22 @@ export default function ClientesPage() {
                                             </div>
                                         ))}
                                     </div>
+                                    {/* CET calculado */}
+                                    {(neg.rates?.rav > 0 || neg.rates?.ravRate > 0) && (
+                                        <div className="grid grid-cols-4 gap-1.5 mt-1">
+                                            {[{ l: "CET 1x", inst: 1, mdr: neg.rates?.credit1x }, { l: "CET 6x", inst: 6, mdr: neg.rates?.credit2to6 }, { l: "CET 12x", inst: 12, mdr: neg.rates?.credit7to12 }, { l: "CET Méd", inst: 0, mdr: 0 }].map(r => {
+                                                const ravVal = neg.rates?.ravRate ?? neg.rates?.rav ?? 0;
+                                                const cet = r.inst > 0 ? calculateCET(r.mdr || 0, ravVal, r.inst) : ((calculateCET(neg.rates?.credit1x || 0, ravVal, 1) + calculateCET(neg.rates?.credit2to6 || 0, ravVal, 6) + calculateCET(neg.rates?.credit7to12 || 0, ravVal, 12)) / 3);
+                                                const color = cet < 5 ? "text-[#00A868]" : cet < 10 ? "text-amber-500" : "text-red-500";
+                                                return (
+                                                    <div key={r.l} className="bg-blue-500/5 border border-blue-500/10 rounded-lg p-1.5 text-center">
+                                                        <p className="text-[9px] text-blue-400 font-medium">{r.l}</p>
+                                                        <p className={`text-xs font-bold ${color}`}>{formatPercent(cet)}</p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                     {neg.notes && <p className="text-xs text-muted-foreground mt-2 italic">{neg.notes}</p>}
                                     {neg.stageHistory && neg.stageHistory.length > 0 && (
                                         <div className="mt-2 pt-2 border-t border-border/50 space-y-0.5">

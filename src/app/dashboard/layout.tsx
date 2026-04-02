@@ -13,6 +13,7 @@ import CommandPalette from "@/components/CommandPalette";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationBell } from "@/components/NotificationBell";
 import LizzeChat from "@/components/LizzeChat";
+import { ConfirmProvider } from "@/components/ConfirmModal";
 
 /* ═══ Navigation Items ═══ */
 const MAIN_NAV = [
@@ -54,6 +55,7 @@ export default function DashboardLayout({
 }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [moreOpen, setMoreOpen] = useState(false);
+    const [fabOpen, setFabOpen] = useState(false);
     const [user, setUser] = useState<{ name: string; email: string } | null>(null);
     const router = useRouter();
     const pathname = usePathname();
@@ -69,6 +71,7 @@ export default function DashboardLayout({
     useEffect(() => {
         setSidebarOpen(false);
         setMoreOpen(false);
+        setFabOpen(false);
     }, [pathname]);
 
     async function handleLogout() {
@@ -80,6 +83,7 @@ export default function DashboardLayout({
     const isActive = (href: string) => pathname === href;
 
     return (
+        <ConfirmProvider>
         <div className="min-h-screen bg-background text-foreground">
             {/* ═══ DESKTOP: Sidebar (lg+) ═══ */}
             <aside className="hidden lg:flex fixed top-0 left-0 h-screen w-[260px] bg-card border-r border-border z-50 flex-col">
@@ -251,17 +255,14 @@ export default function DashboardLayout({
                     {BOTTOM_NAV.map((item) => {
                         if (item.type === "fab") {
                             return (
-                                <Link key="fab" href="/dashboard/clientes"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        router.push("/dashboard/clientes?view=new");
-                                    }}
+                                <button key="fab"
+                                    onClick={() => { setFabOpen(!fabOpen); setMoreOpen(false); }}
                                     className="flex flex-col items-center justify-center -mt-5">
-                                    <div className="w-14 h-14 rounded-full bg-[#00A868] flex items-center justify-center shadow-lg shadow-[#00A868]/30 active:scale-95 transition-transform">
+                                    <div className={`w-14 h-14 rounded-full bg-[#00A868] flex items-center justify-center shadow-lg shadow-[#00A868]/30 active:scale-95 transition-all duration-300 ${fabOpen ? "rotate-45 bg-red-500 shadow-red-500/30" : ""}`}>
                                         <Plus className="w-6 h-6 text-white" />
                                     </div>
-                                    <span className="text-[10px] font-semibold text-[#00A868] mt-1">{item.label}</span>
-                                </Link>
+                                    <span className={`text-[10px] font-semibold mt-1 ${fabOpen ? "text-red-500" : "text-[#00A868]"}`}>{fabOpen ? "Fechar" : item.label}</span>
+                                </button>
                             );
                         }
                         if (item.type === "action") {
@@ -289,6 +290,41 @@ export default function DashboardLayout({
                     })}
                 </div>
             </nav>
+
+            {/* ═══ MOBILE: FAB Quick Actions ═══ */}
+            {fabOpen && (
+                <>
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
+                        onClick={() => setFabOpen(false)} />
+                    <div className="fixed bottom-24 left-0 right-0 z-50 lg:hidden px-4 animate-slide-up">
+                        <div className="bg-card rounded-2xl border border-border shadow-2xl p-4 mx-auto max-w-sm">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">Ação Rápida</p>
+                            <div className="space-y-1.5">
+                                <Link href="/dashboard/negociacoes?view=new" onClick={() => setFabOpen(false)}
+                                    className="flex items-center gap-3 p-3 rounded-xl bg-[#00A868]/10 hover:bg-[#00A868]/20 transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-[#00A868] flex items-center justify-center shadow-md shadow-[#00A868]/20"><Handshake className="w-5 h-5 text-white" /></div>
+                                    <div><p className="text-sm font-bold text-foreground">Novo Cliente + Negociação</p><p className="text-[10px] text-muted-foreground">Cadastrar e iniciar pipeline</p></div>
+                                </Link>
+                                <Link href="/dashboard/tarefas" onClick={() => setFabOpen(false)}
+                                    className="flex items-center gap-3 p-3 rounded-xl bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center shadow-md shadow-purple-500/20"><CheckSquare className="w-5 h-5 text-white" /></div>
+                                    <div><p className="text-sm font-bold text-foreground">Nova Tarefa</p><p className="text-[10px] text-muted-foreground">Criar tarefa de acompanhamento</p></div>
+                                </Link>
+                                <Link href="/dashboard/clientes" onClick={() => setFabOpen(false)}
+                                    className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 hover:bg-blue-500/10 transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center shadow-md shadow-blue-500/20"><Briefcase className="w-5 h-5 text-white" /></div>
+                                    <div><p className="text-sm font-bold text-foreground">Renegociar Cliente</p><p className="text-[10px] text-muted-foreground">Abrir carteira e renegociar</p></div>
+                                </Link>
+                                <Link href="/dashboard/cet" onClick={() => setFabOpen(false)}
+                                    className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/5 hover:bg-amber-500/10 transition-colors">
+                                    <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shadow-md shadow-amber-500/20"><Calculator className="w-5 h-5 text-white" /></div>
+                                    <div><p className="text-sm font-bold text-foreground">Calcular CET</p><p className="text-[10px] text-muted-foreground">MDR + RAV = Custo Efetivo Total</p></div>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* ═══ MOBILE: "Mais" Drawer (tools + admin + logout) ═══ */}
             {moreOpen && (
@@ -356,5 +392,6 @@ export default function DashboardLayout({
                 </>
             )}
         </div>
+        </ConfirmProvider>
     );
 }

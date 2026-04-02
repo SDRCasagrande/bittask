@@ -7,6 +7,7 @@ import {
     Mail, Plus, Save, ChevronDown, ChevronUp
 } from "lucide-react";
 import { PERMISSIONS, PermissionKey } from "@/lib/permissions";
+import { useConfirm } from "@/components/ConfirmModal";
 
 interface User {
     id: string; name: string; email: string; notificationEmail: string;
@@ -28,6 +29,7 @@ const PERM_GROUPS: Record<string, PermissionKey[]> = {
 };
 
 export default function UsuariosPage() {
+    const confirmAction = useConfirm();
     const [tab, setTab] = useState<Tab>("equipe");
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
@@ -78,7 +80,8 @@ export default function UsuariosPage() {
         try { const res = await fetch(`/api/admin/users/${resetId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ newPassword: resetPw }) }); if (res.ok) { setMsg({ type: "ok", text: "Senha resetada!" }); setResetId(null); setResetPw(""); } } catch { /* */ }
     };
     const deleteUser = async (id: string, name: string) => {
-        if (!confirm(`Excluir ${name}? Todos os dados serão perdidos!`)) return;
+        const { confirmed } = await confirmAction({ title: "Excluir Usuário", message: `Excluir ${name}? Todos os dados serão perdidos!`, variant: "danger", confirmText: "Excluir Usuário" });
+        if (!confirmed) return;
         try { const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" }); const d = await res.json(); if (res.ok) { setMsg({ type: "ok", text: "Usuário excluído" }); load(); } else setMsg({ type: "err", text: d.error || "Erro" }); } catch { /* */ }
     };
 
@@ -100,7 +103,8 @@ export default function UsuariosPage() {
         } catch { setMsg({ type: "err", text: "Erro" }); } finally { setSaving(false); }
     };
     const deleteRole = async (role: Role) => {
-        if (!confirm(`Excluir o cargo "${role.name}"?`)) return;
+        const { confirmed } = await confirmAction({ title: "Excluir Cargo", message: `Excluir o cargo "${role.name}"? Usuários com este cargo perderão as permissões.`, variant: "danger", confirmText: "Excluir Cargo" });
+        if (!confirmed) return;
         try { const res = await fetch(`/api/admin/roles/${role.id}`, { method: "DELETE" }); const d = await res.json(); if (res.ok) { setMsg({ type: "ok", text: "Cargo excluído" }); load(); } else setMsg({ type: "err", text: d.error || "Erro" }); } catch { /* */ }
     };
     const toggleExpand = (role: Role) => { if (expandedId === role.id) { setExpandedId(null); return; } setExpandedId(role.id); setEditPerms(new Set(role.permissions.map(p => p.permission))); };

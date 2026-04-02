@@ -9,6 +9,7 @@ import {
     AlertTriangle, Flag, Clock, Columns3
 } from "lucide-react";
 import KanbanBoard from "@/components/KanbanBoard";
+import { useConfirm } from "@/components/ConfirmModal";
 
 interface UserOption { id: string; name: string; email: string }
 interface TaskData {
@@ -40,6 +41,7 @@ const PRIORITY_MAP: Record<string, { label: string; color: string; bg: string; i
 };
 
 export default function TarefasPage() {
+    const confirmAction = useConfirm();
     const [lists, setLists] = useState<TaskListData[]>([]);
     const [assignedToMe, setAssignedToMe] = useState<TaskData[]>([]);
     const [users, setUsers] = useState<UserOption[]>([]);
@@ -92,9 +94,20 @@ export default function TarefasPage() {
         } catch { /* */ }
     };
 
+    const renameList = async (listId: string, newName: string) => {
+        if (!newName.trim()) return;
+        try { await fetch(`/api/tasks/${listId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newName.trim() }) }); load(); } catch { /* */ }
+    };
+
     const deleteList = async (listId: string, name: string) => {
-        if (!confirm(`Excluir a lista "${name}" e todas as suas tarefas?`)) return;
-        try { await fetch(`/api/tasks/${listId}`, { method: "DELETE" }); load(); } catch { /* */ }
+        const { confirmed } = await confirmAction({
+            title: "Excluir lista",
+            message: `Tem certeza que deseja excluir a lista "${name}" e todas as suas tarefas? Esta ação não pode ser desfeita.`,
+            variant: "danger",
+            confirmText: "Excluir Lista",
+        });
+        if (!confirmed) return;
+        try { await fetch(`/api/tasks/${listId}`, { method: "DELETE" }); setSidebarFilter("all"); load(); } catch { /* */ }
     };
 
     const addTask = async (listId: string, title: string, date?: string, time?: string, assigneeId?: string, priority?: string) => {
@@ -163,7 +176,8 @@ export default function TarefasPage() {
                         <UserPlus className="w-3.5 h-3.5" /> Minhas {assignedToMe.filter(t => !t.completed).length > 0 && <span className="opacity-70">{assignedToMe.filter(t => !t.completed).length}</span>}
                     </button>
                     {lists.map(l => (
-                        <button key={l.id} onClick={() => setSidebarFilter("all")} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-secondary text-muted-foreground">
+                        <button key={l.id} onClick={() => setSidebarFilter(sidebarFilter === `list_${l.id}` ? "all" : `list_${l.id}`)}
+                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${sidebarFilter === `list_${l.id}` ? "bg-[#00A868] text-white" : "bg-secondary text-muted-foreground"}`}>
                             {l.name} <span className="opacity-50">{l.tasks.filter(t => !t.completed).length}</span>
                         </button>
                     ))}
@@ -202,11 +216,12 @@ export default function TarefasPage() {
 
                     <div className="mt-4 mb-1"><span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 px-3">Listas</span></div>
                     {lists.map(l => (
-                        <div key={l.id} className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground">
+                        <button key={l.id} onClick={() => setSidebarFilter(sidebarFilter === `list_${l.id}` ? "all" : `list_${l.id}`)}
+                            className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${sidebarFilter === `list_${l.id}` ? "bg-[#00A868]/15 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}>
                             <CheckSquare className="w-3.5 h-3.5 shrink-0" />
-                            <span className="truncate flex-1">{l.name}</span>
+                            <span className="truncate flex-1 text-left">{l.name}</span>
                             <span className="text-[10px] opacity-50">{l.tasks.filter(t => !t.completed).length}</span>
-                        </div>
+                        </button>
                     ))}
                     {showNewList ? (
                         <div className="px-1 mt-1 flex gap-1">
@@ -250,16 +265,22 @@ export default function TarefasPage() {
                                         onOpenDetail={setDetailTask} isSpecialView />
                                 );
                             })()}
-                            {sidebarFilter === "all" && lists.map(list => (
-                                <ListColumn key={list.id} list={list} users={users}
-                                    onAdd={(title, date, time, assigneeId, priority) => addTask(list.id, title, date, time, assigneeId, priority)}
-                                    onToggle={(id) => { const t = allTasks.find(x => x.id === id) || assignedToMe.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
-                                    onStar={(id) => { const t = allTasks.find(x => x.id === id) || assignedToMe.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
-                                    onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
-                                    onOpenDetail={setDetailTask}
-                                    onDeleteList={lists.length > 1 ? () => deleteList(list.id, list.name) : undefined}
-                                    onClearCompleted={() => { list.tasks.filter(t => t.completed).forEach(t => deleteTask(t.id)); }} />
-                            ))}
+                            {(sidebarFilter === "all" || sidebarFilter.startsWith("list_")) && (() => {
+                                const visibleLists = sidebarFilter.startsWith("list_")
+                                    ? lists.filter(l => l.id === sidebarFilter.replace("list_", ""))
+                                    : lists;
+                                return visibleLists.map(list => (
+                                    <ListColumn key={list.id} list={list} users={users}
+                                        onAdd={(title, date, time, assigneeId, priority) => addTask(list.id, title, date, time, assigneeId, priority)}
+                                        onToggle={(id) => { const t = allTasks.find(x => x.id === id) || assignedToMe.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
+                                        onStar={(id) => { const t = allTasks.find(x => x.id === id) || assignedToMe.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
+                                        onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
+                                        onOpenDetail={setDetailTask}
+                                        onDeleteList={lists.length > 1 ? () => deleteList(list.id, list.name) : undefined}
+                                        onRenameList={(newName) => renameList(list.id, newName)}
+                                        onClearCompleted={() => { list.tasks.filter(t => t.completed).forEach(t => deleteTask(t.id)); }} />
+                                ));
+                            })()}
                             {/* Show assigned-to-me tasks that are NOT in user's own lists */}
                             {sidebarFilter === "all" && (() => {
                                 const ownTaskIds = new Set(allTasks.map(t => t.id));
@@ -354,6 +375,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
     task: TaskData; users: UserOption[];
     onUpdate: (data: Record<string, any>) => void; onDelete: () => void; onClose: () => void;
 }) {
+    const confirmAction = useConfirm();
     const [title, setTitle] = useState(task.title);
     const [description, setDescription] = useState(task.description || "");
     const [priority, setPriority] = useState(task.priority || "medium");
@@ -381,10 +403,8 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
             onUpdate(updates);
         }
 
-        // Show saved animation
         setSaved(true);
         setDirty(false);
-        setTimeout(() => setSaved(false), 2000);
     }
 
     const pri = PRIORITY_MAP[priority] || PRIORITY_MAP.medium;
@@ -474,54 +494,58 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between px-5 py-3 border-t border-border shrink-0">
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => { onUpdate({ starred: !task.starred }); }}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${task.starred ? "bg-amber-500/10 text-amber-500" : "bg-muted text-muted-foreground hover:text-amber-500"}`}>
-                            <Star className={`w-3.5 h-3.5 ${task.starred ? "fill-amber-500" : ""}`} /> {task.starred ? "Favorita" : "Favoritar"}
-                        </button>
-                        <button onClick={() => {
-                            const t = encodeURIComponent(title || task.title);
-                            const desc = encodeURIComponent(`${description || ""}\n\n— BitTask`);
-                            let url = `https://calendar.google.com/calendar/r/eventedit?text=${t}&details=${desc}`;
-                            if (date) {
-                                const d = date.replace(/-/g, "");
-                                if (time) {
-                                    const startTime = `${d}T${time.replace(":", "")}00`;
-                                    const endH = parseInt(time.split(":")[0]) + 1;
-                                    const endTime = `${d}T${String(endH).padStart(2, "0")}${time.split(":")[1]}00`;
-                                    url += `&dates=${startTime}/${endTime}`;
-                                } else {
-                                    url += `&dates=${d}/${d}`;
-                                }
-                            }
-                            window.open(url, "_blank");
-                            onUpdate({ scheduled: true });
-                        }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-500 hover:bg-blue-500/20">
-                            <Calendar className="w-3.5 h-3.5" /> Agendar
-                        </button>
-                        <button onClick={() => { if (confirm("Excluir esta tarefa?")) onDelete(); }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20">
-                            <Trash2 className="w-3.5 h-3.5" /> Excluir
-                        </button>
-                    </div>
-
-                    {/* Save Button */}
-                    <button onClick={handleSave}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg ${
-                            saved
-                                ? "bg-[#00A868] text-white scale-105 shadow-[#00A868]/30"
-                                : dirty
-                                    ? "bg-[#00A868] hover:bg-[#00A868] text-white shadow-[#00A868]/20 animate-pulse"
-                                    : "bg-[#00A868] hover:bg-[#00A868] text-white shadow-[#00A868]/20"
-                        }`}>
-                        {saved ? (
-                            <><Check className="w-4 h-4" /> Salvo!</>
-                        ) : (
-                            <><Check className="w-4 h-4" /> Salvar</>
-                        )}
+                <div className="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3 border-t border-border shrink-0">
+                    <button onClick={() => { onUpdate({ starred: !task.starred }); }}
+                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium ${task.starred ? "bg-amber-500/10 text-amber-500" : "bg-muted text-muted-foreground hover:text-amber-500"}`}>
+                        <Star className={`w-3.5 h-3.5 ${task.starred ? "fill-amber-500" : ""}`} /> {task.starred ? "Favorita" : "Favoritar"}
                     </button>
+                    <button onClick={() => {
+                        const t = encodeURIComponent(title || task.title);
+                        const desc = encodeURIComponent(`${description || ""}\n\n— BitTask`);
+                        let url = `https://calendar.google.com/calendar/r/eventedit?text=${t}&details=${desc}`;
+                        if (date) {
+                            const d = date.replace(/-/g, "");
+                            if (time) {
+                                const startTime = `${d}T${time.replace(":", "")}00`;
+                                const endH = parseInt(time.split(":")[0]) + 1;
+                                const endTime = `${d}T${String(endH).padStart(2, "0")}${time.split(":")[1]}00`;
+                                url += `&dates=${startTime}/${endTime}`;
+                            } else {
+                                url += `&dates=${d}/${d}`;
+                            }
+                        }
+                        window.open(url, "_blank");
+                        onUpdate({ scheduled: true });
+                    }}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-blue-500/10 text-blue-500 hover:bg-blue-500/20">
+                        <Calendar className="w-3.5 h-3.5" /> Agendar
+                    </button>
+                    <button onClick={async () => {
+                        const { confirmed } = await confirmAction({
+                            title: "Excluir tarefa",
+                            message: `Tem certeza que deseja excluir "${title || task.title}"?`,
+                            variant: "danger",
+                            confirmText: "Excluir",
+                        });
+                        if (confirmed) onDelete();
+                    }}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20">
+                        <Trash2 className="w-3.5 h-3.5" /> Excluir
+                    </button>
+
+                    {/* Save Button — pushed to right */}
+                    <div className="ml-auto">
+                    {dirty ? (
+                        <button onClick={handleSave}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#00A868] text-white shadow-lg shadow-[#00A868]/20 hover:bg-[#008f58] animate-pulse transition-all">
+                            <Check className="w-3.5 h-3.5" /> Salvar
+                        </button>
+                    ) : saved ? (
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#00A868]/15 text-[#00A868]">
+                            <Check className="w-3.5 h-3.5" /> Salvo!
+                        </span>
+                    ) : null}
+                    </div>
                 </div>
             </div>
         </div>
@@ -529,7 +553,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
 }
 
 /* ═══ LIST COLUMN ═══ */
-function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onOpenDetail, onDeleteList, onClearCompleted, isSpecialView }: {
+function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onOpenDetail, onDeleteList, onRenameList, onClearCompleted, isSpecialView }: {
     list: { id: string; name: string; tasks: TaskData[] };
     users: UserOption[];
     onAdd: (title: string, date?: string, time?: string, assigneeId?: string, priority?: string) => void;
@@ -540,6 +564,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
     onAssign: (id: string, assigneeId: string | null) => void;
     onOpenDetail: (t: TaskData) => void;
     onDeleteList?: () => void;
+    onRenameList?: (newName: string) => void;
     onClearCompleted?: () => void;
     isSpecialView?: boolean;
 }) {
@@ -552,6 +577,8 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
     const [showMenu, setShowMenu] = useState(false);
     const [showCompleted, setShowCompleted] = useState(false);
     const [assigningId, setAssigningId] = useState<string | null>(null);
+    const [renaming, setRenaming] = useState(false);
+    const [renameName, setRenameName] = useState(list.name);
 
     const pending = list.tasks.filter(t => !t.completed).sort((a, b) => {
         if (a.starred !== b.starred) return Number(b.starred) - Number(a.starred);
@@ -573,7 +600,14 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
         <div className="w-72 shrink-0 card-elevated flex flex-col max-h-[calc(100vh-180px)]">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 shrink-0">
-                <h3 className="text-sm font-bold text-foreground truncate">{list.name}</h3>
+                {renaming ? (
+                    <input value={renameName} onChange={e => setRenameName(e.target.value)} autoFocus
+                        onBlur={() => { if (renameName.trim() && renameName !== list.name && onRenameList) onRenameList(renameName.trim()); setRenaming(false); }}
+                        onKeyDown={e => { if (e.key === "Enter") { if (renameName.trim() && renameName !== list.name && onRenameList) onRenameList(renameName.trim()); setRenaming(false); } if (e.key === "Escape") { setRenameName(list.name); setRenaming(false); } }}
+                        className="flex-1 text-sm font-bold text-foreground bg-transparent border-b-2 border-[#00A868] focus:outline-none mr-2" />
+                ) : (
+                    <h3 className="text-sm font-bold text-foreground truncate">{list.name}</h3>
+                )}
                 <span className="text-[10px] text-muted-foreground mr-auto ml-2">{pending.length}</span>
                 {!isSpecialView && (
                     <div className="relative">
@@ -581,6 +615,12 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                         {showMenu && (<>
                             <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                             <div className="absolute right-0 top-8 z-20 bg-popover border border-border rounded-xl shadow-xl py-1 min-w-[200px]">
+                                {onRenameList && (
+                                    <button onClick={() => { setRenaming(true); setShowMenu(false); }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
+                                        <Pencil className="w-3.5 h-3.5 text-muted-foreground" /> Renomear lista
+                                    </button>
+                                )}
                                 <button onClick={() => { navigator.clipboard.writeText(pending.map(t => `- ${t.title}`).join("\n")); setShowMenu(false); }}
                                     className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
                                     <Copy className="w-3.5 h-3.5 text-muted-foreground" /> Copiar tarefas
