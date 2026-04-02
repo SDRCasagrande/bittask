@@ -10,7 +10,7 @@ import {
     Handshake, Plus, X, ChevronLeft, LayoutGrid, List, Search,
     Calendar, CalendarPlus, CalendarDays, MessageSquare, Clock, User, Trash2, CheckCircle,
     AlertCircle, Loader2, ExternalLink, GripVertical, ArrowRight, FileDown,
-    Flame, Snowflake, Timer
+    Flame, Snowflake, Timer, Send
 } from "lucide-react";
 import { generateProposalPDF } from "@/lib/proposal-pdf";
 import { BrandIcon } from "@/components/BrandIcons";
@@ -266,6 +266,44 @@ export default function NegociacoesPage() {
     const [editingRates, setEditingRates] = useState(false);
     const [drawerRates, setDrawerRates] = useState<RateSnapshot | null>(null);
     const [savingRates, setSavingRates] = useState(false);
+
+    // Comments
+    const [drawerComments, setDrawerComments] = useState<any[]>([]);
+    const [loadingComments, setLoadingComments] = useState(false);
+    const [commentText, setCommentText] = useState("");
+    const [sendingComment, setSendingComment] = useState(false);
+    const commentsEndRef = useRef<HTMLDivElement>(null);
+
+    // Load comments when drawer opens
+    useEffect(() => {
+        if (drawerNeg?.id) {
+            setLoadingComments(true);
+            setDrawerComments([]);
+            fetch(`/api/negotiations/${drawerNeg.id}/comments`)
+                .then(r => r.json())
+                .then(data => { if (Array.isArray(data)) setDrawerComments(data); })
+                .catch(() => {})
+                .finally(() => setLoadingComments(false));
+        }
+    }, [drawerNeg?.id]);
+
+    async function sendComment() {
+        if (!drawerNeg || !commentText.trim()) return;
+        setSendingComment(true);
+        try {
+            const res = await fetch(`/api/negotiations/${drawerNeg.id}/comments`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: commentText.trim() }),
+            });
+            if (res.ok) {
+                const c = await res.json();
+                setDrawerComments(prev => [...prev, c]);
+                setCommentText("");
+                setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+            }
+        } catch { /* */ }
+        setSendingComment(false);
+    }
 
     // New client form
     const [fn, setFN] = useState(""); const [fsc, setFSC] = useState(""); const [fcnpj, setFCNPJ] = useState("");
@@ -958,13 +996,64 @@ export default function NegociacoesPage() {
                             </div>
                         )}
 
-                        {/* Notes */}
+                        {/* Notes (legacy - display only if exists) */}
                         {drawerNeg.notes && (
                             <div className="space-y-1">
-                                <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Observações</h4>
-                                <p className="text-xs text-foreground bg-secondary rounded-xl p-3 whitespace-pre-wrap break-words">{drawerNeg.notes}</p>
+                                <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Observação Inicial</h4>
+                                <p className="text-xs text-foreground bg-secondary rounded-xl p-3 whitespace-pre-wrap break-words italic">{drawerNeg.notes}</p>
                             </div>
                         )}
+
+                        {/* Chat / Documentation */}
+                        <div className="space-y-2 pt-2 border-t border-border">
+                            <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                                <MessageSquare className="w-3 h-3" /> Documentação da Equipe
+                            </h4>
+
+                            {/* Messages */}
+                            <div className="max-h-48 overflow-y-auto space-y-2 py-1">
+                                {loadingComments ? (
+                                    <p className="text-[10px] text-muted-foreground text-center py-3">Carregando...</p>
+                                ) : drawerComments.length === 0 ? (
+                                    <p className="text-[10px] text-muted-foreground/50 text-center py-4 italic">Nenhuma atualização ainda. Documente o progresso desta negociação.</p>
+                                ) : (
+                                    drawerComments.map(c => (
+                                        <div key={c.id} className="flex gap-2 items-start">
+                                            <div className="w-6 h-6 rounded-full bg-[#00A868]/20 text-[#00A868] flex items-center justify-center text-[8px] font-bold shrink-0 mt-0.5">
+                                                {c.user?.name?.charAt(0) || "?"}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-baseline gap-1.5">
+                                                    <span className="text-[10px] font-bold text-foreground">{c.user?.name?.split(" ")[0] || "Usuário"}</span>
+                                                    <span className="text-[9px] text-muted-foreground/50">
+                                                        {new Date(c.createdAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-foreground/80 mt-0.5 whitespace-pre-wrap break-words">{c.content}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                                <div ref={commentsEndRef} />
+                            </div>
+
+                            {/* Input */}
+                            <div className="flex gap-2">
+                                <input
+                                    value={commentText}
+                                    onChange={e => setCommentText(e.target.value)}
+                                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendComment(); } }}
+                                    placeholder="Documentar atualização..."
+                                    className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-xs text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50"
+                                />
+                                <button
+                                    onClick={sendComment}
+                                    disabled={sendingComment || !commentText.trim()}
+                                    className="px-3 py-2 rounded-xl bg-[#00A868] text-white text-xs font-bold hover:bg-[#008f58] transition-colors disabled:opacity-40 shrink-0">
+                                    <Send className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        </div>
 
                         {/* Actions */}
                         <div className="space-y-2 pt-2 border-t border-border">
