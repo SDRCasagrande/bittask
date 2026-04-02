@@ -29,8 +29,8 @@ export function generateWeeklyReportHTML(userName: string, metrics: WeeklyMetric
         <!-- Header -->
         <tr><td style="background:linear-gradient(135deg,#10b981,#059669);border-radius:16px 16px 0 0;padding:28px 32px;text-align:center;">
           <div style="font-size:36px;margin-bottom:8px;">📊</div>
-          <h1 style="margin:0;color:white;font-size:22px;font-weight:700;">Relatório Semanal</h1>
-          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Resumo da sua semana no BitTask</p>
+          <h1 style="margin:0;color:white;font-size:22px;font-weight:700;">Briefing Diário</h1>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Resumo dos últimos 7 dias no BitTask</p>
         </td></tr>
 
         <!-- Body -->
@@ -91,7 +91,7 @@ export function generateWeeklyReportHTML(userName: string, metrics: WeeklyMetric
         <!-- Footer -->
         <tr><td style="padding-top:24px;text-align:center;">
           <p style="color:#475569;font-size:12px;margin:0;">BitTask — Gestão Inteligente de Negociações & Propostas</p>
-          <p style="color:#334155;font-size:11px;margin:8px 0 0;">Relatório automático semanal. Enviado toda segunda-feira.</p>
+          <p style="color:#334155;font-size:11px;margin:8px 0 0;">Briefing diário automático — todo dia às 8h.</p>
         </td></tr>
 
       </table>
@@ -113,7 +113,7 @@ export async function sendWeeklyReport(to: string, userName: string, metrics: We
         const result = await resend.emails.send({
             from: FROM_EMAIL,
             to,
-            subject: `📊 Seu resumo semanal — BitTask`,
+            subject: `📊 Seu briefing diário — BitTask`,
             html,
         });
         console.log(`Weekly report sent to ${to}:`, result);
