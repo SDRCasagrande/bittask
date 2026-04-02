@@ -11,6 +11,7 @@ import {
     Star, ListChecks, XCircle, CalendarPlus
 } from "lucide-react";
 import ActivityPanel from "@/components/ActivityPanel";
+import GoalsWidget from "@/components/GoalsWidget";
 
 interface RenegAlert { negId: string; clientId: string; clientName: string; stoneCode: string; dateAccept: string; renegDate: string; daysLeft: number }
 interface Pipeline { prospeccao: number; proposta_enviada: number; aguardando_cliente: number; aprovado: number; recusado: number; fechado: number }
@@ -165,6 +166,9 @@ export default function DashboardPage() {
                     <p className="text-[10px] text-[#00A868] uppercase font-bold tracking-wider mt-0.5">Sua Comissão</p>
                 </div>
             </div>
+
+            {/* ═══ Goals Widget ═══ */}
+            <GoalsWidget />
 
             {/* ═══ Pipeline Stage Overview ═══ */}
             <div className="card-elevated p-5">

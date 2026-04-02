@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
-/* ═══ BitTaxas — Stone Green + White Theme (Mobile-First) ═══ */
-/* Sem Dark Mode. Cor corporativa Stone #00A868 com fundo Paper White. */
+/* ═══ BitTask — Stone Green Theme with Dark Mode (Mobile-First) ═══ */
 
 :root {
   --background: #f8faf9;
@@ -27,6 +26,31 @@
   --stone-green: #00A868;
   --stone-green-dark: #008f58;
   --stone-green-light: #e6f7ef;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --card: #1e293b;
+  --card-foreground: #e2e8f0;
+  --popover: #1e293b;
+  --popover-foreground: #e2e8f0;
+  --primary: #00A868;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #e2e8f0;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #1e3a2f;
+  --accent-foreground: #e2e8f0;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --ring: #00A868;
+  --stone-green: #00A868;
+  --stone-green-dark: #10b981;
+  --stone-green-light: #1e3a2f;
 }
 
 @theme inline {
@@ -71,9 +95,11 @@
     overscroll-behavior: none;
   }
 
-  /* Force Light Mode — remove class .dark completely */
   html {
     color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
 }
 
@@ -84,7 +110,8 @@
   left: 0;
   right: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--card);
+  opacity: 0.95;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--border);

@@ -30,6 +30,8 @@ model User {
   negotiations      Negotiation[] @relation("NegotiationAssignee")
   teamGroups        TeamGroupMember[]
   googleCalendarToken GoogleCalendarToken?
+  comments      NegotiationComment[]
+  goals         UserGoal[]
 
   @@map("users")
 }
@@ -227,10 +229,41 @@ model Negotiation {
 
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
   assignee User?  @relation("NegotiationAssignee", fields: [assigneeId], references: [id])
+  comments NegotiationComment[]
 
   @@index([clientId])
   @@index([assigneeId])
   @@map("negotiations")
+}
+
+model NegotiationComment {
+  id            String   @id @default(cuid())
+  negotiationId String
+  userId        String
+  content       String
+  createdAt     DateTime @default(now())
+
+  negotiation Negotiation @relation(fields: [negotiationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([negotiationId])
+  @@map("negotiation_comments")
+}
+
+model UserGoal {
+  id            String   @id @default(cuid())
+  userId        String
+  month         String
+  targetClients Int      @default(10)
+  targetTPV     Float    @default(100000)
+  targetDeals   Int      @default(15)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@map("user_goals")
 }
 
 model GoogleCalendarToken {

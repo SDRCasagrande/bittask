@@ -10,6 +10,8 @@ import {
     CheckSquare, Briefcase, MoreHorizontal, Plus, Search, Bell
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/NotificationBell";
 
 /* ═══ Navigation Items ═══ */
 const MAIN_NAV = [
@@ -187,7 +189,7 @@ export default function DashboardLayout({
             {/* ═══ Main Area ═══ */}
             <div className="lg:ml-[260px] flex flex-col min-h-screen">
                 {/* ═══ Top Bar ═══ */}
-                <header className="sticky top-0 z-30 h-14 bg-white/90 backdrop-blur-xl border-b border-border flex items-center justify-between px-4 lg:px-6 shrink-0">
+                <header className="sticky top-0 z-30 h-14 bg-card/90 backdrop-blur-xl border-b border-border flex items-center justify-between px-4 lg:px-6 shrink-0">
                     <div className="flex items-center gap-2">
                         {/* Mobile: Logo only */}
                         <div className="lg:hidden flex items-center gap-2">
@@ -219,6 +221,8 @@ export default function DashboardLayout({
                         <button onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))} className="sm:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground">
                             <Search className="w-4 h-4" />
                         </button>
+                        <NotificationBell />
+                        <ThemeToggle />
                         {user && (
                             <Link href="/dashboard/configuracoes" className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-[#00A868]/10 flex items-center justify-center text-xs font-bold text-[#00A868]">
@@ -292,7 +296,7 @@ export default function DashboardLayout({
                         onClick={() => setMoreOpen(false)}
                     />
                     <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden animate-slide-up safe-area-bottom">
-                        <div className="bg-white rounded-t-3xl border-t border-border shadow-2xl p-5 pb-6 mx-auto max-w-lg">
+                        <div className="bg-card rounded-t-3xl border-t border-border shadow-2xl p-5 pb-6 mx-auto max-w-lg">
                             {/* Drag handle */}
                             <div className="w-10 h-1 rounded-full bg-border mx-auto mb-5" />
 

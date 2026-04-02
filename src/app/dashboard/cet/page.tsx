@@ -395,47 +395,66 @@ tr:nth-child(even){background:#fafafa}
                         </button>
                         <div className={`px-3 pb-3 border-t border-border/30 space-y-2 ${openSection === "taxas" ? "block" : "hidden lg:block"}`}>
                             {/* Brand Toggle Grid */}
-                            <div className="grid grid-cols-2 gap-1.5 mt-2">
+                            {/* Brand Accordion */}
+                            <div className="space-y-1.5 mt-2">
                                 {ALL_BRANDS.map((b) => {
                                     const isEnabled = enabledBrands[b];
                                     const isSelected = activeBrand === b && isEnabled;
+                                    const bRates = brandRates[b] || { debit: 0, credit1x: 0, credit2to6: 0, credit7to12: 0, credit13to18: 0 };
                                     return (
-                                        <button key={b}
-                                            onClick={() => {
-                                                if (!isEnabled) {
-                                                    // Inactive → activate + select
-                                                    toggleBrand(b); setActiveBrand(b);
-                                                } else if (isSelected) {
-                                                    // Already selected → deactivate
-                                                    toggleBrand(b);
-                                                    const next = ALL_BRANDS.find(k => k !== b && enabledBrands[k]);
-                                                    if (next) setActiveBrand(next);
-                                                } else {
-                                                    // Active not selected → select for editing
-                                                    setActiveBrand(b);
-                                                }
-                                            }}
-                                            className={`flex items-center gap-2 px-2.5 py-2 rounded-xl text-left transition-all ${
-                                                isSelected
-                                                    ? "bg-[#00A868]/10 border-2 border-[#00A868] shadow-sm shadow-[#00A868]/10"
-                                                    : isEnabled
-                                                        ? "bg-[#00A868]/5 border-2 border-[#00A868]/30 hover:border-[#00A868]/60"
-                                                        : "bg-secondary/30 border-2 border-transparent opacity-40 hover:opacity-60"
-                                            }`}>
-                                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isEnabled ? "bg-[#00A868]" : "bg-muted-foreground/20"}`} />
-                                            <span className={`text-[11px] font-bold truncate ${isEnabled ? "text-foreground" : "text-muted-foreground/50 line-through"}`}>{b}</span>
-                                            {/* Only custom brands (not in presets) show delete when disabled */}
-                                            {!BRAND_PRESETS[b] && !isEnabled && (
-                                                <div onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const next = { ...brandRates }; delete next[b];
-                                                    setBrandRates(next);
-                                                    const ne = { ...enabledBrands }; delete ne[b];
-                                                    setEnabledBrands(ne);
-                                                    if (activeBrand === b) setActiveBrand(Object.keys(next)[0]);
-                                                }} className="ml-auto w-4 h-4 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-[8px] hover:bg-red-500/20 transition-colors shrink-0">🗑</div>
+                                        <div key={b} className={`rounded-xl transition-all overflow-hidden ${
+                                            isSelected
+                                                ? "bg-[#00A868]/5 border-2 border-[#00A868] shadow-sm shadow-[#00A868]/10"
+                                                : isEnabled
+                                                    ? "bg-[#00A868]/5 border border-[#00A868]/20"
+                                                    : "bg-secondary/20 border border-transparent opacity-40 hover:opacity-60"
+                                        }`}>
+                                            <button
+                                                onClick={() => {
+                                                    if (!isEnabled) {
+                                                        toggleBrand(b); setActiveBrand(b);
+                                                    } else if (isSelected) {
+                                                        toggleBrand(b);
+                                                        const next = ALL_BRANDS.find(k => k !== b && enabledBrands[k]);
+                                                        if (next) setActiveBrand(next);
+                                                    } else {
+                                                        setActiveBrand(b);
+                                                    }
+                                                }}
+                                                className="w-full flex items-center gap-2 px-3 py-2">
+                                                <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isEnabled ? "bg-[#00A868]" : "bg-muted-foreground/20"}`} />
+                                                <span className={`text-xs font-bold truncate ${isEnabled ? "text-foreground" : "text-muted-foreground/50 line-through"}`}>{b}</span>
+                                                {isEnabled && (
+                                                    <span className="ml-auto text-[9px] text-muted-foreground">
+                                                        {bRates.debit > 0 ? `Déb ${formatPercent(bRates.debit)}` : ""}
+                                                        {bRates.credit1x > 0 ? ` · 1x ${formatPercent(bRates.credit1x)}` : ""}
+                                                    </span>
+                                                )}
+                                                {!BRAND_PRESETS[b] && !isEnabled && (
+                                                    <div onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const next = { ...brandRates }; delete next[b];
+                                                        setBrandRates(next);
+                                                        const ne = { ...enabledBrands }; delete ne[b];
+                                                        setEnabledBrands(ne);
+                                                        if (activeBrand === b) setActiveBrand(Object.keys(next)[0]);
+                                                    }} className="ml-auto w-4 h-4 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-[8px] hover:bg-red-500/20 transition-colors shrink-0">🗑</div>
+                                                )}
+                                                {isEnabled && (
+                                                    <svg className={`w-3 h-3 text-muted-foreground transition-transform shrink-0 ${isSelected ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                                                )}
+                                            </button>
+                                            {/* Expanded rate fields */}
+                                            {isSelected && (
+                                                <div className="px-3 pb-3 pt-1 border-t border-[#00A868]/10 grid grid-cols-2 gap-1.5">
+                                                    <RI l="DÉBITO" v={bRates.debit} set={(v) => setBrandRates({ ...brandRates, [b]: { ...bRates, debit: v } })} />
+                                                    <RI l="CRÉD 1x" v={bRates.credit1x} set={(v) => setBrandRates({ ...brandRates, [b]: { ...bRates, credit1x: v } })} />
+                                                    <RI l="2-6x" v={bRates.credit2to6} set={(v) => setBrandRates({ ...brandRates, [b]: { ...bRates, credit2to6: v } })} />
+                                                    <RI l="7-12x" v={bRates.credit7to12} set={(v) => setBrandRates({ ...brandRates, [b]: { ...bRates, credit7to12: v } })} />
+                                                    <RI l="13-18x" v={bRates.credit13to18} set={(v) => setBrandRates({ ...brandRates, [b]: { ...bRates, credit13to18: v } })} />
+                                                </div>
                                             )}
-                                        </button>
+                                        </div>
                                     );
                                 })}
                                 {/* Add Brand */}
@@ -456,7 +475,7 @@ tr:nth-child(even){background:#fafafa}
                                                 if (e.key === "Escape") { setNewBrandInput(""); setShowNewBrand(false); }
                                             }}
                                             placeholder="Nome da bandeira"
-                                            className="flex-1 px-2.5 py-1.5 text-xs rounded-lg bg-white border border-[#00A868]/30 text-foreground focus:ring-1 focus:ring-[#00A868]" />
+                                            className="flex-1 px-2.5 py-1.5 text-xs rounded-lg bg-secondary border border-[#00A868]/30 text-foreground focus:ring-1 focus:ring-[#00A868]" />
                                         <button onClick={() => {
                                             const name = newBrandInput.trim();
                                             if (name && !brandRates[name]) {
@@ -467,7 +486,7 @@ tr:nth-child(even){background:#fafafa}
                                             setNewBrandInput(""); setShowNewBrand(false);
                                         }} className="px-3 py-1.5 text-xs rounded-lg bg-[#00A868] text-white font-bold hover:bg-[#008f58] transition-colors">Salvar</button>
                                         <button onClick={() => { setNewBrandInput(""); setShowNewBrand(false); }}
-                                            className="px-2 py-1.5 text-xs rounded-lg bg-secondary text-muted-foreground hover:bg-muted transition-colors">Cancelar</button>
+                                            className="px-2 py-1.5 text-xs rounded-lg bg-secondary text-muted-foreground hover:bg-muted transition-colors">✕</button>
                                     </div>
                                 ) : (
                                     <button onClick={() => setShowNewBrand(true)}
@@ -475,13 +494,6 @@ tr:nth-child(even){background:#fafafa}
                                         <span className="text-sm">+</span> Adicionar Bandeira
                                     </button>
                                 )}
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <RI l="DÉBITO" v={sr.debit} set={(v) => setBrandRates({ ...brandRates, [activeBrand]: { ...sr, debit: v } })} />
-                                <RI l="CRÉD 1x" v={sr.credit1x} set={(v) => setBrandRates({ ...brandRates, [activeBrand]: { ...sr, credit1x: v } })} />
-                                <RI l="2-6x" v={sr.credit2to6} set={(v) => setBrandRates({ ...brandRates, [activeBrand]: { ...sr, credit2to6: v } })} />
-                                <RI l="7-12x" v={sr.credit7to12} set={(v) => setBrandRates({ ...brandRates, [activeBrand]: { ...sr, credit7to12: v } })} />
-                                <RI l="13-18x" v={sr.credit13to18} set={(v) => setBrandRates({ ...brandRates, [activeBrand]: { ...sr, credit13to18: v } })} />
                             </div>
                         </div>
                     </div>

@@ -9,8 +9,9 @@ import { PhoneInput } from "@/components/PhoneInput";
 import {
     Handshake, Plus, X, ChevronLeft, LayoutGrid, List, Search,
     Calendar, CalendarPlus, CalendarDays, MessageSquare, Clock, User, Trash2, CheckCircle,
-    AlertCircle, Loader2, ExternalLink, GripVertical, ArrowRight
+    AlertCircle, Loader2, ExternalLink, GripVertical, ArrowRight, FileDown
 } from "lucide-react";
+import { generateProposalPDF } from "@/lib/proposal-pdf";
 
 const BRAND_NAMES = Object.keys(BRAND_PRESETS);
 interface BrandRateSet { [brand: string]: { debit: number; credit1x: number; credit2to6: number; credit7to12: number } }
@@ -457,6 +458,13 @@ export default function NegociacoesPage() {
                                                     <a href={gcalLink(neg)} target="_blank" rel="noopener noreferrer" className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold text-blue-500 bg-blue-500/8 hover:bg-blue-500/15 flex items-center justify-center gap-0.5 transition-colors" title="Calendário">
                                                         <CalendarPlus className="w-3 h-3" /> Agendar
                                                     </a>
+                                                    <button onClick={() => generateProposalPDF(
+                                                        { name: neg.clientName, stoneCode: neg.stoneCode, cnpj: neg.cnpj, phone: neg.clientPhone },
+                                                        neg,
+                                                        "Agente"
+                                                    )} className="py-1.5 px-2 rounded-lg text-[10px] font-semibold text-purple-500 bg-purple-500/8 hover:bg-purple-500/15 flex items-center justify-center gap-0.5 transition-colors" title="Exportar PDF">
+                                                        <FileDown className="w-3 h-3" /> PDF
+                                                    </button>
                                                     {normalizeStatus(neg.status) !== "fechado" && normalizeStatus(neg.status) !== "recusado" && (
                                                         <button onClick={() => {
                                                             const idx = STAGES.findIndex(s => s.id === normalizeStatus(neg.status));
