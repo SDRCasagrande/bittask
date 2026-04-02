@@ -63,6 +63,7 @@ export default function TarefasPage() {
     const [globalAdding, setGlobalAdding] = useState(false);
     const [globalAddListId, setGlobalAddListId] = useState<string>("");
     const [globalAddDate, setGlobalAddDate] = useState<string>("");
+    const [globalAddTime, setGlobalAddTime] = useState<string>("");
 
     function nextRoundedTime() {
         const now = new Date();
@@ -72,9 +73,10 @@ export default function TarefasPage() {
         return `${String(h % 24).padStart(2, "0")}:${String(roundedMins).padStart(2, "0")}`;
     }
 
-    function openAddTask(listId?: string, date?: string) {
+    function openAddTask(listId?: string, date?: string, time?: string) {
         setGlobalAddListId(listId || (lists.length > 0 ? lists[0].id : ""));
         setGlobalAddDate(date || "");
+        setGlobalAddTime(time || "");
         setGlobalAdding(true);
     }
 
@@ -478,7 +480,7 @@ export default function TarefasPage() {
                                                     </div>
                                                     <div className="flex-1 relative">
                                                         {/* :00 slot */}
-                                                        <div onClick={() => openAddTask(undefined, calDateStr)}
+                                                        <div onClick={() => openAddTask(undefined, calDateStr, `${String(h).padStart(2, "0")}:00`)}
                                                             className="h-[30px] border-b border-border/30 hover:bg-[#00A868]/5 cursor-pointer transition-colors flex items-center gap-1 px-2">
                                                             {tasksAtH.filter(t => parseInt(t.time!.split(":")[1]) < 30).map(t => (
                                                                 <button key={t.id} onClick={(e) => { e.stopPropagation(); setDetailTask(t); }}
@@ -495,7 +497,7 @@ export default function TarefasPage() {
                                                             <span className="opacity-0 group-hover:opacity-40 text-[9px] text-muted-foreground ml-auto">+</span>
                                                         </div>
                                                         {/* :30 slot */}
-                                                        <div onClick={() => openAddTask(undefined, calDateStr)}
+                                                        <div onClick={() => openAddTask(undefined, calDateStr, `${String(h).padStart(2, "0")}:30`)}
                                                             className="h-[30px] hover:bg-[#00A868]/5 cursor-pointer transition-colors flex items-center gap-1 px-2">
                                                             {tasksAtH.filter(t => parseInt(t.time!.split(":")[1]) >= 30).map(t => (
                                                                 <button key={t.id} onClick={(e) => { e.stopPropagation(); setDetailTask(t); }}
@@ -550,7 +552,7 @@ export default function TarefasPage() {
                                                 const eventsAtH = getEventsForDate(wd.date).filter(e => e.time && parseInt(e.time.split(":")[0]) === h);
                                                 return (
                                                     <div key={wd.date} className={`flex-1 min-w-[80px] lg:min-w-[100px] border-r border-border ${isToday ? "bg-[#00A868]/3" : ""}`}>
-                                                        <div onClick={() => openAddTask(undefined, wd.date)}
+                                                        <div onClick={() => openAddTask(undefined, wd.date, `${String(h).padStart(2, "0")}:00`)}
                                                             className="h-[28px] border-b border-border/20 hover:bg-[#00A868]/5 cursor-pointer transition-colors px-0.5 flex items-center gap-0.5 overflow-hidden">
                                                             {tasksAtH.filter(t => parseInt(t.time!.split(":")[1]) < 30).map(t => (
                                                                 <button key={t.id} onClick={(e) => { e.stopPropagation(); setDetailTask(t); }}
@@ -565,7 +567,7 @@ export default function TarefasPage() {
                                                                 </button>
                                                             ))}
                                                         </div>
-                                                        <div onClick={() => openAddTask(undefined, wd.date)}
+                                                        <div onClick={() => openAddTask(undefined, wd.date, `${String(h).padStart(2, "0")}:30`)}
                                                             className="h-[28px] hover:bg-[#00A868]/5 cursor-pointer transition-colors px-0.5 flex items-center gap-0.5 overflow-hidden">
                                                             {tasksAtH.filter(t => parseInt(t.time!.split(":")[1]) >= 30).map(t => (
                                                                 <button key={t.id} onClick={(e) => { e.stopPropagation(); setDetailTask(t); }}
@@ -663,7 +665,7 @@ export default function TarefasPage() {
                     users={users}
                     defaultListId={globalAddListId}
                     defaultDate={globalAddDate || today()}
-                    defaultTime={nextRoundedTime()}
+                    defaultTime={globalAddTime || nextRoundedTime()}
                     onSave={(listId, title, date, time, assigneeId, priority, description) => {
                         addTask(listId, title, date, time, assigneeId, priority, description);
                         setGlobalAdding(false);
@@ -1132,6 +1134,11 @@ function AddTaskModal({ lists, users, defaultListId, defaultDate, defaultTime, o
     const [showRecurrence, setShowRecurrence] = useState(false);
     const [showListPicker, setShowListPicker] = useState(false);
     const [showAssigneePicker, setShowAssigneePicker] = useState(false);
+
+    // Sync props → state when modal re-opens with new defaults
+    useEffect(() => { setDate(defaultDate); }, [defaultDate]);
+    useEffect(() => { setTime(defaultTime); }, [defaultTime]);
+    useEffect(() => { setListId(defaultListId); }, [defaultListId]);
 
     const handleSave = () => {
         if (!title.trim() || !listId) return;

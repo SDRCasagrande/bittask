@@ -270,34 +270,34 @@ export default function DashboardLayout({
                         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] animate-fade-in" onClick={() => setCalModalOpen(false)} />
                         <div className="fixed inset-4 lg:inset-8 z-[61] flex flex-col rounded-2xl overflow-hidden border border-border bg-card shadow-2xl animate-slide-up">
                             {/* Header */}
-                            <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card shrink-0">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-xl bg-[#4285F4]/10 flex items-center justify-center">
+                            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div className="w-8 h-8 rounded-xl bg-[#4285F4]/10 flex items-center justify-center shrink-0">
                                         <CalendarDays className="w-4 h-4 text-[#4285F4]" />
                                     </div>
-                                    <div>
-                                        <h3 className="text-sm font-bold text-foreground">Google Calendar</h3>
-                                        {gcalEmail && <p className="text-[10px] text-muted-foreground">{gcalEmail}</p>}
+                                    <div className="min-w-0">
+                                        <h3 className="text-sm font-bold text-foreground truncate">Google Calendar</h3>
+                                        {gcalEmail && <p className="text-[10px] text-muted-foreground truncate">{gcalEmail}</p>}
                                     </div>
-                                    {gcalConnected && <span className="w-2 h-2 rounded-full bg-[#00A868] animate-pulse" />}
+                                    {gcalConnected && <span className="w-2 h-2 rounded-full bg-[#00A868] animate-pulse shrink-0" />}
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5 shrink-0">
                                     <button onClick={() => { setCalModalOpen(false); window.location.href = "/dashboard/tarefas"; }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00A868] text-white hover:bg-[#008f58] shadow-sm transition-all active:scale-95">
+                                        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00A868] text-white hover:bg-[#008f58] shadow-sm transition-all active:scale-95">
                                         <Plus className="w-3 h-3" /> Nova Tarefa
                                     </button>
                                     <button onClick={() => { setCalModalOpen(false); window.location.href = "/dashboard/tarefas"; }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                                        <CheckSquare className="w-3 h-3" /> Ver Tarefas
+                                        className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                                        <CheckSquare className="w-3 h-3" /> Tarefas
                                     </button>
                                     {gcalConnected && (
                                         <button onClick={() => window.open("https://calendar.google.com", "_blank")}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                                            <ExternalLink className="w-3 h-3" /> <span className="hidden sm:inline">Abrir no Google</span>
+                                            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                                            <ExternalLink className="w-3 h-3" />
                                         </button>
                                     )}
                                     <button onClick={() => setCalModalOpen(false)}
-                                        className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                                        className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors" title="Fechar">
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>

@@ -111,8 +111,17 @@ function RatesForm({ rates, set }: { rates: RateSnapshot; set: (r: RateSnapshot)
     function handleBrandClick(b: string) {
         const isEnabled = enabledBrands[b] !== false;
         if (isEnabled) {
-            setActiveBrand(b);
+            // If it's the active brand, deactivate it and select next
+            if (activeBrand === b) {
+                setEnabledBrands(prev => ({ ...prev, [b]: false }));
+                const next = Object.keys(br).find(k => k !== b && enabledBrands[k] !== false);
+                if (next) setActiveBrand(next);
+            } else {
+                // Just select it as active
+                setActiveBrand(b);
+            }
         } else {
+            // Enable and select
             setEnabledBrands(prev => ({ ...prev, [b]: true }));
             setActiveBrand(b);
         }
