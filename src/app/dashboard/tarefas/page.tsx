@@ -92,9 +92,11 @@ export default function TarefasPage() {
     useEffect(() => { load(); }, [load]);
 
     // Check Google Calendar status
+    const [gcalEmail, setGcalEmail] = useState("");
     useEffect(() => {
         fetch("/api/google-calendar/status").then(r => r.json()).then(d => {
             setGcalConnected(d.connected === true);
+            if (d.googleEmail) setGcalEmail(d.googleEmail);
         }).catch(() => setGcalConnected(false));
     }, []);
 
@@ -388,77 +390,83 @@ export default function TarefasPage() {
                 )}
 
                 {view === "calendar" && (
-                    <div className="flex-1 overflow-auto space-y-3">
-                        {/* Google Calendar Connection Banner */}
+                    <div className="flex-1 overflow-hidden flex flex-col">
+                        {/* Not connected — show connection prompt */}
                         {gcalConnected === false && (
-                            <div className="card-elevated p-4 flex flex-col sm:flex-row items-center gap-3 border-l-4 border-[#4285F4]">
-                                <div className="w-10 h-10 rounded-xl bg-[#4285F4]/10 flex items-center justify-center shrink-0">
-                                    <CalendarDays className="w-5 h-5 text-[#4285F4]" />
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="card-elevated p-8 max-w-md text-center space-y-5">
+                                    <div className="w-16 h-16 rounded-2xl bg-[#4285F4]/10 flex items-center justify-center mx-auto">
+                                        <CalendarDays className="w-8 h-8 text-[#4285F4]" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-lg font-bold text-foreground">Conectar Google Calendar</h3>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            Veja sua agenda Google diretamente aqui. Tarefas criadas no BitTask aparecem automaticamente no seu calendário.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => { setGcalConnecting(true); window.location.href = "/api/google-calendar/auth"; }}
+                                        disabled={gcalConnecting}
+                                        className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-[#4285F4] text-white hover:bg-[#3367D6] shadow-lg shadow-[#4285F4]/20 transition-all active:scale-95 mx-auto disabled:opacity-50"
+                                    >
+                                        {gcalConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                            <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                        )}
+                                        {gcalConnecting ? "Conectando..." : "Conectar com Google"}
+                                    </button>
                                 </div>
-                                <div className="flex-1 min-w-0 text-center sm:text-left">
-                                    <p className="text-sm font-bold text-foreground">Conectar Google Calendar</p>
-                                    <p className="text-[11px] text-muted-foreground">Sincronize tarefas com sua agenda Google — bidirecional, em tempo real.</p>
-                                </div>
-                                <button
-                                    onClick={() => { setGcalConnecting(true); window.location.href = "/api/google-calendar/auth"; }}
-                                    disabled={gcalConnecting}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-[#4285F4] text-white hover:bg-[#3367D6] shadow-lg shadow-[#4285F4]/20 transition-all active:scale-95 shrink-0 disabled:opacity-50"
-                                >
-                                    {gcalConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-                                    {gcalConnecting ? "Conectando..." : "Conectar Google"}
-                                </button>
                             </div>
                         )}
+
+                        {/* Loading state */}
+                        {gcalConnected === null && (
+                            <div className="flex-1 flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 animate-spin text-[#4285F4]" />
+                            </div>
+                        )}
+
+                        {/* Connected — show real Google Calendar embed */}
                         {gcalConnected === true && (
-                            <div className="card-elevated p-3 flex items-center gap-3 border-l-4 border-[#00A868]">
-                                <div className="w-8 h-8 rounded-lg bg-[#00A868]/10 flex items-center justify-center shrink-0">
-                                    <CalendarDays className="w-4 h-4 text-[#00A868]" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-bold text-[#00A868] flex items-center gap-1.5">
+                            <div className="flex-1 flex flex-col rounded-2xl overflow-hidden border border-border card-elevated">
+                                {/* Toolbar */}
+                                <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-card shrink-0">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-[#4285F4]/10 flex items-center justify-center">
+                                            <CalendarDays className="w-3.5 h-3.5 text-[#4285F4]" />
+                                        </div>
+                                        <span className="text-xs font-bold text-foreground">Google Calendar</span>
                                         <span className="w-1.5 h-1.5 rounded-full bg-[#00A868] animate-pulse" />
-                                        Google Calendar conectado
-                                    </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {gcalEmail && <span className="text-[10px] text-muted-foreground">{gcalEmail}</span>}
+                                        <button onClick={() => window.open("https://calendar.google.com", "_blank")}
+                                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                                            <ExternalLink className="w-3 h-3" /> Abrir no Google
+                                        </button>
+                                    </div>
                                 </div>
+                                {/* Google Calendar Embed iframe */}
+                                <iframe
+                                    src={`https://calendar.google.com/calendar/embed?${new URLSearchParams({
+                                        src: gcalEmail || "primary",
+                                        ctz: "America/Sao_Paulo",
+                                        mode: "WEEK",
+                                        showTitle: "0",
+                                        showNav: "1",
+                                        showDate: "1",
+                                        showPrint: "0",
+                                        showTabs: "1",
+                                        showCalendars: "0",
+                                        showTz: "0",
+                                        bgcolor: "#1a1a2e",
+                                        color: "#00A868",
+                                    }).toString()}`}
+                                    className="flex-1 w-full border-0 min-h-[600px]"
+                                    style={{ colorScheme: "auto" }}
+                                    allow="fullscreen"
+                                />
                             </div>
                         )}
-                        <div className="card-elevated overflow-hidden">
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                                <button onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); } else setCalMonth(calMonth - 1); }} className="p-1.5 rounded-lg hover:bg-muted"><ChevronLeft className="w-4 h-4" /></button>
-                                <span className="text-sm font-bold text-foreground capitalize">{monthLabel}</span>
-                                <button onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(calYear + 1); } else setCalMonth(calMonth + 1); }} className="p-1.5 rounded-lg hover:bg-muted"><ChevronRight className="w-4 h-4" /></button>
-                            </div>
-                            <div className="grid grid-cols-7 text-center text-[10px] font-bold uppercase text-muted-foreground border-b border-border">
-                                {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(d => <div key={d} className="py-2">{d}</div>)}
-                            </div>
-                            <div className="grid grid-cols-7">
-                                {calDays.map((cell, i) => {
-                                    const isToday = cell.date === today();
-                                    const totalItems = cell.tasks.length + (cell.gcalEvents?.length || 0);
-                                    return (
-                                        <div key={i} className={`min-h-[80px] border-b border-r border-border p-1.5 ${cell.day === 0 ? "bg-muted/10" : isToday ? "bg-[#00A868]/5" : ""}`}>
-                                            {cell.day > 0 && (<>
-                                                <span className={`text-xs font-bold ${isToday ? "bg-[#00A868] text-white w-6 h-6 rounded-full inline-flex items-center justify-center" : "text-foreground"}`}>{cell.day}</span>
-                                                <div className="space-y-0.5 mt-1">
-                                                    {cell.tasks.slice(0, 3).map(t => (
-                                                        <div key={t.id} onClick={() => setDetailTask(t)} className={`text-[10px] truncate px-1.5 py-0.5 rounded-md font-medium cursor-pointer hover:opacity-80 ${t.starred ? "bg-amber-500/15 text-amber-600" : "bg-[#00A868]/10 text-[#00A868]"}`}>
-                                                            {t.time && <span className="font-bold">{t.time} </span>}{t.title}
-                                                        </div>
-                                                    ))}
-                                                    {cell.gcalEvents?.slice(0, Math.max(0, 3 - cell.tasks.length)).map(e => (
-                                                        <div key={e.id} onClick={() => window.open(e.htmlLink, "_blank")}
-                                                            className="text-[10px] truncate px-1.5 py-0.5 rounded-md font-medium cursor-pointer hover:opacity-80 bg-[#4285F4]/10 text-[#4285F4]">
-                                                            {e.time && <span className="font-bold">{e.time} </span>}{e.title}
-                                                        </div>
-                                                    ))}
-                                                    {totalItems > 3 && <span className="text-[10px] text-muted-foreground px-1">+{totalItems - 3}</span>}
-                                                </div>
-                                            </>)}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
                     </div>
                 )}
             </div>

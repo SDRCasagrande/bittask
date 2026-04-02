@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
-import { isCalendarConnected } from '@/lib/google-calendar';
+import { isCalendarConnected, getCalendarClient } from '@/lib/google-calendar';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback');
 
@@ -15,13 +15,25 @@ export async function GET() {
         const userId = payload.userId as string;
 
         const connected = await isCalendarConnected(userId);
+        let googleEmail = '';
+
+        if (connected) {
+            try {
+                const calendar = await getCalendarClient(userId);
+                if (calendar) {
+                    const calList = await calendar.calendarList.get({ calendarId: 'primary' });
+                    googleEmail = calList.data.id || '';
+                }
+            } catch { /* non-blocking */ }
+        }
 
         return NextResponse.json({
             connected,
+            googleEmail,
             configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
         });
     } catch (error) {
         console.error('[GCal Status] Error:', error);
-        return NextResponse.json({ connected: false, configured: false }, { status: 500 });
+        return NextResponse.json({ connected: false, configured: false, googleEmail: '' }, { status: 500 });
     }
 }
