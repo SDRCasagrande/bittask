@@ -6,7 +6,7 @@ import {
     Star, ChevronLeft, ChevronRight, ListTodo, CalendarDays,
     ExternalLink, MoreVertical, ChevronDown, Loader2, UserPlus,
     Pencil, SortAsc, Copy, Check, X, Users, MessageSquare,
-    AlertTriangle, Flag, Clock, Columns3
+    AlertTriangle, Flag, Clock, Columns3, Repeat, Sun
 } from "lucide-react";
 import KanbanBoard from "@/components/KanbanBoard";
 import { useConfirm } from "@/components/ConfirmModal";
@@ -56,6 +56,23 @@ export default function TarefasPage() {
     const [detailTask, setDetailTask] = useState<TaskData | null>(null);
     const [gcalConnected, setGcalConnected] = useState<boolean | null>(null);
     const [gcalConnecting, setGcalConnecting] = useState(false);
+
+    // ═══ Global "Add Task" modal state (elevated to page level) ═══
+    const [globalAdding, setGlobalAdding] = useState(false);
+    const [globalAddListId, setGlobalAddListId] = useState<string>("");
+
+    function nextRoundedTime() {
+        const now = new Date();
+        const mins = now.getMinutes();
+        const roundedMins = mins < 30 ? 30 : 0;
+        const h = mins < 30 ? now.getHours() : now.getHours() + 1;
+        return `${String(h % 24).padStart(2, "0")}:${String(roundedMins).padStart(2, "0")}`;
+    }
+
+    function openAddTask(listId?: string) {
+        setGlobalAddListId(listId || (lists.length > 0 ? lists[0].id : ""));
+        setGlobalAdding(true);
+    }
 
     const load = useCallback(async () => {
         try {
@@ -242,7 +259,7 @@ export default function TarefasPage() {
                     <div className="mt-4 mb-1"><span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 px-3">Listas</span></div>
                     <button onClick={() => setSidebarFilter("assigned")}
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${sidebarFilter === "assigned" ? "bg-purple-500/20 text-purple-500 border border-purple-500/20" : "text-muted-foreground hover:bg-muted/50 border border-transparent"}`}>
-                        <CheckSquare className="w-4 h-4 shrink-0" /> Minhas Tarefas
+                        <UserPlus className="w-4 h-4 shrink-0" /> Atribuídas a mim
                         <span className="ml-auto text-[10px] bg-purple-500/10 text-purple-400 px-1.5 py-0.5 rounded-full font-bold">{assignedToMe.filter(t => !t.completed).length}</span>
                     </button>
                     {lists.map(l => (
@@ -324,7 +341,8 @@ export default function TarefasPage() {
                                         onOpenDetail={setDetailTask}
                                         onDeleteList={lists.length > 1 ? () => deleteList(list.id, list.name) : undefined}
                                         onRenameList={(newName) => renameList(list.id, newName)}
-                                        onClearCompleted={() => { list.tasks.filter(t => t.completed).forEach(t => deleteTask(t.id)); }} />
+                                        onClearCompleted={() => { list.tasks.filter(t => t.completed).forEach(t => deleteTask(t.id)); }}
+                                        onOpenAddTask={() => openAddTask(list.id)} />
                                 ));
                             })()}
                             {/* Show assigned-to-me tasks that are NOT in user's own lists */}
@@ -445,6 +463,22 @@ export default function TarefasPage() {
                 )}
             </div>
 
+            {/* Global Add Task Modal */}
+            {globalAdding && (
+                <AddTaskModal
+                    lists={lists}
+                    users={users}
+                    defaultListId={globalAddListId}
+                    defaultDate={today()}
+                    defaultTime={nextRoundedTime()}
+                    onSave={(listId, title, date, time, assigneeId, priority, description) => {
+                        addTask(listId, title, date, time, assigneeId, priority, description);
+                        setGlobalAdding(false);
+                    }}
+                    onClose={() => setGlobalAdding(false)}
+                />
+            )}
+
             {/* Detail Modal */}
             {detailTask && (
                 <TaskDetailModal task={detailTask} users={users}
@@ -480,7 +514,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
     const [loadingComments, setLoadingComments] = useState(true);
 
     useEffect(() => {
-        fetch(`/api/tasks/${task.id}/comments`).then(r => r.json()).then(d => {
+        fetch(`/api/tasks/item/${task.id}/comments`).then(r => r.json()).then(d => {
             if (Array.isArray(d)) setComments(d);
         }).catch(() => {}).finally(() => setLoadingComments(false));
     }, [task.id]);
@@ -488,7 +522,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
     const addComment = async () => {
         if (!newComment.trim()) return;
         try {
-            const res = await fetch(`/api/tasks/${task.id}/comments`, {
+            const res = await fetch(`/api/tasks/item/${task.id}/comments`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text: newComment.trim() }),
             });
@@ -518,7 +552,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
             onUpdate(updates);
             // Refresh comments after save (in case auto-log triggers)
             setTimeout(() => {
-                fetch(`/api/tasks/${task.id}/comments`).then(r => r.json()).then(d => {
+                fetch(`/api/tasks/item/${task.id}/comments`).then(r => r.json()).then(d => {
                     if (Array.isArray(d)) setComments(d);
                 }).catch(() => {});
             }, 500);
@@ -720,7 +754,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
 }
 
 /* ═══ LIST COLUMN ═══ */
-function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onOpenDetail, onDeleteList, onRenameList, onClearCompleted, isSpecialView }: {
+function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onOpenDetail, onDeleteList, onRenameList, onClearCompleted, isSpecialView, onOpenAddTask }: {
     list: { id: string; name: string; tasks: TaskData[] };
     users: UserOption[];
     onAdd: (title: string, date?: string, time?: string, assigneeId?: string, priority?: string, description?: string) => void;
@@ -734,14 +768,8 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
     onRenameList?: (newName: string) => void;
     onClearCompleted?: () => void;
     isSpecialView?: boolean;
+    onOpenAddTask?: () => void;
 }) {
-    const [adding, setAdding] = useState(false);
-    const [newTitle, setNewTitle] = useState("");
-    const [newDesc, setNewDesc] = useState("");
-    const [newDate, setNewDate] = useState("");
-    const [newTime, setNewTime] = useState("");
-    const [newAssignee, setNewAssignee] = useState("");
-    const [newPriority, setNewPriority] = useState("medium");
     const [showMenu, setShowMenu] = useState(false);
     const [showCompleted, setShowCompleted] = useState(false);
     const [assigningId, setAssigningId] = useState<string | null>(null);
@@ -757,13 +785,6 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
     const completed = list.tasks.filter(t => t.completed);
-
-    const handleAdd = () => {
-        if (!newTitle.trim()) return;
-        onAdd(newTitle.trim(), newDate, newTime, newAssignee || undefined, newPriority, newDesc || undefined);
-        setNewTitle(""); setNewDesc(""); setNewDate(""); setNewTime(""); setNewAssignee(""); setNewPriority("medium");
-        setAdding(false);
-    };
 
     return (
         <div className="w-72 shrink-0 card-elevated flex flex-col max-h-[calc(100vh-180px)]">
@@ -815,86 +836,10 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
 
             {/* Add Task */}
             <div className="px-3 pt-3 pb-1 shrink-0">
-                {!isSpecialView ? (
-                    <button onClick={() => setAdding(true)} className="w-full flex items-center gap-2 text-sm text-[#00A868] hover:text-[#008f58] py-1"><Plus className="w-4 h-4" /> Adicionar uma tarefa</button>
+                {!isSpecialView && onOpenAddTask ? (
+                    <button onClick={onOpenAddTask} className="w-full flex items-center gap-2 text-sm text-[#00A868] hover:text-[#008f58] py-1"><Plus className="w-4 h-4" /> Adicionar uma tarefa</button>
                 ) : null}
             </div>
-
-            {/* Add Task Modal — Google Tasks Style */}
-            {adding && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setAdding(false)}>
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                    <div className="relative w-full max-w-md card-elevated shadow-2xl rounded-2xl animate-in zoom-in-95 fade-in duration-200" onClick={e => e.stopPropagation()}>
-                        {/* Close button */}
-                        <button onClick={() => setAdding(false)} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-muted text-muted-foreground z-10">
-                            <X className="w-4 h-4" />
-                        </button>
-
-                        <div className="p-5 space-y-4">
-                            {/* Title */}
-                            <input value={newTitle} onChange={e => setNewTitle(e.target.value)} autoFocus
-                                onKeyDown={e => { if (e.key === "Enter" && newTitle.trim()) handleAdd(); }}
-                                placeholder="Adicionar título"
-                                className="w-full text-lg font-medium text-foreground bg-transparent border-b-2 border-border focus:border-[#00A868] focus:outline-none pb-2 placeholder-muted-foreground/50 transition-colors" />
-
-                            {/* Date & Time row */}
-                            <div className="flex items-center gap-3">
-                                <div className="text-muted-foreground"><Clock className="w-4 h-4" /></div>
-                                <div className="flex gap-2 flex-1">
-                                    <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
-                                        className="px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
-                                    <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
-                                        className="px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
-                                </div>
-                            </div>
-
-                            {/* Description */}
-                            <div className="flex items-start gap-3">
-                                <div className="text-muted-foreground mt-2"><MessageSquare className="w-4 h-4" /></div>
-                                <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)}
-                                    rows={3} placeholder="Adicionar uma descrição"
-                                    className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 resize-none" />
-                            </div>
-
-                            {/* Assignee & Priority row */}
-                            <div className="flex gap-2">
-                                <div className="flex items-center gap-2 flex-1">
-                                    <UserPlus className="w-4 h-4 text-muted-foreground shrink-0" />
-                                    <select value={newAssignee} onChange={e => setNewAssignee(e.target.value)}
-                                        className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none">
-                                        <option value="">Sem responsável</option>
-                                        {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                                    </select>
-                                </div>
-                                <select value={newPriority} onChange={e => setNewPriority(e.target.value)}
-                                    className="px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none">
-                                    <option value="high">🔴 Alta</option>
-                                    <option value="medium">🟡 Média</option>
-                                    <option value="low">🔵 Baixa</option>
-                                </select>
-                            </div>
-
-                            {/* List indicator */}
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
-                                <ListTodo className="w-3.5 h-3.5" />
-                                <span>{list.name}</span>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">
-                            <button onClick={() => { setAdding(false); setNewTitle(""); setNewDesc(""); }}
-                                className="px-4 py-2 text-sm font-medium text-[#00A868] hover:bg-muted rounded-xl transition-colors">
-                                Cancelar
-                            </button>
-                            <button onClick={handleAdd} disabled={!newTitle.trim()}
-                                className="px-5 py-2 text-sm font-bold bg-[#00A868] text-white rounded-xl hover:bg-[#008f58] disabled:opacity-30 transition-all shadow-lg shadow-[#00A868]/20">
-                                Salvar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Tasks */}
             <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5">
@@ -940,7 +885,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                     );
                 })}
 
-                {pending.length === 0 && !adding && (
+                {pending.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-10 text-muted-foreground/40"><CheckSquare className="w-10 h-10 mb-2" /><p className="text-xs">Não há tarefas</p></div>
                 )}
 
@@ -959,6 +904,198 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
                         ))}</div>}
                     </div>
                 )}
+            </div>
+        </div>
+    );
+}
+
+/* ═══ ADD TASK MODAL — Premium Redesigned ═══ */
+const RECURRENCE_OPTIONS = [
+    { value: "none", label: "Não se repete" },
+    { value: "daily", label: "Diariamente" },
+    { value: "weekly", label: "Semanalmente" },
+    { value: "monthly", label: "Mensalmente" },
+    { value: "yearly", label: "Anualmente" },
+];
+
+function AddTaskModal({ lists, users, defaultListId, defaultDate, defaultTime, onSave, onClose }: {
+    lists: TaskListData[];
+    users: UserOption[];
+    defaultListId: string;
+    defaultDate: string;
+    defaultTime: string;
+    onSave: (listId: string, title: string, date?: string, time?: string, assigneeId?: string, priority?: string, description?: string) => void;
+    onClose: () => void;
+}) {
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [date, setDate] = useState(defaultDate);
+    const [time, setTime] = useState(defaultTime);
+    const [allDay, setAllDay] = useState(false);
+    const [priority, setPriority] = useState("medium");
+    const [assignee, setAssignee] = useState("");
+    const [listId, setListId] = useState(defaultListId);
+    const [recurrence, setRecurrence] = useState("none");
+    const [showRecurrence, setShowRecurrence] = useState(false);
+
+    const handleSave = () => {
+        if (!title.trim() || !listId) return;
+        onSave(listId, title.trim(), date || undefined, allDay ? undefined : time || undefined, assignee || undefined, priority, description || undefined);
+    };
+
+    const priorities = [
+        { value: "low", label: "Baixa", color: "text-[#00A868]", bg: "bg-[#00A868]/10", border: "border-[#00A868]/30", activeBg: "bg-[#00A868]", activeText: "text-white" },
+        { value: "medium", label: "Média", color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/30", activeBg: "bg-amber-500", activeText: "text-white" },
+        { value: "high", label: "Alta", color: "text-red-500", bg: "bg-red-500/10", border: "border-red-500/30", activeBg: "bg-red-500", activeText: "text-white" },
+    ];
+
+    const selectedList = lists.find(l => l.id === listId);
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div className="relative w-full max-w-lg card-elevated shadow-2xl rounded-2xl animate-in zoom-in-95 fade-in duration-200" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-[#00A868] flex items-center justify-center text-white shadow-lg shadow-[#00A868]/20">
+                            <Plus className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-base font-bold text-foreground">Nova Tarefa</h3>
+                    </div>
+                    <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                    {/* Title */}
+                    <input value={title} onChange={e => setTitle(e.target.value)} autoFocus
+                        onKeyDown={e => { if (e.key === "Enter" && title.trim()) handleSave(); }}
+                        placeholder="O que precisa ser feito?"
+                        className="w-full text-lg font-medium text-foreground bg-transparent border-b-2 border-border focus:border-[#00A868] focus:outline-none pb-2 placeholder-muted-foreground/50 transition-colors" />
+
+                    {/* ── Date & Time ── */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Quando</label>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-2 flex-1 min-w-[140px]">
+                                <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
+                                <input type="date" value={date} onChange={e => setDate(e.target.value)}
+                                    className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
+                            </div>
+                            {!allDay && (
+                                <div className="flex items-center gap-2 min-w-[120px]">
+                                    <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                                    <input type="time" value={time} onChange={e => setTime(e.target.value)}
+                                        className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
+                                </div>
+                            )}
+                            <button onClick={() => setAllDay(!allDay)}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition-all ${allDay ? "bg-[#00A868] text-white border-[#00A868] shadow-lg shadow-[#00A868]/20" : "bg-muted/50 text-muted-foreground border-border hover:border-[#00A868]/50"}`}>
+                                <Sun className="w-3.5 h-3.5" />
+                                Dia todo
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* ── Recurrence ── */}
+                    <div className="relative">
+                        <button onClick={() => setShowRecurrence(!showRecurrence)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all w-full justify-between ${recurrence !== "none" ? "bg-purple-500/10 text-purple-500 border-purple-500/30" : "bg-muted/50 text-muted-foreground border-border hover:border-[#00A868]/50"}`}>
+                            <span className="flex items-center gap-1.5">
+                                <Repeat className="w-3.5 h-3.5" />
+                                {RECURRENCE_OPTIONS.find(r => r.value === recurrence)?.label || "Não se repete"}
+                            </span>
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showRecurrence ? "rotate-180" : ""}`} />
+                        </button>
+                        {showRecurrence && (<>
+                            <div className="fixed inset-0 z-10" onClick={() => setShowRecurrence(false)} />
+                            <div className="absolute left-0 top-10 z-20 w-full bg-popover border border-border rounded-xl shadow-xl py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                                {RECURRENCE_OPTIONS.map(opt => (
+                                    <button key={opt.value} onClick={() => { setRecurrence(opt.value); setShowRecurrence(false); }}
+                                        className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm transition-colors ${recurrence === opt.value ? "text-[#00A868] font-bold bg-[#00A868]/5" : "text-foreground hover:bg-muted"}`}>
+                                        {recurrence === opt.value && <Check className="w-3.5 h-3.5" />}
+                                        <span className={recurrence === opt.value ? "" : "ml-5"}>{opt.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </>)}
+                    </div>
+
+                    {/* ── Priority Pills ── */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prioridade</label>
+                        <div className="flex gap-2">
+                            {priorities.map(p => (
+                                <button key={p.value} onClick={() => setPriority(p.value)}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold border transition-all ${priority === p.value
+                                        ? `${p.activeBg} ${p.activeText} border-transparent shadow-lg`
+                                        : `${p.bg} ${p.color} ${p.border} hover:opacity-80`}`}>
+                                    <Flag className="w-3.5 h-3.5" />
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ── List Picker ── */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Lista</label>
+                        <div className="flex items-center gap-2">
+                            <ListTodo className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <select value={listId} onChange={e => setListId(e.target.value)}
+                                className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50">
+                                {lists.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* ── Assignee ── */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Responsável</label>
+                        <div className="flex items-center gap-2">
+                            <UserPlus className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <select value={assignee} onChange={e => setAssignee(e.target.value)}
+                                className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50">
+                                <option value="">Sem responsável</option>
+                                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* ── Description ── */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição</label>
+                        <textarea value={description} onChange={e => setDescription(e.target.value)}
+                            rows={3} placeholder="Adicionar detalhes, notas..."
+                            className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 resize-none" />
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between gap-2 px-5 py-3 border-t border-border">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <CheckSquare className="w-3.5 h-3.5" />
+                        <span>{selectedList?.name || "Selecione uma lista"}</span>
+                        {recurrence !== "none" && (
+                            <span className="flex items-center gap-1 ml-2 px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-500 font-medium">
+                                <Repeat className="w-3 h-3" />
+                                {RECURRENCE_OPTIONS.find(r => r.value === recurrence)?.label}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button onClick={onClose}
+                            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors">
+                            Cancelar
+                        </button>
+                        <button onClick={handleSave} disabled={!title.trim() || !listId}
+                            className="px-5 py-2 text-sm font-bold bg-[#00A868] text-white rounded-xl hover:bg-[#008f58] disabled:opacity-30 transition-all shadow-lg shadow-[#00A868]/20 active:scale-95">
+                            Criar Tarefa
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
