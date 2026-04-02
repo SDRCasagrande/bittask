@@ -408,44 +408,59 @@ tr:nth-child(even){background:#fafafa}
                                                 ? "bg-[#00A868]/5 border-2 border-[#00A868] shadow-sm shadow-[#00A868]/10"
                                                 : isEnabled
                                                     ? "bg-[#00A868]/5 border border-[#00A868]/20"
-                                                    : "bg-secondary/20 border border-transparent opacity-40 hover:opacity-60"
+                                                    : "bg-secondary/30 border border-border/50"
                                         }`}>
-                                            <button
-                                                onClick={() => {
-                                                    if (!isEnabled) {
-                                                        toggleBrand(b); setActiveBrand(b);
-                                                    } else if (isSelected) {
-                                                        toggleBrand(b);
-                                                        const next = ALL_BRANDS.find(k => k !== b && enabledBrands[k]);
-                                                        if (next) setActiveBrand(next);
-                                                    } else {
-                                                        setActiveBrand(b);
-                                                    }
-                                                }}
-                                                className="w-full flex items-center gap-2 px-3 py-2">
-                                                <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isEnabled ? "bg-[#00A868]" : "bg-muted-foreground/20"}`} />
-                                                <BrandIcon brand={b} size={12} />
-                                                <span className={`text-xs font-bold truncate ${isEnabled ? "text-foreground" : "text-muted-foreground/50 line-through"}`}>{b}</span>
-                                                {isEnabled && (
-                                                    <span className="ml-auto text-[9px] text-muted-foreground">
-                                                        {bRates.debit > 0 ? `Déb ${formatPercent(bRates.debit)}` : ""}
-                                                        {bRates.credit1x > 0 ? ` · 1x ${formatPercent(bRates.credit1x)}` : ""}
-                                                    </span>
-                                                )}
-                                                {!BRAND_PRESETS[b] && !isEnabled && (
-                                                    <div onClick={(e) => {
+                                            <div className="flex items-center gap-0 px-1.5 py-1.5">
+                                                {/* Toggle ✓/✗ */}
+                                                <button
+                                                    onClick={(e) => {
                                                         e.stopPropagation();
+                                                        toggleBrand(b);
+                                                        if (!isEnabled) setActiveBrand(b);
+                                                        else if (activeBrand === b) {
+                                                            const next = ALL_BRANDS.find(k => k !== b && enabledBrands[k]);
+                                                            if (next) setActiveBrand(next);
+                                                        }
+                                                    }}
+                                                    className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-sm font-bold transition-all ${
+                                                        isEnabled
+                                                            ? "bg-[#00A868] text-white shadow-sm shadow-[#00A868]/30"
+                                                            : "bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                                                    }`}
+                                                    title={isEnabled ? "Desativar bandeira" : "Ativar bandeira"}>
+                                                    {isEnabled ? "✓" : "✗"}
+                                                </button>
+
+                                                {/* Brand info — click to expand */}
+                                                <button
+                                                    onClick={() => { if (isEnabled) setActiveBrand(isSelected ? "" : b); }}
+                                                    className={`flex-1 flex items-center gap-2 px-2 py-1 rounded-lg transition-colors ${isEnabled ? "hover:bg-[#00A868]/5 cursor-pointer" : "cursor-default"}`}>
+                                                    <BrandIcon brand={b} size={12} />
+                                                    <span className={`text-xs font-bold truncate ${isEnabled ? "text-foreground" : "text-muted-foreground/50 line-through"}`}>{b}</span>
+                                                    {isEnabled && (
+                                                        <span className="ml-auto text-[9px] text-muted-foreground">
+                                                            {bRates.debit > 0 ? `Déb ${formatPercent(bRates.debit)}` : ""}
+                                                            {bRates.credit1x > 0 ? ` · 1x ${formatPercent(bRates.credit1x)}` : ""}
+                                                        </span>
+                                                    )}
+                                                </button>
+
+                                                {/* Delete custom brand */}
+                                                {!BRAND_PRESETS[b] && !isEnabled && (
+                                                    <button onClick={() => {
                                                         const next = { ...brandRates }; delete next[b];
                                                         setBrandRates(next);
                                                         const ne = { ...enabledBrands }; delete ne[b];
                                                         setEnabledBrands(ne);
                                                         if (activeBrand === b) setActiveBrand(Object.keys(next)[0]);
-                                                    }} className="ml-auto w-4 h-4 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-[8px] hover:bg-red-500/20 transition-colors shrink-0">🗑</div>
+                                                    }} className="w-7 h-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center text-xs hover:bg-red-500/20 transition-colors shrink-0">🗑</button>
                                                 )}
+
+                                                {/* Expand chevron */}
                                                 {isEnabled && (
-                                                    <svg className={`w-3 h-3 text-muted-foreground transition-transform shrink-0 ${isSelected ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                                                    <svg className={`w-3.5 h-3.5 text-muted-foreground transition-transform shrink-0 ${isSelected ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                                                 )}
-                                            </button>
+                                            </div>
                                             {/* Expanded rate fields */}
                                             {isSelected && (
                                                 <div className="px-3 pb-3 pt-1 border-t border-[#00A868]/10 grid grid-cols-2 gap-1.5">
