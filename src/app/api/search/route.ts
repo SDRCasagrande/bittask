@@ -16,6 +16,7 @@ export async function GET(request: Request) {
         // Search clients
         const clients = await prisma.client.findMany({
             where: {
+                userId: session.userId,
                 OR: [
                     { name: { contains: q, mode: 'insensitive' } },
                     { cnpj: { contains: q } },
@@ -41,6 +42,7 @@ export async function GET(request: Request) {
         const negotiations = await prisma.negotiation.findMany({
             where: {
                 client: {
+                    userId: session.userId,
                     OR: [
                         { name: { contains: q, mode: 'insensitive' } },
                         { cnpj: { contains: q } },
@@ -70,8 +72,10 @@ export async function GET(request: Request) {
         const tasks = await prisma.task.findMany({
             where: {
                 OR: [
-                    { title: { contains: q, mode: 'insensitive' } },
-                    { description: { contains: q, mode: 'insensitive' } },
+                    { list: { userId: session.userId }, title: { contains: q, mode: 'insensitive' } },
+                    { list: { userId: session.userId }, description: { contains: q, mode: 'insensitive' } },
+                    { assigneeId: session.userId, title: { contains: q, mode: 'insensitive' } },
+                    { assigneeId: session.userId, description: { contains: q, mode: 'insensitive' } },
                 ],
             },
             take: 5,
