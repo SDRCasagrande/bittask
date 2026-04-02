@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
     // ─── APP SUBDOMAIN (app.bittask.com.br) ───
 
     // Public paths
-    const publicPaths = ['/login', '/convite', '/primeiro-acesso', '/api/auth/login', '/api/auth/forgot-password', '/api/seed', '/api/google-calendar/callback', '/api/billing/webhook'];
+    const publicPaths = ['/login', '/convite', '/primeiro-acesso', '/api/auth/login', '/api/auth/forgot-password', '/api/seed', '/api/google-calendar/callback', '/api/billing/webhook', '/api/admin/promote'];
     if (publicPaths.some(p => pathname.startsWith(p))) {
         if (pathname === '/login' && isAuth) {
             return NextResponse.redirect(new URL('/dashboard', request.url));

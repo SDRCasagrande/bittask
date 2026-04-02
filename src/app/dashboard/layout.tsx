@@ -7,7 +7,8 @@ import Image from "next/image";
 import {
     LayoutDashboard, Calculator, FileBarChart, GitCompare,
     Handshake, Settings, Users, LogOut, Menu, X, ChevronRight,
-    CheckSquare, Briefcase, MoreHorizontal, Plus, Search, Bell
+    CheckSquare, Briefcase, MoreHorizontal, Plus, Search, Bell,
+    CalendarDays, Loader2, ExternalLink
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -56,6 +57,10 @@ export default function DashboardLayout({
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [moreOpen, setMoreOpen] = useState(false);
     const [fabOpen, setFabOpen] = useState(false);
+    const [calModalOpen, setCalModalOpen] = useState(false);
+    const [gcalEmail, setGcalEmail] = useState("");
+    const [gcalConnected, setGcalConnected] = useState<boolean | null>(null);
+    const [gcalLoaded, setGcalLoaded] = useState(false);
     const [user, setUser] = useState<{ name: string; email: string } | null>(null);
     const router = useRouter();
     const pathname = usePathname();
@@ -226,6 +231,18 @@ export default function DashboardLayout({
                         <button onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))} className="sm:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground">
                             <Search className="w-4 h-4" />
                         </button>
+                        <button onClick={() => {
+                            setCalModalOpen(true);
+                            if (!gcalLoaded) {
+                                fetch("/api/google-calendar/status").then(r => r.json()).then(d => {
+                                    setGcalConnected(d.connected === true);
+                                    if (d.googleEmail) setGcalEmail(d.googleEmail);
+                                }).catch(() => setGcalConnected(false));
+                                setGcalLoaded(true);
+                            }
+                        }} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-[#4285F4] transition-colors" title="Agenda">
+                            <CalendarDays className="w-4 h-4" />
+                        </button>
                         <NotificationBell />
                         <ThemeToggle />
                         {user && (
@@ -246,6 +263,82 @@ export default function DashboardLayout({
 
                 {/* Command Palette (Ctrl+K) */}
                 <CommandPalette />
+
+                {/* ═══ Calendar Quick Modal ═══ */}
+                {calModalOpen && (
+                    <>
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] animate-fade-in" onClick={() => setCalModalOpen(false)} />
+                        <div className="fixed inset-4 lg:inset-8 z-[61] flex flex-col rounded-2xl overflow-hidden border border-border bg-card shadow-2xl animate-slide-up">
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-xl bg-[#4285F4]/10 flex items-center justify-center">
+                                        <CalendarDays className="w-4 h-4 text-[#4285F4]" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-bold text-foreground">Google Calendar</h3>
+                                        {gcalEmail && <p className="text-[10px] text-muted-foreground">{gcalEmail}</p>}
+                                    </div>
+                                    {gcalConnected && <span className="w-2 h-2 rounded-full bg-[#00A868] animate-pulse" />}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {gcalConnected && (
+                                        <button onClick={() => window.open("https://calendar.google.com", "_blank")}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                                            <ExternalLink className="w-3 h-3" /> Abrir no Google
+                                        </button>
+                                    )}
+                                    <button onClick={() => setCalModalOpen(false)}
+                                        className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                            {/* Body */}
+                            <div className="flex-1 overflow-hidden">
+                                {gcalConnected === null && (
+                                    <div className="flex-1 h-full flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 animate-spin text-[#4285F4]" />
+                                    </div>
+                                )}
+                                {gcalConnected === false && (
+                                    <div className="flex-1 h-full flex items-center justify-center">
+                                        <div className="text-center space-y-4 p-8">
+                                            <div className="w-16 h-16 rounded-2xl bg-[#4285F4]/10 flex items-center justify-center mx-auto">
+                                                <CalendarDays className="w-8 h-8 text-[#4285F4]" />
+                                            </div>
+                                            <h3 className="text-lg font-bold">Conectar Google Calendar</h3>
+                                            <p className="text-sm text-muted-foreground max-w-sm">Conecte sua conta Google para ver sua agenda aqui.</p>
+                                            <button onClick={() => { window.location.href = "/api/google-calendar/auth"; }}
+                                                className="px-6 py-3 rounded-xl text-sm font-bold bg-[#4285F4] text-white hover:bg-[#3367D6] shadow-lg shadow-[#4285F4]/20 transition-all active:scale-95 mx-auto">
+                                                Conectar com Google
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                {gcalConnected === true && (
+                                    <iframe
+                                        src={`https://calendar.google.com/calendar/embed?${new URLSearchParams({
+                                            src: gcalEmail || "primary",
+                                            ctz: "America/Sao_Paulo",
+                                            mode: "WEEK",
+                                            showTitle: "0",
+                                            showNav: "1",
+                                            showDate: "1",
+                                            showPrint: "0",
+                                            showTabs: "1",
+                                            showCalendars: "0",
+                                            showTz: "0",
+                                        }).toString()}`}
+                                        className="w-full h-full border-0"
+                                        allow="fullscreen"
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    </>
+                )}
+
             <LizzeChat />
             </div>
 
