@@ -15,7 +15,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ task
         // Get existing task first (for calendar sync)
         const existingTask = await prisma.task.findUnique({
             where: { id: taskId },
-            select: { googleCalendarEventId: true, title: true, date: true, time: true, description: true, completed: true },
+            select: { googleCalendarEventId: true, title: true, date: true, time: true, description: true, completed: true, assigneeId: true, dueDate: true },
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,6 +28,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ task
         if (body.priority !== undefined) data.priority = body.priority;
         if (body.date !== undefined) data.date = body.date;
         if (body.time !== undefined) data.time = body.time;
+        if (body.dueDate !== undefined) data.dueDate = body.dueDate;
         if (body.assigneeId !== undefined) data.assigneeId = body.assigneeId || null;
 
         const task = await prisma.task.update({
@@ -92,6 +93,42 @@ export async function PUT(request: Request, { params }: { params: Promise<{ task
         } catch (gcalError) {
             console.error('[GCal] Sync error (non-blocking):', gcalError);
         }
+
+        // Auto-log activity comments
+        try {
+            if (body.assigneeId !== undefined && body.assigneeId !== existingTask?.assigneeId) {
+                const assigneeName = task.assignee?.name || 'Ninguém';
+                await prisma.taskComment.create({
+                    data: {
+                        taskId,
+                        userId: session.userId,
+                        userName: session.name || 'Sistema',
+                        text: `📌 Atribuiu para ${assigneeName}`,
+                    },
+                });
+            }
+            if (body.dueDate && body.dueDate !== existingTask?.dueDate) {
+                const prazoFormatted = new Date(body.dueDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                await prisma.taskComment.create({
+                    data: {
+                        taskId,
+                        userId: session.userId,
+                        userName: session.name || 'Sistema',
+                        text: `⏰ Definiu prazo: ${prazoFormatted}`,
+                    },
+                });
+            }
+            if (body.completed === true) {
+                await prisma.taskComment.create({
+                    data: {
+                        taskId,
+                        userId: session.userId,
+                        userName: session.name || 'Sistema',
+                        text: `✅ Marcou como concluída`,
+                    },
+                });
+            }
+        } catch { /* non-blocking */ }
 
         return NextResponse.json(task);
     } catch (error) {

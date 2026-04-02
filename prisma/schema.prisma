@@ -58,6 +58,7 @@ model Task {
   completed   Boolean  @default(false)
   date        String   @default("")
   time        String   @default("")
+  dueDate     String   @default("")
   starred     Boolean  @default(false)
   scheduled   Boolean  @default(false)
   priority    String   @default("medium")
@@ -69,16 +70,31 @@ model Task {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  list      TaskList   @relation(fields: [listId], references: [id], onDelete: Cascade)
-  createdBy User       @relation("TaskCreator", fields: [createdById], references: [id])
-  assignee  User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  group     TeamGroup? @relation(fields: [groupId], references: [id])
+  list      TaskList      @relation(fields: [listId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("TaskCreator", fields: [createdById], references: [id])
+  assignee  User?         @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  group     TeamGroup?    @relation(fields: [groupId], references: [id])
+  comments  TaskComment[]
 
   @@index([listId])
   @@index([createdById])
   @@index([assigneeId])
   @@index([groupId])
   @@map("tasks")
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String
+  userName  String
+  text      String
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("task_comments")
 }
 
 model TeamGroup {

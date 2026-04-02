@@ -14,7 +14,7 @@ import { useConfirm } from "@/components/ConfirmModal";
 interface UserOption { id: string; name: string; email: string }
 interface TaskData {
     id: string; title: string; description: string; completed: boolean; date: string; time: string;
-    starred: boolean; scheduled: boolean; priority: string; listId: string; createdById: string;
+    dueDate: string; starred: boolean; scheduled: boolean; priority: string; listId: string; createdById: string;
     assigneeId: string | null;
     assignee: UserOption | null;
     createdBy: { id: string; name: string };
@@ -81,6 +81,21 @@ export default function TarefasPage() {
         }).catch(() => setGcalConnected(false));
     }, []);
 
+    // Google Calendar events
+    interface GCalEvent { id: string; title: string; date: string; time: string; isGoogleEvent: boolean; isBitTask: boolean; htmlLink: string }
+    const [gcalEvents, setGcalEvents] = useState<GCalEvent[]>([]);
+
+    useEffect(() => {
+        if (!gcalConnected) return;
+        const timeMin = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-01`;
+        const lastDay = new Date(calYear, calMonth + 1, 0).getDate();
+        const timeMax = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${lastDay}`;
+        fetch(`/api/google-calendar/events?timeMin=${timeMin}&timeMax=${timeMax}`)
+            .then(r => r.json())
+            .then(d => { if (Array.isArray(d.events)) setGcalEvents(d.events); })
+            .catch(() => {});
+    }, [gcalConnected, calMonth, calYear]);
+
     const allTasks = useMemo(() => lists.flatMap(l => l.tasks), [lists]);
     const totalPending = allTasks.filter(t => !t.completed).length;
     const totalStarred = allTasks.filter(t => t.starred && !t.completed).length;
@@ -119,9 +134,9 @@ export default function TarefasPage() {
         try { await fetch(`/api/tasks/${listId}`, { method: "DELETE" }); setSidebarFilter("all"); load(); } catch { /* */ }
     };
 
-    const addTask = async (listId: string, title: string, date?: string, time?: string, assigneeId?: string, priority?: string) => {
+    const addTask = async (listId: string, title: string, date?: string, time?: string, assigneeId?: string, priority?: string, description?: string) => {
         try {
-            await fetch(`/api/tasks/${listId}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, date, time, assigneeId, priority }) });
+            await fetch(`/api/tasks/${listId}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, date, time, assigneeId, priority, description }) });
             load();
         } catch { /* */ }
     };
@@ -146,14 +161,15 @@ export default function TarefasPage() {
     const calDays = useMemo(() => {
         const lastDay = new Date(calYear, calMonth + 1, 0).getDate();
         const startDow = new Date(calYear, calMonth, 1).getDay();
-        const days: { day: number; date: string; tasks: TaskData[] }[] = [];
-        for (let i = 0; i < startDow; i++) days.push({ day: 0, date: "", tasks: [] });
+        const days: { day: number; date: string; tasks: TaskData[]; gcalEvents: GCalEvent[] }[] = [];
+        for (let i = 0; i < startDow; i++) days.push({ day: 0, date: "", tasks: [], gcalEvents: [] });
         for (let d = 1; d <= lastDay; d++) {
             const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-            days.push({ day: d, date: dateStr, tasks: allTasks.filter(t => t.date === dateStr && !t.completed) });
+            const dayGcalEvents = gcalEvents.filter(e => e.date === dateStr && !e.isBitTask);
+            days.push({ day: d, date: dateStr, tasks: allTasks.filter(t => t.date === dateStr && !t.completed), gcalEvents: dayGcalEvents });
         }
         return days;
-    }, [calMonth, calYear, allTasks]);
+    }, [calMonth, calYear, allTasks, gcalEvents]);
     const monthLabel = new Date(calYear, calMonth).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
     if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-[#00A868]" /></div>;
@@ -224,22 +240,43 @@ export default function TarefasPage() {
                     </>)}
 
                     <div className="mt-4 mb-1"><span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 px-3">Listas</span></div>
+                    <button onClick={() => setSidebarFilter("assigned")}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${sidebarFilter === "assigned" ? "bg-purple-500/20 text-purple-500 border border-purple-500/20" : "text-muted-foreground hover:bg-muted/50 border border-transparent"}`}>
+                        <CheckSquare className="w-4 h-4 shrink-0" /> Minhas Tarefas
+                        <span className="ml-auto text-[10px] bg-purple-500/10 text-purple-400 px-1.5 py-0.5 rounded-full font-bold">{assignedToMe.filter(t => !t.completed).length}</span>
+                    </button>
                     {lists.map(l => (
                         <button key={l.id} onClick={() => setSidebarFilter(sidebarFilter === `list_${l.id}` ? "all" : `list_${l.id}`)}
-                            className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${sidebarFilter === `list_${l.id}` ? "bg-[#00A868]/15 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}>
+                            className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${sidebarFilter === `list_${l.id}` ? "bg-[#00A868]/15 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}>
                             <CheckSquare className="w-3.5 h-3.5 shrink-0" />
                             <span className="truncate flex-1 text-left">{l.name}</span>
                             <span className="text-[10px] opacity-50">{l.tasks.filter(t => !t.completed).length}</span>
                         </button>
                     ))}
-                    {showNewList ? (
-                        <div className="px-1 mt-1 flex gap-1">
-                            <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => e.key === "Enter" && createList()} autoFocus placeholder="Nome..."
-                                className="flex-1 px-2 py-1 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none min-w-0" />
-                            <button onClick={createList} className="px-2 py-1 bg-[#00A868] text-white rounded-lg text-xs">OK</button>
+                    <button onClick={() => setShowNewList(true)} className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"><Plus className="w-3.5 h-3.5" /> Criar nova lista</button>
+
+                    {/* Create List Modal — Google Tasks Style */}
+                    {showNewList && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowNewList(false)}>
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                            <div className="relative w-full max-w-sm card-elevated shadow-2xl rounded-2xl p-5 animate-in zoom-in-95 fade-in duration-200" onClick={e => e.stopPropagation()}>
+                                <h3 className="text-base font-bold text-foreground mb-4">Criar nova lista</h3>
+                                <input value={newListName} onChange={e => setNewListName(e.target.value)}
+                                    onKeyDown={e => { if (e.key === "Enter" && newListName.trim()) createList(); if (e.key === "Escape") setShowNewList(false); }}
+                                    autoFocus placeholder="Digite o nome"
+                                    className="w-full text-sm text-foreground bg-transparent border-b-2 border-border focus:border-[#00A868] focus:outline-none pb-2 placeholder-muted-foreground/50 transition-colors mb-6" />
+                                <div className="flex items-center justify-end gap-3">
+                                    <button onClick={() => { setShowNewList(false); setNewListName(""); }}
+                                        className="px-4 py-2 text-sm font-medium text-[#00A868] hover:bg-muted rounded-xl transition-colors">
+                                        Cancelar
+                                    </button>
+                                    <button onClick={createList} disabled={!newListName.trim()}
+                                        className="px-4 py-2 text-sm font-medium text-[#00A868] hover:bg-muted rounded-xl transition-colors disabled:opacity-30">
+                                        Concluir
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    ) : (
-                        <button onClick={() => setShowNewList(true)} className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"><Plus className="w-3.5 h-3.5" /> Criar nova lista</button>
                     )}
                 </div>
 
@@ -280,7 +317,7 @@ export default function TarefasPage() {
                                     : lists;
                                 return visibleLists.map(list => (
                                     <ListColumn key={list.id} list={list} users={users}
-                                        onAdd={(title, date, time, assigneeId, priority) => addTask(list.id, title, date, time, assigneeId, priority)}
+                                        onAdd={(title, date, time, assigneeId, priority, description) => addTask(list.id, title, date, time, assigneeId, priority, description)}
                                         onToggle={(id) => { const t = allTasks.find(x => x.id === id) || assignedToMe.find(x => x.id === id); if (t) updateTask(id, { completed: !t.completed }); }}
                                         onStar={(id) => { const t = allTasks.find(x => x.id === id) || assignedToMe.find(x => x.id === id); if (t) updateTask(id, { starred: !t.starred }); }}
                                         onDelete={deleteTask} onSchedule={scheduleToCalendar} onAssign={(id, a) => updateTask(id, { assigneeId: a })}
@@ -379,6 +416,7 @@ export default function TarefasPage() {
                             <div className="grid grid-cols-7">
                                 {calDays.map((cell, i) => {
                                     const isToday = cell.date === today();
+                                    const totalItems = cell.tasks.length + (cell.gcalEvents?.length || 0);
                                     return (
                                         <div key={i} className={`min-h-[80px] border-b border-r border-border p-1.5 ${cell.day === 0 ? "bg-muted/10" : isToday ? "bg-[#00A868]/5" : ""}`}>
                                             {cell.day > 0 && (<>
@@ -389,7 +427,13 @@ export default function TarefasPage() {
                                                             {t.time && <span className="font-bold">{t.time} </span>}{t.title}
                                                         </div>
                                                     ))}
-                                                    {cell.tasks.length > 3 && <span className="text-[10px] text-muted-foreground px-1">+{cell.tasks.length - 3}</span>}
+                                                    {cell.gcalEvents?.slice(0, Math.max(0, 3 - cell.tasks.length)).map(e => (
+                                                        <div key={e.id} onClick={() => window.open(e.htmlLink, "_blank")}
+                                                            className="text-[10px] truncate px-1.5 py-0.5 rounded-md font-medium cursor-pointer hover:opacity-80 bg-[#4285F4]/10 text-[#4285F4]">
+                                                            {e.time && <span className="font-bold">{e.time} </span>}{e.title}
+                                                        </div>
+                                                    ))}
+                                                    {totalItems > 3 && <span className="text-[10px] text-muted-foreground px-1">+{totalItems - 3}</span>}
                                                 </div>
                                             </>)}
                                         </div>
@@ -424,9 +468,37 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
     const [date, setDate] = useState(task.date);
     const [time, setTime] = useState(task.time);
     const [assigneeId, setAssigneeId] = useState(task.assigneeId || "");
+    const [dueDate, setDueDate] = useState(task.dueDate || "");
     const [editingTitle, setEditingTitle] = useState(false);
     const [saved, setSaved] = useState(false);
     const [dirty, setDirty] = useState(false);
+
+    // Comments/updates
+    interface TaskComment { id: string; userId: string; userName: string; text: string; createdAt: string }
+    const [comments, setComments] = useState<TaskComment[]>([]);
+    const [newComment, setNewComment] = useState("");
+    const [loadingComments, setLoadingComments] = useState(true);
+
+    useEffect(() => {
+        fetch(`/api/tasks/${task.id}/comments`).then(r => r.json()).then(d => {
+            if (Array.isArray(d)) setComments(d);
+        }).catch(() => {}).finally(() => setLoadingComments(false));
+    }, [task.id]);
+
+    const addComment = async () => {
+        if (!newComment.trim()) return;
+        try {
+            const res = await fetch(`/api/tasks/${task.id}/comments`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: newComment.trim() }),
+            });
+            if (res.ok) {
+                const c = await res.json();
+                setComments(prev => [...prev, c]);
+                setNewComment("");
+            }
+        } catch { /* */ }
+    };
 
     // Track changes
     const markDirty = () => { if (!dirty) setDirty(true); };
@@ -438,11 +510,18 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
         if (priority !== task.priority) updates.priority = priority;
         if (date !== task.date) updates.date = date;
         if (time !== task.time) updates.time = time;
+        if (dueDate !== (task.dueDate || "")) updates.dueDate = dueDate;
         const newAssignee = assigneeId || null;
         if (newAssignee !== task.assigneeId) updates.assigneeId = newAssignee;
 
         if (Object.keys(updates).length > 0) {
             onUpdate(updates);
+            // Refresh comments after save (in case auto-log triggers)
+            setTimeout(() => {
+                fetch(`/api/tasks/${task.id}/comments`).then(r => r.json()).then(d => {
+                    if (Array.isArray(d)) setComments(d);
+                }).catch(() => {});
+            }, 500);
         }
 
         setSaved(true);
@@ -514,6 +593,18 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                             <input type="time" value={time} onChange={e => { setTime(e.target.value); markDirty(); }}
                                 className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
                         </div>
+
+                        {/* Deadline */}
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prazo</label>
+                            <input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); markDirty(); }}
+                                className={`w-full px-3 py-2 bg-muted/50 border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark] ${
+                                    dueDate && new Date(dueDate + 'T23:59:59') < new Date() ? 'border-red-500/50 text-red-400' : 'border-border'
+                                }`} />
+                            {dueDate && new Date(dueDate + 'T23:59:59') < new Date() && (
+                                <p className="text-[10px] text-red-400 font-medium flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Prazo vencido</p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Description */}
@@ -522,6 +613,40 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                         <textarea value={description} onChange={e => { setDescription(e.target.value); markDirty(); }}
                             rows={4} placeholder="Adicione detalhes, observações..."
                             className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 resize-none" />
+                    </div>
+
+                    {/* Atualizações */}
+                    <div className="space-y-2 pt-3 border-t border-border/50">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                            <MessageSquare className="w-3 h-3" /> Atualizações
+                        </label>
+                        <div className="max-h-40 overflow-y-auto space-y-1.5">
+                            {loadingComments ? (
+                                <p className="text-[10px] text-muted-foreground">Carregando...</p>
+                            ) : comments.length === 0 ? (
+                                <p className="text-[10px] text-muted-foreground italic">Nenhuma atualização</p>
+                            ) : comments.map(c => (
+                                <div key={c.id} className="flex gap-2 items-start">
+                                    <div className="w-5 h-5 rounded-full bg-[#00A868]/20 text-[#00A868] flex items-center justify-center text-[8px] font-bold shrink-0 mt-0.5">
+                                        {c.userName.charAt(0)}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[11px] text-foreground"><span className="font-bold">{c.userName}</span> <span className="text-muted-foreground">· {new Date(c.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></p>
+                                        <p className="text-xs text-foreground/80">{c.text}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex gap-1.5 mt-1">
+                            <input value={newComment} onChange={e => setNewComment(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addComment(); } }}
+                                placeholder="Escreva uma atualização..."
+                                className="flex-1 px-3 py-1.5 bg-muted/50 border border-border rounded-xl text-xs text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 min-w-0" />
+                            <button onClick={addComment} disabled={!newComment.trim()}
+                                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#00A868] text-white hover:bg-[#008f58] disabled:opacity-30 transition-all shrink-0">
+                                Enviar
+                            </button>
+                        </div>
                     </div>
 
                     {/* Info */}
@@ -598,7 +723,7 @@ function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
 function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule, onAssign, onOpenDetail, onDeleteList, onRenameList, onClearCompleted, isSpecialView }: {
     list: { id: string; name: string; tasks: TaskData[] };
     users: UserOption[];
-    onAdd: (title: string, date?: string, time?: string, assigneeId?: string, priority?: string) => void;
+    onAdd: (title: string, date?: string, time?: string, assigneeId?: string, priority?: string, description?: string) => void;
     onToggle: (id: string) => void;
     onStar: (id: string) => void;
     onDelete: (id: string) => void;
@@ -612,6 +737,7 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
 }) {
     const [adding, setAdding] = useState(false);
     const [newTitle, setNewTitle] = useState("");
+    const [newDesc, setNewDesc] = useState("");
     const [newDate, setNewDate] = useState("");
     const [newTime, setNewTime] = useState("");
     const [newAssignee, setNewAssignee] = useState("");
@@ -634,8 +760,9 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
 
     const handleAdd = () => {
         if (!newTitle.trim()) return;
-        onAdd(newTitle.trim(), newDate, newTime, newAssignee || undefined, newPriority);
-        setNewTitle(""); setNewDate(""); setNewTime(""); setNewAssignee(""); setNewPriority("medium");
+        onAdd(newTitle.trim(), newDate, newTime, newAssignee || undefined, newPriority, newDesc || undefined);
+        setNewTitle(""); setNewDesc(""); setNewDate(""); setNewTime(""); setNewAssignee(""); setNewPriority("medium");
+        setAdding(false);
     };
 
     return (
@@ -688,39 +815,86 @@ function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onSchedule
 
             {/* Add Task */}
             <div className="px-3 pt-3 pb-1 shrink-0">
-                {!isSpecialView && adding ? (
-                    <div className="space-y-2 mb-2">
-                        <input value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") setAdding(false); }}
-                            autoFocus placeholder="Título da tarefa..."
-                            className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50" />
-                        <div className="flex gap-1.5">
-                            <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
-                                className="flex-1 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none min-w-0 [color-scheme:dark]" />
-                            <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
-                                className="w-20 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none [color-scheme:dark]" />
-                        </div>
-                        <div className="flex gap-1.5">
-                            <select value={newAssignee} onChange={e => setNewAssignee(e.target.value)}
-                                className="flex-1 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none">
-                                <option value="">Sem responsável</option>
-                                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                            </select>
-                            <select value={newPriority} onChange={e => setNewPriority(e.target.value)}
-                                className="w-24 px-2 py-1.5 bg-muted/50 border border-border rounded-lg text-xs text-foreground focus:outline-none">
-                                <option value="high">🔴 Alta</option>
-                                <option value="medium">🟡 Média</option>
-                                <option value="low">🔵 Baixa</option>
-                            </select>
-                        </div>
-                        <div className="flex gap-1.5">
-                            <button onClick={handleAdd} className="px-3 py-1.5 bg-[#00A868] hover:bg-[#008f58] text-white rounded-lg text-xs font-medium">Adicionar</button>
-                            <button onClick={() => { setAdding(false); setNewTitle(""); }} className="px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs">Cancelar</button>
-                        </div>
-                    </div>
-                ) : !isSpecialView ? (
+                {!isSpecialView ? (
                     <button onClick={() => setAdding(true)} className="w-full flex items-center gap-2 text-sm text-[#00A868] hover:text-[#008f58] py-1"><Plus className="w-4 h-4" /> Adicionar uma tarefa</button>
                 ) : null}
             </div>
+
+            {/* Add Task Modal — Google Tasks Style */}
+            {adding && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setAdding(false)}>
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                    <div className="relative w-full max-w-md card-elevated shadow-2xl rounded-2xl animate-in zoom-in-95 fade-in duration-200" onClick={e => e.stopPropagation()}>
+                        {/* Close button */}
+                        <button onClick={() => setAdding(false)} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-muted text-muted-foreground z-10">
+                            <X className="w-4 h-4" />
+                        </button>
+
+                        <div className="p-5 space-y-4">
+                            {/* Title */}
+                            <input value={newTitle} onChange={e => setNewTitle(e.target.value)} autoFocus
+                                onKeyDown={e => { if (e.key === "Enter" && newTitle.trim()) handleAdd(); }}
+                                placeholder="Adicionar título"
+                                className="w-full text-lg font-medium text-foreground bg-transparent border-b-2 border-border focus:border-[#00A868] focus:outline-none pb-2 placeholder-muted-foreground/50 transition-colors" />
+
+                            {/* Date & Time row */}
+                            <div className="flex items-center gap-3">
+                                <div className="text-muted-foreground"><Clock className="w-4 h-4" /></div>
+                                <div className="flex gap-2 flex-1">
+                                    <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
+                                        className="px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
+                                    <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
+                                        className="px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50 [color-scheme:dark]" />
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            <div className="flex items-start gap-3">
+                                <div className="text-muted-foreground mt-2"><MessageSquare className="w-4 h-4" /></div>
+                                <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)}
+                                    rows={3} placeholder="Adicionar uma descrição"
+                                    className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 resize-none" />
+                            </div>
+
+                            {/* Assignee & Priority row */}
+                            <div className="flex gap-2">
+                                <div className="flex items-center gap-2 flex-1">
+                                    <UserPlus className="w-4 h-4 text-muted-foreground shrink-0" />
+                                    <select value={newAssignee} onChange={e => setNewAssignee(e.target.value)}
+                                        className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none">
+                                        <option value="">Sem responsável</option>
+                                        {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                    </select>
+                                </div>
+                                <select value={newPriority} onChange={e => setNewPriority(e.target.value)}
+                                    className="px-3 py-2 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none">
+                                    <option value="high">🔴 Alta</option>
+                                    <option value="medium">🟡 Média</option>
+                                    <option value="low">🔵 Baixa</option>
+                                </select>
+                            </div>
+
+                            {/* List indicator */}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+                                <ListTodo className="w-3.5 h-3.5" />
+                                <span>{list.name}</span>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">
+                            <button onClick={() => { setAdding(false); setNewTitle(""); setNewDesc(""); }}
+                                className="px-4 py-2 text-sm font-medium text-[#00A868] hover:bg-muted rounded-xl transition-colors">
+                                Cancelar
+                            </button>
+                            <button onClick={handleAdd} disabled={!newTitle.trim()}
+                                className="px-5 py-2 text-sm font-bold bg-[#00A868] text-white rounded-xl hover:bg-[#008f58] disabled:opacity-30 transition-all shadow-lg shadow-[#00A868]/20">
+                                Salvar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Tasks */}
             <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5">

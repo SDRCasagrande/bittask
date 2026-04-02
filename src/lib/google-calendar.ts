@@ -191,6 +191,40 @@ export async function deleteCalendarEvent(userId: string, eventId: string) {
 }
 
 /**
+ * List Google Calendar events for a given time range.
+ */
+export async function listCalendarEvents(userId: string, timeMin: string, timeMax: string) {
+    const calendar = await getCalendarClient(userId);
+    if (!calendar) return [];
+
+    try {
+        const res = await calendar.events.list({
+            calendarId: 'primary',
+            timeMin: new Date(timeMin).toISOString(),
+            timeMax: new Date(timeMax).toISOString(),
+            singleEvents: true,
+            orderBy: 'startTime',
+            maxResults: 250,
+        });
+
+        return (res.data.items || []).map(event => ({
+            id: event.id || '',
+            title: (event.summary || 'Sem título').replace(/^📋\s*/, ''),
+            description: event.description || '',
+            date: event.start?.date || event.start?.dateTime?.split('T')[0] || '',
+            time: event.start?.dateTime ? event.start.dateTime.split('T')[1]?.substring(0, 5) : '',
+            isGoogleEvent: true,
+            isBitTask: (event.description || '').includes('BitTask'),
+            htmlLink: event.htmlLink || '',
+            status: event.status || 'confirmed',
+        }));
+    } catch (error) {
+        console.error('[GCal] List events failed:', error);
+        return [];
+    }
+}
+
+/**
  * Check if a user has Google Calendar connected.
  */
 export async function isCalendarConnected(userId: string) {

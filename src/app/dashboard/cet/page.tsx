@@ -11,6 +11,7 @@ import {
 } from "@/lib/calculator";
 import { RI } from "@/components/rate-input";
 import { BrandIcon } from "@/components/BrandIcons";
+import { BrandSelectorModal } from "@/components/BrandSelectorModal";
 
 const STORAGE_KEY = "bitkaiser_cet_calc";
 
@@ -67,6 +68,7 @@ export default function CETCalculatorPage() {
     // Inline brand add
     const [newBrandInput, setNewBrandInput] = useState("");
     const [showNewBrand, setShowNewBrand] = useState(false);
+    const [showBrandModal, setShowBrandModal] = useState(false);
 
     // Client autocomplete
     interface ClientSuggestion { id: string; name: string; cnpj: string; negotiations: { rates: any }[] }
@@ -456,7 +458,24 @@ tr:nth-child(even){background:#fafafa}
                             </div>
                         </button>
                         <div className={`px-3 pb-3 border-t border-border/30 space-y-2 ${openSection === "taxas" ? "block" : "hidden lg:block"}`}>
-                            {/* Brand Toggle Grid */}
+                            {/* Mobile quick-toggle button */}
+                            <button type="button" onClick={() => setShowBrandModal(true)}
+                                className="w-full lg:hidden flex items-center justify-center gap-2 mt-2 px-3 py-2 rounded-xl text-xs font-bold bg-[#00A868]/10 text-[#00A868] border border-dashed border-[#00A868]/30 hover:bg-[#00A868]/20 transition-colors">
+                                Gerenciar Bandeiras ({ACTIVE_BRANDS.length}/{ALL_BRANDS.length})
+                            </button>
+                            {showBrandModal && (
+                                <BrandSelectorModal
+                                    brands={ALL_BRANDS}
+                                    enabledBrands={enabledBrands}
+                                    activeBrand={activeBrand}
+                                    onToggle={(b, enabled) => {
+                                        if (enabled) { setEnabledBrands({ ...enabledBrands, [b]: true }); }
+                                        else { toggleBrand(b); }
+                                    }}
+                                    onSelect={setActiveBrand}
+                                    onClose={() => setShowBrandModal(false)}
+                                />
+                            )}
                             {/* Brand Accordion */}
                             <div className="space-y-1.5 mt-2">
                                 {ALL_BRANDS.map((b) => {

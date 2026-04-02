@@ -191,8 +191,16 @@ export default function NegociacoesPage() {
 
     useEffect(() => { loadAll(); }, [loadAll]);
 
-    // All negotiations flat
-    const allNegs = clients.flatMap(c => c.negotiations.map(n => ({ ...n, clientName: c.name, clientId: c.id, cnpj: c.cnpj, stoneCode: c.stoneCode, clientPhone: c.phone })));
+    // Auto-archive old negotiations on first load
+    useEffect(() => {
+        fetch("/api/negotiations/archive", { method: "POST" }).then(r => r.json()).then(d => {
+            if (d.archived > 0) loadAll();
+        }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // All negotiations flat (exclude archived from pipeline)
+    const allNegs = clients.flatMap(c => c.negotiations.filter(n => n.status !== "arquivado").map(n => ({ ...n, clientName: c.name, clientId: c.id, cnpj: c.cnpj, stoneCode: c.stoneCode, clientPhone: c.phone })));
 
     // Time filter
     const timeFiltered = (() => {
