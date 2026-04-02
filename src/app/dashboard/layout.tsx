@@ -12,6 +12,7 @@ import {
 import CommandPalette from "@/components/CommandPalette";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationBell } from "@/components/NotificationBell";
+import LizzeChat from "@/components/LizzeChat";
 
 /* ═══ Navigation Items ═══ */
 const MAIN_NAV = [
@@ -241,6 +242,7 @@ export default function DashboardLayout({
 
                 {/* Command Palette (Ctrl+K) */}
                 <CommandPalette />
+            <LizzeChat />
             </div>
 
             {/* ═══ MOBILE: Bottom Navigation Bar (< lg) ═══ */}
