@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { exchangeCode } from '@/lib/google-calendar';
 import { encrypt } from '@/lib/encryption';
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://app.bittask.com.br';
+
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
@@ -12,18 +14,18 @@ export async function GET(request: NextRequest) {
 
         if (error) {
             console.error('[GCal Callback] User denied access:', error);
-            return NextResponse.redirect(new URL('/dashboard/configuracoes?gcal=denied', request.url));
+            return NextResponse.redirect(`${APP_URL}/dashboard/tarefas?gcal=denied`);
         }
 
         if (!code || !state) {
-            return NextResponse.redirect(new URL('/dashboard/configuracoes?gcal=error', request.url));
+            return NextResponse.redirect(`${APP_URL}/dashboard/tarefas?gcal=error`);
         }
 
         const tokens = await exchangeCode(code);
 
         if (!tokens.access_token) {
             console.error('[GCal Callback] No access token received');
-            return NextResponse.redirect(new URL('/dashboard/configuracoes?gcal=error', request.url));
+            return NextResponse.redirect(`${APP_URL}/dashboard/tarefas?gcal=error`);
         }
 
         // Upsert the token record (encrypted)
@@ -46,9 +48,10 @@ export async function GET(request: NextRequest) {
         });
 
         console.log('[GCal Callback] Successfully connected for user:', state);
-        return NextResponse.redirect(new URL('/dashboard/configuracoes?gcal=connected', request.url));
+        return NextResponse.redirect(`${APP_URL}/dashboard/tarefas?gcal=connected`);
     } catch (error) {
         console.error('[GCal Callback] Error:', error);
-        return NextResponse.redirect(new URL('/dashboard/configuracoes?gcal=error', request.url));
+        return NextResponse.redirect(`${APP_URL}/dashboard/tarefas?gcal=error`);
     }
 }
+
