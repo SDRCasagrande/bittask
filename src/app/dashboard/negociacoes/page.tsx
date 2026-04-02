@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { formatPercent, BRAND_PRESETS, type BrandRates } from "@/lib/calculator";
+import { formatPercent, calculateCET, BRAND_PRESETS, type BrandRates } from "@/lib/calculator";
 import { RI } from "@/components/rate-input";
 import { formatarDocumento, validarDocumento } from "@/lib/documento";
 import { DocumentInput } from "@/components/DocumentInput";
@@ -263,6 +263,9 @@ export default function NegociacoesPage() {
 
     // SlideDrawer
     const [drawerNeg, setDrawerNeg] = useState<any | null>(null);
+    const [editingRates, setEditingRates] = useState(false);
+    const [drawerRates, setDrawerRates] = useState<RateSnapshot | null>(null);
+    const [savingRates, setSavingRates] = useState(false);
 
     // New client form
     const [fn, setFN] = useState(""); const [fsc, setFSC] = useState(""); const [fcnpj, setFCNPJ] = useState("");
@@ -823,24 +826,114 @@ export default function NegociacoesPage() {
                             </div>
                         </div>
 
-                        {/* Rates Summary */}
+                        {/* Rates Summary — Editable */}
                         <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Taxas Negociadas</h4>
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Taxas Negociadas</h4>
+                                {!editingRates ? (
+                                    <button onClick={() => { setEditingRates(true); setDrawerRates({ ...drawerNeg.rates }); }}
+                                        className="text-[10px] font-bold text-[#00A868] hover:text-[#008f58] transition-colors px-2 py-0.5 rounded-lg hover:bg-[#00A868]/10">
+                                        ✏️ Editar
+                                    </button>
+                                ) : (
+                                    <div className="flex gap-1">
+                                        <button onClick={async () => {
+                                            if (!drawerRates) return;
+                                            setSavingRates(true);
+                                            try {
+                                                await fetch(`/api/negotiations/${drawerNeg.id}`, {
+                                                    method: "PUT", headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ rates: drawerRates })
+                                                });
+                                                drawerNeg.rates = { ...drawerRates };
+                                                setEditingRates(false);
+                                                loadAll();
+                                                setMsg({ type: "ok", text: "Taxas atualizadas!" });
+                                            } catch { setMsg({ type: "err", text: "Erro ao salvar" }); }
+                                            setSavingRates(false);
+                                        }} disabled={savingRates}
+                                            className="text-[10px] font-bold text-white bg-[#00A868] hover:bg-[#008f58] px-2.5 py-0.5 rounded-lg transition-colors disabled:opacity-50">
+                                            {savingRates ? "Salvando..." : "Salvar"}
+                                        </button>
+                                        <button onClick={() => { setEditingRates(false); setDrawerRates(null); }}
+                                            className="text-[10px] font-bold text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-lg hover:bg-muted transition-colors">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Rate Grid */}
                             <div className="grid grid-cols-3 gap-2">
                                 {[
-                                    { l: "Débito", v: drawerNeg.rates.debit },
-                                    { l: "Créd 1x", v: drawerNeg.rates.credit1x },
-                                    { l: "2-6x", v: drawerNeg.rates.credit2to6 },
-                                    { l: "7-12x", v: drawerNeg.rates.credit7to12 },
-                                    { l: "PIX", v: drawerNeg.rates.pix },
-                                    { l: "RAV", v: drawerNeg.rates.ravRate ?? drawerNeg.rates.rav },
-                                ].map(r => (
-                                    <div key={r.l} className="bg-[#00A868]/5 border border-[#00A868]/10 rounded-xl p-2.5 text-center">
-                                        <p className="text-[9px] text-muted-foreground uppercase font-bold">{r.l}</p>
-                                        <p className="text-sm font-black text-[#00A868]">{formatPercent(r.v)}</p>
-                                    </div>
-                                ))}
+                                    { l: "Débito", k: "debit" },
+                                    { l: "Créd 1x", k: "credit1x" },
+                                    { l: "2-6x", k: "credit2to6" },
+                                    { l: "7-12x", k: "credit7to12" },
+                                    { l: "PIX", k: "pix" },
+                                    { l: "RAV", k: "rav" },
+                                ].map(r => {
+                                    const val = editingRates && drawerRates
+                                        ? (drawerRates as any)[r.k === "rav" ? "ravRate" : r.k] ?? (drawerRates as any)[r.k] ?? 0
+                                        : r.k === "rav" ? (drawerNeg.rates.ravRate ?? drawerNeg.rates.rav) : drawerNeg.rates[r.k];
+                                    return (
+                                        <div key={r.l} className={`rounded-xl p-2.5 text-center border transition-all ${
+                                            editingRates ? "bg-card border-[#00A868]/30" : "bg-[#00A868]/5 border-[#00A868]/10"
+                                        }`}>
+                                            <p className="text-[9px] text-muted-foreground uppercase font-bold">{r.l}</p>
+                                            {editingRates && drawerRates ? (
+                                                <input type="number" step="0.01" value={val}
+                                                    onChange={e => {
+                                                        const key = r.k === "rav" ? "ravRate" : r.k;
+                                                        setDrawerRates(prev => prev ? { ...prev, [key]: parseFloat(e.target.value) || 0, ...(r.k === "rav" ? { rav: parseFloat(e.target.value) || 0 } : {}) } : prev);
+                                                    }}
+                                                    className="w-full text-center text-sm font-black text-[#00A868] bg-transparent focus:outline-none border-b border-[#00A868]/30 pb-0.5" />
+                                            ) : (
+                                                <p className="text-sm font-black text-[#00A868]">{formatPercent(val)}</p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
+                        </div>
+
+                        {/* CET Block */}
+                        <div className="space-y-2">
+                            <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                                📊 Custo Efetivo Total (CET)
+                            </h4>
+                            {(() => {
+                                const rates = editingRates && drawerRates ? drawerRates : drawerNeg.rates;
+                                const ravVal = rates.ravRate ?? rates.rav ?? 0;
+                                const cetRows = [
+                                    { label: "Débito", mdr: rates.debit, parcelas: 1 },
+                                    { label: "Créd 1x", mdr: rates.credit1x, parcelas: 1 },
+                                    { label: "Créd 2x", mdr: rates.credit2to6, parcelas: 2 },
+                                    { label: "Créd 6x", mdr: rates.credit2to6, parcelas: 6 },
+                                    { label: "Créd 12x", mdr: rates.credit7to12, parcelas: 12 },
+                                ];
+                                return (
+                                    <div className="rounded-xl border border-border overflow-hidden">
+                                        <div className="grid grid-cols-4 gap-0 text-center bg-secondary/50 py-1.5">
+                                            <span className="text-[8px] font-bold uppercase text-muted-foreground">Modalidade</span>
+                                            <span className="text-[8px] font-bold uppercase text-muted-foreground">MDR</span>
+                                            <span className="text-[8px] font-bold uppercase text-muted-foreground">RAV</span>
+                                            <span className="text-[8px] font-bold uppercase text-[#00A868]">CET</span>
+                                        </div>
+                                        {cetRows.map(row => {
+                                            const cet = calculateCET(row.mdr, ravVal, row.parcelas);
+                                            return (
+                                                <div key={row.label} className="grid grid-cols-4 gap-0 text-center py-2 border-t border-border/50 hover:bg-muted/30 transition-colors">
+                                                    <span className="text-[10px] font-semibold text-foreground">{row.label}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground">{formatPercent(row.mdr)}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground">{formatPercent(ravVal)}</span>
+                                                    <span className="text-[10px] font-black text-[#00A868]">{formatPercent(cet)}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         {/* Stage History */}
