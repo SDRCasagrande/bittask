@@ -275,18 +275,35 @@ export default function CETCalculatorPage() {
 <style>
 @page{size:landscape;margin:5mm}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:10px;color:#333;padding:4px 6px}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:10px;color:#333;padding:4px 6px;display:flex;flex-direction:column;height:100vh}
 .header{display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #00a868;padding-bottom:4px;margin-bottom:5px}
 .header h1{font-size:16px;color:#00a868;font-weight:800;letter-spacing:0.3px}
 .header .badges{display:flex;gap:4px;align-items:center}
 .badge{display:inline-block;font-size:8px;padding:2px 7px;border-radius:3px;font-weight:600}
 .badge-promo{background:#fff3cd;color:#856404;border:1px solid #ffc107}
 .badge-fid{background:#e3f2fd;color:#1565c0;border:1px solid #42a5f5}
-.info-strip{display:flex;gap:3px;margin-bottom:5px;font-size:9px;flex-wrap:wrap}
-.info-tag{padding:2px 6px;border-radius:3px;border:1px solid #e0e0e0;background:#fafafa;font-weight:500}
-.info-tag b{color:#00a868}
-.info-tag.amber b{color:#d97706}
-.info-tag.blue b{color:#1565c0}
+
+.layout-split{display:flex;gap:10px;flex:1}
+
+/* Left Sidebar for Parameters */
+.sidebar{width:220px;display:flex;flex-direction:column;gap:6px}
+.summary-block{border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;background:#fafafa}
+.summary-block-header{background:#e8f5e9;padding:3px 6px;font-size:8px;font-weight:800;color:#2e7d32;text-transform:uppercase;border-bottom:1px solid #c8e6c9}
+.summary-row{padding:2px 6px;display:flex;justify-content:space-between;border-bottom:1px solid #f0f0f0;font-size:9px}
+.summary-row:last-child{border-bottom:none}
+.summary-row .l{color:#555;font-weight:500}
+.summary-row .v{font-weight:700;color:#111}
+.summary-row .v.green{color:#00a868}
+.summary-row .v.red{color:#dc2626}
+.summary-row .v.amber{color:#d97706}
+.summary-row .v.blue{color:#1565c0}
+.brand-item{padding:3px 6px;border-bottom:1px dashed #e0e0e0}
+.brand-item:last-child{border-bottom:none}
+.brand-name{font-weight:700;font-size:9px;color:#2e7d32;margin-bottom:1px}
+.brand-rates{font-size:8px;color:#666}
+
+/* Right Content for Table */
+.main-content{flex:1}
 table{width:100%;border-collapse:collapse;border:1px solid #ccc;border-radius:4px;overflow:hidden}
 thead th{padding:4px 5px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #ccc;border-right:1px solid #eee}
 .brand-head{background:linear-gradient(180deg,#e8f5e9,#f0fdf4);color:#2e7d32;text-align:center;font-size:9px;border-right:2px solid #c8e6c9}
@@ -300,33 +317,56 @@ tbody tr:hover{background:#f0f7f0}
 .mdr{color:#555;font-size:9px}
 .cet{font-weight:700}
 .green{color:#059669}.amber{color:#d97706}.red{color:#dc2626}
-.brand-sep{border-right:2px solid #e0e0e0 !important}
-.footer{font-size:7.5px;color:#aaa;margin-top:3px;border-top:1px solid #eee;padding-top:2px;display:flex;justify-content:space-between}
+.footer{font-size:7.5px;color:#aaa;margin-top:auto;border-top:1px solid #eee;padding-top:2px;display:flex;justify-content:space-between}
 </style></head><body>`;
 
-        // Header — single line
+        // Header
         html += `<div class="header"><h1>PROPOSTA STONE${clientName ? " \u2014 " + clientName.toUpperCase() : ""}</h1><div class="badges">`;
         if (proposalType !== "custom") html += `<span class="badge badge-promo">${promoInfo?.label}</span>`;
         if (fidelidade) html += `<span class="badge badge-fid">FIDELIDADE 13M</span>`;
         html += `</div></div>`;
 
-        // Info strip — compact horizontal tags
-        html += `<div class="info-strip">`;
-        ACTIVE_BRANDS.forEach(name => {
-            const r = brandRates[name];
-            html += `<span class="info-tag"><b>${name}</b> D\u00e9b ${formatPercent(r.debit)} \u00b7 1x ${formatPercent(r.credit1x)} \u00b7 2-6x ${formatPercent(r.credit2to6)} \u00b7 7-12x ${formatPercent(r.credit7to12)}</span>`;
-        });
-        html += `<span class="info-tag">RAV: <b>${ravLabel} ${formatPercent(ravAuto)}</b></span>`;
-        html += `<span class="info-tag">PIX: <b>${formatPercent(pixRate)}</b></span>`;
-        html += `<span class="info-tag">TPV: <b>R$ ${tpv.toLocaleString("pt-BR")}</b></span>`;
-        html += `<span class="info-tag blue">M\u00e1q: <b>${totalMaqPdf} (IPV ${Math.min(ipvPdf, machines)})</b></span>`;
-        if (paidPdf > 0) html += `<span class="info-tag amber">Aluguel: <b>R$ ${(paidPdf * rental).toFixed(2)}/m</b></span>`;
-        if (maqAdesao > 0) html += `<span class="info-tag blue">Ades\u00e3o: <b>${maqAdesao} (R$ ${adesaoCustoPdf.toFixed(2)})</b></span>`;
+        // Split Layout
+        html += `<div class="layout-split">`;
+
+        // ── LEFT SIDEBAR ──
+        html += `<div class="sidebar">`;
+
+        // Configurações Gerais (PIX, RAV, TPV)
+        html += `<div class="summary-block">
+            <div class="summary-block-header">Condições Financeiras</div>
+            <div class="summary-row"><span class="l">RAV</span><span class="v">${ravLabel} ${formatPercent(ravAuto)}</span></div>
+            <div class="summary-row"><span class="l">PIX</span><span class="v">${formatPercent(pixRate)}</span></div>
+            <div class="summary-row"><span class="l">TPV Estimado</span><span class="v">R$ ${tpv.toLocaleString("pt-BR")}</span></div>
+        </div>`;
+
+        // Máquinas
+        html += `<div class="summary-block">
+            <div class="summary-block-header">Equipamentos</div>
+            <div class="summary-row"><span class="l">Total M\u00e1quinas</span><span class="v blue">${totalMaqPdf}</span></div>
+            <div class="summary-row"><span class="l">Regra IPV</span><span class="v ${ipvPdf > 0 ? 'green' : ''}">${Math.min(ipvPdf, machines)} Isentas</span></div>`;
+        if (paidPdf > 0) html += `<div class="summary-row"><span class="l">Aluguel (${paidPdf}x)</span><span class="v amber">R$ ${(paidPdf * rental).toFixed(2)}/m</span></div>`;
+        else html += `<div class="summary-row"><span class="l">Aluguel</span><span class="v green">Isento</span></div>`;
+        if (maqAdesao > 0) html += `<div class="summary-row"><span class="l">Ades\u00e3o (${maqAdesao}x)</span><span class="v">R$ ${adesaoCustoPdf.toFixed(2)}</span></div>`;
         html += `</div>`;
 
-        // ── Unified table ──
+        // Resumo Bandeiras
+        html += `<div class="summary-block">
+            <div class="summary-block-header">Resumo Taxas Bandeira</div>`;
+        ACTIVE_BRANDS.forEach(name => {
+            const r = brandRates[name];
+            html += `<div class="brand-item">
+                <div class="brand-name">${name}</div>
+                <div class="brand-rates">D\u00e9b: <b>${formatPercent(r.debit)}</b> \u00b7 1x: <b>${formatPercent(r.credit1x)}</b> \u00b7 2-6x: <b>${formatPercent(r.credit2to6)}</b> \u00b7 7-12: <b>${formatPercent(r.credit7to12)}</b></div>
+            </div>`;
+        });
+        html += `</div>`;
+        html += `</div>`; // End sidebar
+
+        // ── RIGHT MAIN CONTENT (TABLE) ──
+        html += `<div class="main-content">`;
         html += `<table>`;
-        // Brand headers (colspan=2 each)
+        // Brand headers
         html += `<thead><tr><th rowspan="2" style="width:30px;background:#f5f5f5;border-right:2px solid #ddd">Parc.</th>`;
         ACTIVE_BRANDS.forEach((name, i) => {
             const isLast = i === brandCount - 1;
@@ -356,6 +396,9 @@ tbody tr:hover{background:#f0f7f0}
             html += `</tr>`;
         }
         html += `</tbody></table>`;
+        html += `</div>`; // End main-content
+
+        html += `</div>`; // End layout-split
 
         html += `<div class="footer"><span>Gerado em ${new Date().toLocaleDateString("pt-BR")} \u2014 BitTask</span><span>${ravTipo === "pontual" ? "CET = MDR (sem antecipa\u00e7\u00e3o)" : `CET = MDR + RAV ${formatPercent(ravAuto)}`}</span></div>`;
         html += `</body></html>`;
