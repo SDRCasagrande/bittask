@@ -222,12 +222,12 @@ export default function NegociacoesPage() {
                     </div>
                     <div className="relative"><Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..."
-                            className="pl-8 pr-3 py-2.5 rounded-xl bg-secondary border border-border text-sm text-foreground w-48 focus:outline-none focus:border-[#00A868]/50" />
+                            className="pl-8 pr-3 py-2 rounded-xl bg-secondary border border-border text-sm text-foreground w-48 focus:outline-none focus:border-[#00A868]/50" />
                     </div>
-                    <button onClick={() => setView(view === "board" ? "list" : "board")} className={`p-2 rounded-xl ${view === "board" ? "bg-[#00A868]/10 text-[#00A868]" : "bg-muted text-muted-foreground"} touch-target`} title="Alternar vista">
+                    <button onClick={() => setView(view === "board" ? "list" : "board")} className={`inline-flex items-center justify-center w-9 h-9 rounded-xl transition-colors ${view === "board" ? "bg-[#00A868]/10 text-[#00A868]" : "bg-muted text-muted-foreground"} touch-target`} title="Alternar vista">
                         {view === "board" ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
                     </button>
-                    <button onClick={() => setView("new")} className="flex items-center gap-2 px-4 py-2.5 bg-[#00A868] hover:bg-[#008f58] text-white rounded-xl text-sm font-medium shadow-lg shadow-[#00A868]/20 active:scale-[0.98] transition-all touch-target">
+                    <button onClick={() => setView("new")} className="inline-flex items-center gap-2 px-4 py-2 bg-[#00A868] hover:bg-[#008f58] text-white rounded-xl text-sm font-medium shadow-lg shadow-[#00A868]/20 active:scale-[0.98] transition-all touch-target">
                         <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Novo Cliente</span>
                     </button>
                 </div>

@@ -341,30 +341,49 @@ tr:nth-child(even){background:#fafafa}
                         <span className="text-[#00A868] text-sm font-black">CET</span>
                     </div>
                     <div className="flex-1 min-w-0 relative">
-                        <input type="text" value={clientName}
-                            onChange={(e) => { setClientName(e.target.value); setShowSuggestions(e.target.value.length >= 2); }}
-                            onFocus={() => { if (clientName.length >= 2) setShowSuggestions(true); }}
-                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                            placeholder="Nome da Empresa / Cliente"
-                            className="w-full text-base sm:text-lg font-bold bg-transparent border-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0" />
-                        {showSuggestions && clientName.length >= 2 && (() => {
-                            const filtered = clientSuggestions.filter(c => c.name.toLowerCase().includes(clientName.toLowerCase())).slice(0, 5);
+                        <div className="flex items-center gap-2">
+                            <input type="text" value={clientName}
+                                onChange={(e) => { setClientName(e.target.value); setShowSuggestions(e.target.value.length >= 1); }}
+                                onFocus={() => { if (clientName.length >= 1) setShowSuggestions(true); }}
+                                onBlur={() => setTimeout(() => setShowSuggestions(false), 250)}
+                                placeholder="Nome da Empresa / Cliente"
+                                className="flex-1 text-base sm:text-lg font-bold bg-transparent border-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0" />
+                            <button type="button"
+                                onMouseDown={(e) => { e.preventDefault(); setShowSuggestions(!showSuggestions); }}
+                                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 text-[10px] sm:text-xs font-bold transition-colors border border-blue-500/20"
+                                title="Selecionar cliente da carteira">
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                <span className="hidden sm:inline">Carteira</span>
+                            </button>
+                        </div>
+                        {showSuggestions && (() => {
+                            const query = clientName.toLowerCase();
+                            const filtered = query.length >= 1
+                                ? clientSuggestions.filter(c => c.name.toLowerCase().includes(query)).slice(0, 8)
+                                : clientSuggestions.slice(0, 8);
                             return filtered.length > 0 ? (
-                                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+                                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-card border border-border rounded-xl shadow-xl overflow-hidden max-h-[280px] overflow-y-auto">
+                                    <div className="px-3 py-1.5 bg-muted/30 border-b border-border/50">
+                                        <p className="text-[9px] text-muted-foreground font-semibold uppercase">Selecionar cliente da carteira ({clientSuggestions.length})</p>
+                                    </div>
                                     {filtered.map(c => (
                                         <button key={c.id} type="button"
                                             onMouseDown={(e) => { e.preventDefault(); selectClient(c); }}
-                                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left">
+                                            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/50 transition-colors text-left border-b border-border/10 last:border-none">
                                             <div className="w-7 h-7 rounded-lg bg-[#00A868]/10 text-[#00A868] flex items-center justify-center text-xs font-bold shrink-0">{c.name.charAt(0)}</div>
-                                            <div className="min-w-0">
+                                            <div className="min-w-0 flex-1">
                                                 <p className="text-sm font-semibold text-foreground truncate">{c.name}</p>
                                                 {c.cnpj && <p className="text-[10px] text-muted-foreground">{c.cnpj}</p>}
                                             </div>
                                             {c.negotiations?.length > 0 && (
-                                                <span className="ml-auto text-[9px] bg-[#00A868]/10 text-[#00A868] px-2 py-0.5 rounded-full font-bold shrink-0">Preencher taxas</span>
+                                                <span className="text-[9px] bg-[#00A868]/10 text-[#00A868] px-2 py-0.5 rounded-full font-bold shrink-0">Preencher taxas</span>
                                             )}
                                         </button>
                                     ))}
+                                </div>
+                            ) : clientName.length >= 1 ? (
+                                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-card border border-border rounded-xl shadow-xl p-4 text-center">
+                                    <p className="text-xs text-muted-foreground">Nenhum cliente encontrado para &quot;{clientName}&quot;</p>
                                 </div>
                             ) : null;
                         })()}
