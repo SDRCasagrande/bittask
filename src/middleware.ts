@@ -33,17 +33,17 @@ export async function middleware(request: NextRequest) {
     const isAdminHost = hostname === ADMIN_HOSTNAME || hostname === 'admin.localhost';
 
     if (isAdminHost) {
-        // Public admin paths
-        if (pathname === '/login') {
-            if (isAuth && isSuperAdmin) {
-                return NextResponse.redirect(new URL('/admin', request.url));
-            }
-            return NextResponse.next();
-        }
-
         // Shared APIs allowed
         if (pathname.startsWith('/api/')) {
             return NextResponse.next();
+        }
+
+        // Public Auth
+        if (pathname === '/login') {
+            if (isAuth && isSuperAdmin) {
+                return NextResponse.redirect(new URL('/', request.url));
+            }
+            return NextResponse.next(); // Serve /login root
         }
 
         // Everything else requires auth and super_admin
@@ -54,12 +54,21 @@ export async function middleware(request: NextRequest) {
             return NextResponse.json({ error: 'Acesso negado: Requer privilégios de Admin.' }, { status: 403 });
         }
 
-        // Force exactly the /admin ecosystem. Block /dashboard to avoid confusion.
-        if (!pathname.startsWith('/admin')) {
-            return NextResponse.redirect(new URL('/admin', request.url));
+        // REWRITE MAGIC: Esconder a pasta /admin da URL!
+        
+        // 1. Se a pessoa digitar /admin explicitamente, redirecionamos para a raiz (/) para limpar a URL.
+        if (pathname.startsWith('/admin')) {
+            const cleanPath = pathname === '/admin' ? '/' : pathname.replace('/admin', '');
+            return NextResponse.redirect(new URL(cleanPath, request.url));
         }
 
-        return NextResponse.next();
+        // 2. Se a pessoa tentar acessar o dashboard de usuários aqui, joga pra raiz (admin)
+        if (pathname.startsWith('/dashboard')) {
+            return NextResponse.redirect(new URL('/', request.url));
+        }
+
+        // 3. Pega a URL limpa (ex: / ou /usuarios) e renderiza silenciosamente os arquivos da pasta /admin!
+        return NextResponse.rewrite(new URL(`/admin${pathname === '/' ? '' : pathname}`, request.url));
     }
 
     // ─── APP SUBDOMAIN: app.bittask.com.br ───
