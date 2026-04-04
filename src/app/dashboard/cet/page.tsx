@@ -193,106 +193,100 @@ export default function CETCalculatorPage() {
         const paidPdf = Math.max(0, machines - ipvPdf);
         const totalMaqPdf = machines + maqAdesao;
         const adesaoCustoPdf = maqAdesao * adesaoValor;
-        const ravLabel = ravTipo === "pontual" ? "Pontual (sem antecipação)" : `Automático — ${ravTiming === "md" ? "Mesmo Dia" : ravTiming === "ds" ? "Dia Seguinte" : "Dias Úteis"}`;
+        const ravLabel = ravTipo === "pontual" ? "Pontual" : `Auto ${ravTiming === "md" ? "M.Dia" : ravTiming === "ds" ? "D.Seg" : "D.Úteis"}`;
         const brandCount = ACTIVE_BRANDS.length;
-        // Max 2 brand tables side-by-side for readability
         const gridCols = Math.min(brandCount, 2);
-        // Show up to 14 installments to fit in page, extend to 18 only if <=2 brands
-        const maxInst = brandCount <= 2 ? 18 : 14;
 
         let html = `<html><head><title>CET ${clientName || "Stone"}</title>
 <style>
-@page{size:landscape;margin:8mm}
+@page{size:landscape;margin:6mm}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;color:#333;padding:8px}
-.header{text-align:center;border-bottom:3px solid #00a868;padding-bottom:6px;margin-bottom:10px}
-.header h1{font-size:22px;color:#00a868;margin:0 0 4px;font-weight:800;letter-spacing:0.5px}
-.badges{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
-.promo-badge,.fidelidade-badge{display:inline-block;font-size:11px;padding:3px 12px;border-radius:4px}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#333;padding:4px 8px}
+.header{text-align:center;border-bottom:2px solid #00a868;padding-bottom:4px;margin-bottom:6px}
+.header h1{font-size:18px;color:#00a868;margin:0 0 2px;font-weight:800;letter-spacing:0.5px}
+.badges{display:flex;justify-content:center;gap:4px;flex-wrap:wrap}
+.promo-badge,.fidelidade-badge{display:inline-block;font-size:9px;padding:2px 8px;border-radius:3px}
 .promo-badge{background:#fff3cd;color:#856404;border:1px solid #ffc107}
 .fidelidade-badge{background:#e3f2fd;color:#1565c0;border:1px solid #42a5f5}
-.content{display:flex;gap:12px}
-.summary{width:220px;flex-shrink:0}
-.tables-area{flex:1;min-width:0}
-.summary-card{border:1px solid #ddd;border-radius:6px;padding:8px 10px;margin-bottom:8px}
-.summary-card h3{font-size:11px;font-weight:700;text-transform:uppercase;color:#00a868;margin-bottom:5px;letter-spacing:0.5px;border-bottom:2px solid #e8f5e9;padding-bottom:3px}
-.s-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;border-bottom:1px solid #f5f5f5}
-.s-row:last-child{border-bottom:none}
-.s-row .lbl{color:#777;font-size:11px}
-.s-row .val{font-weight:700;color:#222;font-size:12px}
-.brand-grid{display:grid;grid-template-columns:repeat(${gridCols},1fr);gap:8px}
-.brand-card{border:1px solid #ddd;border-radius:6px;overflow:hidden;break-inside:avoid}
-.brand-hdr{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:linear-gradient(90deg,#e8f5e9,#f0fdf4);border-bottom:1px solid #c8e6c9}
-.brand-hdr h4{font-size:13px;font-weight:700;color:#2e7d32;margin:0}
-.brand-hdr .deb{font-size:11px;color:#666}
+.summary-bar{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.sum-card{flex:1;min-width:140px;border:1px solid #ddd;border-radius:4px;padding:4px 8px}
+.sum-card h4{font-size:8px;font-weight:700;text-transform:uppercase;color:#00a868;margin-bottom:2px;letter-spacing:0.4px}
+.sum-row{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+.sum-row .l{color:#888;font-size:9px}
+.sum-row .v{font-weight:700;color:#222;font-size:10px}
+.brand-grid{display:grid;grid-template-columns:repeat(${gridCols},1fr);gap:6px}
+.brand-card{border:1px solid #ddd;border-radius:5px;overflow:hidden;break-inside:avoid}
+.brand-hdr{display:flex;justify-content:space-between;align-items:center;padding:3px 8px;background:linear-gradient(90deg,#e8f5e9,#f0fdf4);border-bottom:1px solid #c8e6c9}
+.brand-hdr h4{font-size:11px;font-weight:700;color:#2e7d32;margin:0}
+.brand-hdr .deb{font-size:9px;color:#666}
 .brand-hdr .deb b{color:#333}
+.split{display:grid;grid-template-columns:1fr 1fr}
+.split>div{border-right:1px solid #eee}
+.split>div:last-child{border-right:none}
 table{width:100%;border-collapse:collapse}
-th{padding:4px 8px;font-weight:600;color:#555;font-size:10px;border-bottom:2px solid #e0e0e0;background:#fafafa;text-transform:uppercase}
-td{padding:3px 8px;border-bottom:1px solid #f0f0f0;font-size:12px}
+th{padding:2px 4px;font-weight:600;color:#555;font-size:8px;border-bottom:1px solid #e0e0e0;background:#fafafa;text-transform:uppercase}
+td{padding:1.5px 4px;border-bottom:1px solid #f5f5f5;font-size:10px}
 tr:nth-child(even){background:#fafafa}
 .green{color:#059669}.amber{color:#d97706}.red{color:#dc2626}
-.footer{font-size:10px;color:#aaa;margin-top:8px;border-top:1px solid #eee;padding-top:4px;display:flex;justify-content:space-between}
+.footer{font-size:8px;color:#aaa;margin-top:4px;border-top:1px solid #eee;padding-top:2px;display:flex;justify-content:space-between}
 </style></head><body>`;
 
         // Header
         html += `<div class="header"><h1>PROPOSTA STONE${clientName ? " \u2014 " + clientName.toUpperCase() : ""}</h1><div class="badges">`;
         if (proposalType !== "custom") html += `<span class="promo-badge">${promoInfo?.label}</span>`;
-        if (fidelidade) html += `<span class="fidelidade-badge">FIDELIDADE 13 MESES (1\u00ba m\u00eas isento + 12)</span>`;
+        if (fidelidade) html += `<span class="fidelidade-badge">FIDELIDADE 13 MESES</span>`;
         html += `</div></div>`;
 
-        html += `<div class="content">`;
+        // Summary bar — horizontal compact cards
+        html += `<div class="summary-bar">`;
 
-        // LEFT — Summary
-        html += `<div class="summary">`;
-
-        // Taxas resumo
-        html += `<div class="summary-card"><h3>Taxas por Bandeira</h3>`;
+        // Taxas resumo inline
+        html += `<div class="sum-card">`;
+        html += `<h4>Taxas por Bandeira</h4>`;
         ACTIVE_BRANDS.forEach(name => {
             const r = brandRates[name];
-            html += `<div style="margin-bottom:4px;padding-bottom:3px;border-bottom:1px solid #eee"><div style="font-size:11px;font-weight:700;color:#2e7d32;margin-bottom:1px">${name}</div>`;
-            html += `<div class="s-row"><span class="lbl">D\u00e9b</span><span class="val">${formatPercent(r.debit)}</span></div>`;
-            html += `<div class="s-row"><span class="lbl">1x</span><span class="val">${formatPercent(r.credit1x)}</span></div>`;
-            html += `<div class="s-row"><span class="lbl">2-6x</span><span class="val">${formatPercent(r.credit2to6)}</span></div>`;
-            html += `<div class="s-row"><span class="lbl">7-12x</span><span class="val">${formatPercent(r.credit7to12)}</span></div>`;
-            html += `</div>`;
+            html += `<div class="sum-row"><span class="l">${name}</span><span class="v">D\u00e9b ${formatPercent(r.debit)} \u00b7 1x ${formatPercent(r.credit1x)} \u00b7 2-6x ${formatPercent(r.credit2to6)} \u00b7 7-12x ${formatPercent(r.credit7to12)}</span></div>`;
         });
         html += `</div>`;
 
-        // RAV
-        html += `<div class="summary-card"><h3>Antecipa\u00e7\u00e3o (RAV)</h3>`;
-        html += `<div class="s-row"><span class="lbl">Tipo</span><span class="val" style="font-size:11px">${ravLabel}</span></div>`;
-        html += `<div class="s-row"><span class="lbl">Auto</span><span class="val">${formatPercent(ravAuto)}</span></div>`;
-        html += `<div class="s-row"><span class="lbl">Pontual</span><span class="val">${formatPercent(ravPontual)}</span></div>`;
+        // RAV + PIX + Máquinas inline
+        html += `<div class="sum-card"><h4>RAV &amp; PIX &amp; M\u00e1quinas</h4>`;
+        html += `<div class="sum-row"><span class="l">RAV</span><span class="v">${ravLabel} ${formatPercent(ravAuto)}</span></div>`;
+        html += `<div class="sum-row"><span class="l">PIX</span><span class="v">${formatPercent(pixRate)}</span></div>`;
+        html += `<div class="sum-row"><span class="l">TPV</span><span class="v">R$ ${tpv.toLocaleString("pt-BR")}</span></div>`;
+        html += `<div class="sum-row"><span class="l">M\u00e1q.</span><span class="v">${totalMaqPdf} (IPV: ${Math.min(ipvPdf, machines)})</span></div>`;
+        if (maqAdesao > 0) html += `<div class="sum-row"><span class="l">Ades\u00e3o</span><span class="v" style="color:#1565c0">${maqAdesao} (R$ ${adesaoCustoPdf.toFixed(2)})</span></div>`;
+        if (paidPdf > 0) html += `<div class="sum-row"><span class="l">Aluguel</span><span class="v" style="color:#d97706">R$ ${(paidPdf * rental).toFixed(2)}/m\u00eas</span></div>`;
+        else html += `<div class="sum-row"><span class="l">Aluguel</span><span class="v" style="color:#059669">ISENTO</span></div>`;
         html += `</div>`;
+        html += `</div>`; // end summary-bar
 
-        // PIX & Máquinas
-        html += `<div class="summary-card"><h3>PIX \u0026 M\u00e1quinas</h3>`;
-        html += `<div class="s-row"><span class="lbl">PIX</span><span class="val">${formatPercent(pixRate)}</span></div>`;
-        html += `<div class="s-row"><span class="lbl">TPV</span><span class="val">R$ ${tpv.toLocaleString("pt-BR")}</span></div>`;
-        html += `<div class="s-row"><span class="lbl">M\u00e1quinas</span><span class="val">${totalMaqPdf}</span></div>`;
-        if (maqAdesao > 0) html += `<div class="s-row"><span class="lbl">Ades\u00e3o</span><span class="val" style="color:#1565c0">${maqAdesao} (R$ ${adesaoCustoPdf.toFixed(2)})</span></div>`;
-        html += `<div class="s-row"><span class="lbl">IPV (isentas)</span><span class="val" style="color:#059669">${Math.min(ipvPdf, machines)}</span></div>`;
-        if (paidPdf > 0) html += `<div class="s-row"><span class="lbl">Aluguel</span><span class="val" style="color:#d97706">R$ ${(paidPdf * rental).toFixed(2)}/m\u00eas</span></div>`;
-        else html += `<div class="s-row"><span class="lbl">Aluguel</span><span class="val" style="color:#059669">ISENTO</span></div>`;
-        html += `</div>`;
-
-        html += `</div>`; // end summary
-
-        // RIGHT — CET tables in max 2-col grid
-        html += `<div class="tables-area"><div class="brand-grid">`;
+        // CET tables — each brand has 2-column split (1-9x | 10-18x)
+        html += `<div class="brand-grid">`;
         ACTIVE_BRANDS.forEach(name => {
             const rates = brandRates[name];
             html += `<div class="brand-card">`;
             html += `<div class="brand-hdr"><h4>${name}</h4><div class="deb">D\u00e9b: <b>${formatPercent(rates.debit)}</b></div></div>`;
-            html += `<table><tr><th style="text-align:left;width:50px">Parcela</th><th style="text-align:right">MDR</th><th style="text-align:right">CET</th></tr>`;
-            for (let i = 1; i <= maxInst; i++) {
+            html += `<div class="split">`;
+            // Left col: 1-9x
+            html += `<div><table><tr><th style="text-align:left;width:28px">Parc</th><th style="text-align:right">MDR</th><th style="text-align:right">CET</th></tr>`;
+            for (let i = 1; i <= 9; i++) {
                 const mdr = getMDR(rates, i);
                 const cet = calculateCET(mdr, rav, i);
                 html += `<tr><td style="text-align:left;font-weight:600">${i}x</td><td style="text-align:right">${formatPercent(mdr)}</td><td style="text-align:right;font-weight:700" class="${cet < 5 ? 'green' : cet < 10 ? 'amber' : 'red'}">${formatPercent(cet)}</td></tr>`;
             }
             html += `</table></div>`;
+            // Right col: 10-18x
+            html += `<div><table><tr><th style="text-align:left;width:28px">Parc</th><th style="text-align:right">MDR</th><th style="text-align:right">CET</th></tr>`;
+            for (let i = 10; i <= 18; i++) {
+                const mdr = getMDR(rates, i);
+                const cet = calculateCET(mdr, rav, i);
+                html += `<tr><td style="text-align:left;font-weight:600">${i}x</td><td style="text-align:right">${formatPercent(mdr)}</td><td style="text-align:right;font-weight:700" class="${cet < 5 ? 'green' : cet < 10 ? 'amber' : 'red'}">${formatPercent(cet)}</td></tr>`;
+            }
+            html += `</table></div>`;
+            html += `</div></div>`; // end split + brand-card
         });
-        html += `</div></div></div>`;
+        html += `</div>`;
 
         html += `<div class="footer"><span>Gerado em ${new Date().toLocaleDateString("pt-BR")} \u2014 BitTask</span><span>${ravTipo === "pontual" ? "CET = MDR (sem antecipa\u00e7\u00e3o)" : `CET = MDR + RAV ${formatPercent(ravAuto)}`}</span></div>`;
         html += `</body></html>`;
