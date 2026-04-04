@@ -6,7 +6,7 @@ export interface MonthVolume { id: string; month: string; tpvDebit: number; tpvC
 export interface Negotiation { id: string; dateNeg: string; dateAccept: string; status: string; rates: any; notes: string; stageHistory?: any[]; assignee?: { id: string; name: string } | null }
 export interface Client {
     id: string; name: string; stoneCode: string; cnpj: string; phone: string; email: string;
-    brand: string; safra: string;
+    brand: string; safra: string; category: string;
     status: string; credentialDate: string; cancelDate: string; segment: string;
     createdAt: string; negotiations: Negotiation[]; monthlyVolumes: MonthVolume[];
 }

@@ -5,7 +5,7 @@ import { formatPercent, calculateCET } from "@/lib/calculator";
 import {
     ChevronLeft, TrendingUp, MessageSquare, XCircle, CheckCircle, Trash2,
     Phone, Mail, Calendar, Hash, Building2, Plus, X, FileText, ChevronRight,
-    Clock, Loader2, BarChart3
+    Clock, Loader2, BarChart3, Pencil, Save
 } from "lucide-react";
 import {
     Client, MonthVolume, fmtDate, fmtMoney, fmtMonth, currentMonth,
@@ -57,6 +57,23 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
     const totalComm = calcClientTotalCommission(volumes);
     const currentComm = currentVol ? calcCommission(currentVol) : null;
 
+    // Client edit mode
+    const [editing, setEditing] = useState(false);
+    const [editData, setEditData] = useState({ name: sel.name, phone: sel.phone, email: sel.email, cnpj: sel.cnpj, stoneCode: sel.stoneCode, segment: sel.segment, category: sel.category || "" });
+    const [editSaving, setEditSaving] = useState(false);
+
+    const handleSaveEdit = async () => {
+        setEditSaving(true);
+        try {
+            await fetch(`/api/clients/${sel.id}`, {
+                method: "PUT", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(editData),
+            });
+            loadClients();
+            setEditing(false);
+        } catch { /* */ } finally { setEditSaving(false); }
+    };
+
     const handleAddNeg = async () => {
         setNegSaving(true);
         try {
@@ -101,19 +118,58 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-1.5 flex-wrap">
-                    <button onClick={() => { setTab("negs"); setShowNewNeg(true); }} className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#00A868] text-white text-xs font-bold hover:bg-[#008f58] shadow-sm shadow-[#00A868]/20 touch-target" title="Nova Renegociação">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                    <button onClick={() => { setTab("negs"); setShowNewNeg(true); }} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#00A868] text-white text-xs font-bold hover:bg-[#008f58] shadow-sm shadow-[#00A868]/20 touch-target" title="Nova Renegociação">
                         <TrendingUp className="w-3.5 h-3.5" /> Renegociar
                     </button>
-                    <button onClick={() => shareWhatsApp(sel)} className="p-2.5 rounded-xl bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20 touch-target" title="WhatsApp"><MessageSquare className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditing(!editing); setEditData({ name: sel.name, phone: sel.phone, email: sel.email, cnpj: sel.cnpj, stoneCode: sel.stoneCode, segment: sel.segment, category: sel.category || "" }); }} className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 touch-target" title="Editar Dados">
+                        <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => shareWhatsApp(sel)} className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20 touch-target" title="WhatsApp">
+                        <MessageSquare className="w-4 h-4" />
+                    </button>
                     {sel.status === "ativo" ? (
-                        <button onClick={() => onCancelClient(sel.id)} className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 touch-target" title="Cancelar"><XCircle className="w-4 h-4" /></button>
+                        <button onClick={() => onCancelClient(sel.id)} className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 touch-target" title="Cancelar">
+                            <XCircle className="w-4 h-4" />
+                        </button>
                     ) : (
-                        <button onClick={() => onReactivate(sel.id)} className="p-2.5 rounded-xl bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20 touch-target" title="Reativar"><CheckCircle className="w-4 h-4" /></button>
+                        <button onClick={() => onReactivate(sel.id)} className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#00A868]/10 text-[#00A868] hover:bg-[#00A868]/20 touch-target" title="Reativar">
+                            <CheckCircle className="w-4 h-4" />
+                        </button>
                     )}
-                    <button onClick={() => onDelete(sel.id)} className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 touch-target" title="Excluir"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => onDelete(sel.id)} className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 touch-target" title="Excluir">
+                        <Trash2 className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
+
+            {/* Edit Client Panel */}
+            {editing && (
+                <div className="card-elevated rounded-xl p-5 space-y-3 border border-blue-500/20 animate-slide-up">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-blue-500 uppercase flex items-center gap-2"><Pencil className="w-4 h-4" /> Editar Dados do Cliente</h3>
+                        <button onClick={() => setEditing(false)} className="p-1 rounded-lg hover:bg-muted"><X className="w-4 h-4 text-muted-foreground" /></button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Nome / Razão Social</label>
+                            <input type="text" value={editData.name} onChange={e => setEditData(d => ({ ...d, name: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">CNPJ</label>
+                            <input type="text" value={editData.cnpj} onChange={e => setEditData(d => ({ ...d, cnpj: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Telefone</label>
+                            <input type="tel" value={editData.phone} onChange={e => setEditData(d => ({ ...d, phone: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">E-mail</label>
+                            <input type="email" value={editData.email} onChange={e => setEditData(d => ({ ...d, email: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Stone Code</label>
+                            <input type="text" value={editData.stoneCode} onChange={e => setEditData(d => ({ ...d, stoneCode: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Segmento</label>
+                            <input type="text" value={editData.segment} onChange={e => setEditData(d => ({ ...d, segment: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                    </div>
+                    <button onClick={handleSaveEdit} disabled={editSaving || !editData.name.trim()}
+                        className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-500 disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+                        {editSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Salvar Alterações
+                    </button>
+                </div>
+            )}
 
             {/* Info cards row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -153,6 +209,12 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                             {sel.email && <div className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground" />{sel.email}</div>}
                             {sel.cancelDate && <div className="flex items-center gap-2 text-red-500"><Calendar className="w-3.5 h-3.5" />Cancelado: {fmtDate(sel.cancelDate)}</div>}
                         </div>
+                        {!sel.phone && !sel.email && (
+                            <button onClick={() => { setEditing(true); setEditData({ name: sel.name, phone: sel.phone, email: sel.email, cnpj: sel.cnpj, stoneCode: sel.stoneCode, segment: sel.segment, category: sel.category || "" }); }}
+                                className="mt-2 text-xs text-blue-500 hover:text-blue-600 font-medium flex items-center gap-1">
+                                <Pencil className="w-3 h-3" /> Adicionar contato
+                            </button>
+                        )}
                     </div>
 
                     {lastNeg && (
@@ -251,7 +313,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                                 return (<button key={mVal} type="button" onClick={() => setTpvMonth(mVal)} className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm touch-target ${tpvMonth === mVal ? "bg-blue-600 text-white" : "bg-card border border-border text-muted-foreground hover:bg-muted"}`}>{lbl}</button>);
                             })}
                             <div className="relative">
-                                <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                                <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" />
                                 <button type="button" className="px-3 py-2 rounded-lg text-xs font-semibold bg-card border border-border text-muted-foreground hover:bg-muted flex items-center gap-1 touch-target"><Calendar className="w-3.5 h-3.5" /> Outro...</button>
                             </div>
                         </div>
