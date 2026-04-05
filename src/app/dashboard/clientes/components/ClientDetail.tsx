@@ -534,8 +534,10 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                         )}
 
                         {/* Preview */}
-                        {preview && (
-                            <div className="bg-gradient-to-br from-purple-500/5 to-indigo-500/5 border border-purple-500/20 rounded-xl p-4 space-y-2">
+                        {preview && (() => {
+                            const hasBrandBreakdown = Object.values(brandDebit).some(v => parseFloat(v) > 0) || Object.values(brandCredit).some(v => parseFloat(v) > 0);
+                            return (
+                            <div className="bg-gradient-to-br from-purple-500/5 to-indigo-500/5 border border-purple-500/20 rounded-xl p-4 space-y-3">
                                 <h4 className="text-xs font-bold text-purple-500 uppercase">Resumo do Cálculo</h4>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                                     <div><p className="text-[10px] text-muted-foreground">TPV Total</p><p className="text-sm font-bold">{fmtMoney(preview.tpvTotal)}</p></div>
@@ -543,8 +545,15 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                                     <div><p className="text-[10px] text-muted-foreground">Franquia (30%)</p><p className="text-sm font-bold text-blue-500">{fmtMoney(preview.franchise)}</p></div>
                                     <div><p className="text-[10px] text-muted-foreground">Sua Comissão (10%)</p><p className="text-lg font-black text-purple-500">{fmtMoney(preview.agent)}</p></div>
                                 </div>
+                                {!hasBrandBreakdown && (
+                                    <p className="text-[10px] text-amber-500/80 flex items-center gap-1.5 bg-amber-500/5 border border-amber-500/10 rounded-lg px-3 py-2">
+                                        <span className="shrink-0">⚠️</span>
+                                        <span>Sem detalhamento por bandeira — usando taxas <b>Visa/Master</b> como base do cálculo. Para maior precisão, preencha o Avançado.</span>
+                                    </p>
+                                )}
                             </div>
-                        )}
+                            );
+                        })()}
 
                         {/* Save */}
                         <button onClick={handleSaveTpv} disabled={tpvSaving || !previewReady}
