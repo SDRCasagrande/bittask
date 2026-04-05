@@ -18,7 +18,7 @@ function StatusBadge({ s }: { s: string }) {
     return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#00A868]/10 text-[#00A868] border border-[#00A868]/20"><CheckCircle className="w-2.5 h-2.5" />Ativo</span>;
 }
 
-interface NegRatesForm { debit: string; credit1x: string; credit2to6: string; credit7to12: string; pix: string; rav: string }
+interface NegRatesForm { debit: string; credit1x: string; credit2x: string; credit3x: string; credit4x: string; credit5x: string; credit6x: string; credit7to12: string; pix: string; rav: string }
 
 export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelClient, onReactivate, onDelete }: {
     client: Client;
@@ -50,7 +50,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
     const [showNewNeg, setShowNewNeg] = useState(false);
     const [negDate, setNegDate] = useState(new Date().toISOString().split("T")[0]);
     const [negStatus, setNegStatus] = useState("analise");
-    const [negRates, setNegRates] = useState<NegRatesForm>({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
+    const [negRates, setNegRates] = useState<NegRatesForm>({ debit: "", credit1x: "", credit2x: "", credit3x: "", credit4x: "", credit5x: "", credit6x: "", credit7to12: "", pix: "", rav: "" });
     const [negNotes, setNegNotes] = useState("");
     const [negAlertDate, setNegAlertDate] = useState("");
     const [negCreateTask, setNegCreateTask] = useState(true);
@@ -101,14 +101,19 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                     taskAssigneeId: negTaskAssignee || undefined,
                     rates: {
                         debit: parseFloat(negRates.debit) || 0, credit1x: parseFloat(negRates.credit1x) || 0,
-                        credit2to6: parseFloat(negRates.credit2to6) || 0, credit7to12: parseFloat(negRates.credit7to12) || 0,
+                        credit2x: parseFloat(negRates.credit2x) || 0, credit3x: parseFloat(negRates.credit3x) || 0,
+                        credit4x: parseFloat(negRates.credit4x) || 0, credit5x: parseFloat(negRates.credit5x) || 0,
+                        credit6x: parseFloat(negRates.credit6x) || 0,
+                        // backwards compat: credit2to6 = max of individual installments (for legacy views)
+                        credit2to6: Math.max(...[negRates.credit2x, negRates.credit3x, negRates.credit4x, negRates.credit5x, negRates.credit6x].map(v => parseFloat(v) || 0)),
+                        credit7to12: parseFloat(negRates.credit7to12) || 0,
                         pix: parseFloat(negRates.pix) || 0, rav: parseFloat(negRates.rav) || 0,
                     },
                 }),
             });
             loadClients();
             setShowNewNeg(false);
-            setNegRates({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
+            setNegRates({ debit: "", credit1x: "", credit2x: "", credit3x: "", credit4x: "", credit5x: "", credit6x: "", credit7to12: "", pix: "", rav: "" });
             setNegNotes(""); setNegAlertDate("");
             setNegStatus("analise"); setNegCreateTask(true); setNegTaskAssignee("");
         } catch { /* */ } finally { setNegSaving(false); }
@@ -653,18 +658,43 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                             <p className="text-[9px] text-muted-foreground/70 -mt-1">
                                 {negCetMode ? "📌 Informe as taxas finais (MDR + antecipação). O RAV já está embutido." : "📌 Informe o MDR puro. O RAV será registrado separadamente."}
                             </p>
-                            <div className={`grid gap-2 ${negCetMode ? "grid-cols-3 sm:grid-cols-5" : "grid-cols-3 sm:grid-cols-6"}`}>
-                                {([["Débito", negRates.debit, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, debit: v }))],
-                                  [`Créd 1x${negCetMode ? " (CET)" : ""}`, negRates.credit1x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit1x: v }))],
-                                  [`2-6x${negCetMode ? " (CET)" : ""}`, negRates.credit2to6, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit2to6: v }))],
-                                  [`7-12x${negCetMode ? " (CET)" : ""}`, negRates.credit7to12, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit7to12: v }))],
-                                  ["PIX", negRates.pix, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, pix: v }))],
-                                  ...(!negCetMode ? [["RAV", negRates.rav, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, rav: v }))]] : []),
-                                ] as [string, string, (v: string) => void][]).map(([label, val, setter]) => (
-                                    <div key={label as string}><label className="text-[10px] font-medium text-muted-foreground block mb-0.5">{label as string} (%)</label>
-                                        <input type="number" step="0.01" value={val as string} onChange={e => (setter as (v: string) => void)(e.target.value)} placeholder="0.00"
+                            {/* Rate Fields */}
+                            <div className="space-y-3">
+                                {/* Row 1: Débito + PIX + RAV */}
+                                <div className={`grid gap-2 ${negCetMode ? "grid-cols-2" : "grid-cols-3"}`}>
+                                    {([["Débito", negRates.debit, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, debit: v }))],
+                                      ["PIX", negRates.pix, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, pix: v }))],
+                                      ...(!negCetMode ? [["RAV", negRates.rav, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, rav: v }))]] : []),
+                                    ] as [string, string, (v: string) => void][]).map(([label, val, setter]) => (
+                                        <div key={label as string}><label className="text-[10px] font-medium text-muted-foreground block mb-0.5">{label as string} (%)</label>
+                                            <input type="number" step="0.01" value={val as string} onChange={e => (setter as (v: string) => void)(e.target.value)} placeholder="0.00"
+                                                className="w-full px-2 py-2 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-[#00A868]/50" /></div>
+                                    ))}
+                                </div>
+                                {/* Row 2: Crédito — cada parcela individual */}
+                                <div>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1.5">Crédito por Parcela {negCetMode ? "(CET)" : "(MDR)"}</label>
+                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                                        {([
+                                            ["1x", negRates.credit1x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit1x: v }))],
+                                            ["2x", negRates.credit2x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit2x: v }))],
+                                            ["3x", negRates.credit3x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit3x: v }))],
+                                            ["4x", negRates.credit4x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit4x: v }))],
+                                            ["5x", negRates.credit5x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit5x: v }))],
+                                            ["6x", negRates.credit6x, (v: string) => setNegRates((r: NegRatesForm) => ({ ...r, credit6x: v }))],
+                                        ] as [string, string, (v: string) => void][]).map(([label, val, setter]) => (
+                                            <div key={label as string}><label className="text-[10px] font-medium text-muted-foreground block mb-0.5 text-center">{label as string}</label>
+                                                <input type="number" step="0.01" value={val as string} onChange={e => (setter as (v: string) => void)(e.target.value)} placeholder="0.00"
+                                                    className="w-full px-1.5 py-2 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-[#00A868]/50" /></div>
+                                        ))}
+                                    </div>
+                                </div>
+                                {/* Row 3: 7-12x (mantém agrupado) */}
+                                <div className="grid grid-cols-1">
+                                    <div><label className="text-[10px] font-medium text-muted-foreground block mb-0.5">7-12x {negCetMode ? "(CET)" : ""} (%)</label>
+                                        <input type="number" step="0.01" value={negRates.credit7to12} onChange={e => setNegRates((r: NegRatesForm) => ({ ...r, credit7to12: e.target.value }))} placeholder="0.00"
                                             className="w-full px-2 py-2 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-[#00A868]/50" /></div>
-                                ))}
+                                </div>
                             </div>
                             <div><label className="text-xs font-medium text-muted-foreground block mb-1">Observações</label>
                                 <textarea value={negNotes} onChange={e => setNegNotes(e.target.value)} rows={2} placeholder="Notas sobre a renegociação..."
