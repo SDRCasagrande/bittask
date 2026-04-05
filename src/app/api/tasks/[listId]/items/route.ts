@@ -10,7 +10,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ lis
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { listId } = await params;
-        const { title, date, time, assigneeId, clientId, description, priority, force } = await request.json();
+        const { title, date, time, assigneeId, clientId, description, priority, force, recurrence, recurrenceEnd, negotiationId } = await request.json();
 
         if (!title?.trim()) return NextResponse.json({ error: 'Título é obrigatório' }, { status: 400 });
 
@@ -73,15 +73,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ lis
                 date: date || '',
                 time: time || '',
                 priority: priority || 'medium',
+                recurrence: recurrence || 'none',
+                recurrenceEnd: recurrenceEnd || '',
                 listId,
                 createdById: session.userId,
                 assigneeId: assigneeId || null,
                 clientId: clientId || null,
+                negotiationId: negotiationId || null,
             },
             include: {
                 assignee: { select: { id: true, name: true, email: true } },
                 createdBy: { select: { id: true, name: true } },
                 client: { select: { id: true, name: true, userId: true } },
+                subtasks: { orderBy: { order: 'asc' } },
             },
         });
 

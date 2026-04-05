@@ -184,27 +184,47 @@ model Task {
   starred     Boolean  @default(false)
   scheduled   Boolean  @default(false)
   priority    String   @default("medium")
+  recurrence  String   @default("none") // none, daily, weekly, monthly, yearly
+  recurrenceEnd String @default("")     // end date for recurrence
   googleCalendarEventId String @default("")
   listId      String
   createdById String
   assigneeId  String?
   groupId     String?
   clientId    String?
+  negotiationId String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  list      TaskList      @relation(fields: [listId], references: [id], onDelete: Cascade)
-  createdBy User          @relation("TaskCreator", fields: [createdById], references: [id])
-  assignee  User?         @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  group     TeamGroup?    @relation(fields: [groupId], references: [id])
-  client    Client?       @relation(fields: [clientId], references: [id])
-  comments  TaskComment[]
+  list        TaskList      @relation(fields: [listId], references: [id], onDelete: Cascade)
+  createdBy   User          @relation("TaskCreator", fields: [createdById], references: [id])
+  assignee    User?         @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  group       TeamGroup?    @relation(fields: [groupId], references: [id])
+  client      Client?       @relation(fields: [clientId], references: [id])
+  negotiation Negotiation?  @relation(fields: [negotiationId], references: [id])
+  comments    TaskComment[]
+  subtasks    SubTask[]
 
   @@index([listId])
   @@index([createdById])
   @@index([assigneeId])
   @@index([groupId])
+  @@index([negotiationId])
   @@map("tasks")
+}
+
+model SubTask {
+  id        String   @id @default(cuid())
+  title     String
+  completed Boolean  @default(false)
+  order     Int      @default(0)
+  taskId    String
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("sub_tasks")
 }
 
 model TaskComment {
@@ -340,6 +360,7 @@ model Negotiation {
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
   assignee User?  @relation("NegotiationAssignee", fields: [assigneeId], references: [id])
   comments NegotiationComment[]
+  tasks    Task[]
 
   @@index([clientId])
   @@index([assigneeId])

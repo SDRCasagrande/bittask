@@ -34,6 +34,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ task
         if (body.time !== undefined) data.time = body.time;
         if (body.dueDate !== undefined) data.dueDate = body.dueDate;
         if (body.assigneeId !== undefined) data.assigneeId = body.assigneeId || null;
+        if (body.recurrence !== undefined) data.recurrence = body.recurrence;
+        if (body.recurrenceEnd !== undefined) data.recurrenceEnd = body.recurrenceEnd;
+        if (body.negotiationId !== undefined) data.negotiationId = body.negotiationId || null;
 
         const task = await prisma.task.update({
             where: { id: taskId },

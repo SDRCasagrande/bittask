@@ -19,7 +19,13 @@ export async function GET() {
             where,
             include: {
                 user: { select: { id: true, name: true, email: true, position: true } },
-                negotiations: { include: { assignee: { select: { id: true, name: true, email: true } } }, orderBy: { createdAt: "desc" } },
+                negotiations: { 
+                    include: { 
+                        assignee: { select: { id: true, name: true, email: true } },
+                        tasks: { orderBy: { createdAt: "asc" } }
+                    }, 
+                    orderBy: { createdAt: "desc" } 
+                },
                 monthlyVolumes: { orderBy: { month: "desc" }, take: 12 },
             },
             orderBy: { createdAt: "desc" },

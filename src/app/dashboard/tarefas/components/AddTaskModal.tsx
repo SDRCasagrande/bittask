@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import {
     Plus, CalendarDays, Clock, ListTodo, UserPlus,
-    ChevronDown, Check, X, Flag, Sun, Repeat
+    ChevronDown, Check, X, Flag, Sun, Repeat, FileText
 } from "lucide-react";
-import { TaskListData, UserOption, RECURRENCE_OPTIONS } from "./types";
+import { TaskListData, UserOption, RECURRENCE_OPTIONS, TASK_TEMPLATES } from "./types";
 
 export function AddTaskModal({ lists, users, defaultListId, defaultDate, defaultTime, defaultEndTime, onSave, onClose }: {
     lists: TaskListData[];
@@ -14,7 +14,7 @@ export function AddTaskModal({ lists, users, defaultListId, defaultDate, default
     defaultDate: string;
     defaultTime: string;
     defaultEndTime?: string;
-    onSave: (listId: string, title: string, date?: string, time?: string, assigneeId?: string, priority?: string, description?: string) => void;
+    onSave: (listId: string, title: string, date?: string, time?: string, assigneeId?: string, priority?: string, description?: string, recurrence?: string) => void;
     onClose: () => void;
 }) {
     const [title, setTitle] = useState("");
@@ -36,9 +36,24 @@ export function AddTaskModal({ lists, users, defaultListId, defaultDate, default
     useEffect(() => { setEndTime(defaultEndTime || ""); }, [defaultEndTime]);
     useEffect(() => { setListId(defaultListId); }, [defaultListId]);
 
+    const [showTemplates, setShowTemplates] = useState(!defaultDate && !defaultTime);
+
+    const applyTemplate = (tpl: typeof TASK_TEMPLATES[0]) => {
+        setTitle(tpl.title);
+        setDescription(tpl.description);
+        setPriority(tpl.priority);
+        if (tpl.daysUntilDue) {
+            const d = new Date(); d.setDate(d.getDate() + tpl.daysUntilDue);
+            const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+            setDate(val);
+        }
+        if ((tpl as any).recurrence) setRecurrence((tpl as any).recurrence);
+        setShowTemplates(false);
+    };
+
     const handleSave = () => {
         if (!title.trim() || !listId) return;
-        onSave(listId, title.trim(), date || undefined, allDay ? undefined : time || undefined, assignee || undefined, priority, description || undefined);
+        onSave(listId, title.trim(), date || undefined, allDay ? undefined : time || undefined, assignee || undefined, priority, description || undefined, recurrence !== "none" ? recurrence : undefined);
     };
 
     const priorities = [
@@ -77,6 +92,34 @@ export function AddTaskModal({ lists, users, defaultListId, defaultDate, default
                         onKeyDown={e => { if (e.key === "Enter" && title.trim()) handleSave(); }}
                         placeholder="O que precisa ser feito?"
                         className="w-full text-lg font-medium text-foreground bg-transparent border-b-2 border-border focus:border-[#00A868] focus:outline-none pb-2 placeholder-muted-foreground/50 transition-colors" />
+
+                    {/* Templates */}
+                    {showTemplates && !title && (
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                                <FileText className="w-3 h-3" /> Templates rápidos
+                            </label>
+                            <div className="grid grid-cols-2 gap-1.5">
+                                {TASK_TEMPLATES.map(tpl => (
+                                    <button key={tpl.name} onClick={() => applyTemplate(tpl)}
+                                        className="flex items-start gap-2 p-2.5 rounded-xl bg-muted/50 border border-border hover:border-[#00A868]/40 hover:bg-[#00A868]/5 transition-all text-left group">
+                                        <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${tpl.priority === 'high' ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                            <Flag className="w-3 h-3" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-bold text-foreground truncate group-hover:text-[#00A868]">{tpl.name}</p>
+                                            <p className="text-[10px] text-muted-foreground leading-tight truncate">{tpl.title}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {!showTemplates && !title && (
+                        <button onClick={() => setShowTemplates(true)} className="text-[11px] text-[#00A868] font-medium hover:underline flex items-center gap-1">
+                            <FileText className="w-3 h-3" /> Ver templates
+                        </button>
+                    )}
 
                     {/* Date & Time */}
                     <div className="space-y-2">

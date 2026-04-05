@@ -20,6 +20,7 @@ export async function GET() {
                         assignee: { select: { id: true, name: true, email: true } },
                         createdBy: { select: { id: true, name: true } },
                         client: { select: { id: true, name: true, userId: true } },
+                        subtasks: { orderBy: { order: 'asc' } },
                     },
                     orderBy: { createdAt: 'asc' },
                 },
@@ -31,30 +32,46 @@ export async function GET() {
         if (lists.length === 0) {
             const newList = await prisma.taskList.create({
                 data: { name: 'Minhas Tarefas', userId: session.userId, orgId: session.orgId || null },
-                include: { tasks: { include: { assignee: { select: { id: true, name: true, email: true } }, createdBy: { select: { id: true, name: true } }, client: { select: { id: true, name: true, userId: true } } } } },
+                include: { tasks: { include: { assignee: { select: { id: true, name: true, email: true } }, createdBy: { select: { id: true, name: true } }, client: { select: { id: true, name: true, userId: true } }, subtasks: { orderBy: { order: 'asc' } } } } },
             });
             lists = [newList];
         }
 
-        // Also include tasks assigned TO this user (from any list)
-        const assignedTasks = await prisma.task.findMany({
-            where: { assigneeId: session.userId },
-            include: {
-                assignee: { select: { id: true, name: true, email: true } },
-                createdBy: { select: { id: true, name: true } },
-                list: { select: { name: true } },
-                group: { select: { id: true, name: true } },
-                client: { select: { id: true, name: true, userId: true } },
-            },
-        });
+        // ═══ PARALLEL QUERIES — run independent fetches simultaneously ═══
+        const teamWhere: any = {};
+        if (session.orgId) teamWhere.orgId = session.orgId;
 
-        // Tasks assigned to groups the user belongs to
-        const userGroups = await prisma.teamGroupMember.findMany({
-            where: { userId: session.userId },
-            select: { groupId: true },
-        });
+        const [assignedTasks, userGroups, teams] = await Promise.all([
+            // Tasks assigned TO this user (from any list)
+            prisma.task.findMany({
+                where: { assigneeId: session.userId },
+                include: {
+                    assignee: { select: { id: true, name: true, email: true } },
+                    createdBy: { select: { id: true, name: true } },
+                    list: { select: { name: true } },
+                    group: { select: { id: true, name: true } },
+                    client: { select: { id: true, name: true, userId: true } },
+                    subtasks: { orderBy: { order: 'asc' } },
+                },
+            }),
+            // Groups the user belongs to
+            prisma.teamGroupMember.findMany({
+                where: { userId: session.userId },
+                select: { groupId: true },
+            }),
+            // Teams for UI
+            prisma.teamGroup.findMany({
+                where: teamWhere,
+                include: {
+                    members: { include: { user: { select: { id: true, name: true } } } },
+                    _count: { select: { tasks: true } },
+                },
+                orderBy: { name: "asc" },
+            }),
+        ]);
+
+        // Conditional group tasks query (only if user belongs to groups)
         const groupIds = userGroups.map(g => g.groupId);
-
         let groupTasks: any[] = [];
         if (groupIds.length > 0) {
             groupTasks = await prisma.task.findMany({
@@ -69,22 +86,10 @@ export async function GET() {
                     list: { select: { name: true } },
                     group: { select: { id: true, name: true } },
                     client: { select: { id: true, name: true, userId: true } },
+                    subtasks: { orderBy: { order: 'asc' } },
                 },
             });
         }
-
-        // User's groups for the UI (scoped to org)
-        const teamWhere: any = {};
-        if (session.orgId) teamWhere.orgId = session.orgId;
-
-        const teams = await prisma.teamGroup.findMany({
-            where: teamWhere,
-            include: {
-                members: { include: { user: { select: { id: true, name: true } } } },
-                _count: { select: { tasks: true } },
-            },
-            orderBy: { name: "asc" },
-        });
 
         return NextResponse.json({ lists, assignedTasks, groupTasks, teams });
     } catch (error) {

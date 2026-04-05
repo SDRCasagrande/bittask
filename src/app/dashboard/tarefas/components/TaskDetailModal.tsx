@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import {
     CheckCircle2, Circle, Calendar, Star, Trash2,
     CalendarDays, Pencil, X, Check, Users,
-    MessageSquare, AlertTriangle, Flag, Clock
+    MessageSquare, AlertTriangle, Flag, Clock, ListTodo, Repeat
 } from "lucide-react";
 import { useConfirm } from "@/components/ConfirmModal";
-import { TaskData, UserOption, TaskComment, PRIORITY_MAP } from "./types";
+import { TaskData, UserOption, TaskComment, PRIORITY_MAP, SubTask, RECURRENCE_OPTIONS } from "./types";
 
 export function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
     task: TaskData; users: UserOption[];
@@ -21,6 +21,9 @@ export function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
     const [time, setTime] = useState(task.time);
     const [assigneeId, setAssigneeId] = useState(task.assigneeId || "");
     const [dueDate, setDueDate] = useState(task.dueDate || "");
+    const [recurrence, setRecurrence] = useState(task.recurrence || "none");
+    const [subtasks, setSubtasks] = useState<SubTask[]>(task.subtasks || []);
+    const [newSubtask, setNewSubtask] = useState("");
     const [editingTitle, setEditingTitle] = useState(false);
     const [saved, setSaved] = useState(false);
     const [dirty, setDirty] = useState(false);
@@ -50,9 +53,44 @@ export function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
         } catch { /* */ }
     };
 
+    const addSubtask = async () => {
+        if (!newSubtask.trim()) return;
+        try {
+            const res = await fetch(`/api/tasks/item/${task.id}/subtasks`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: newSubtask.trim() }),
+            });
+            if (res.ok) {
+                const s = await res.json();
+                setSubtasks(prev => [...prev, s]);
+                setNewSubtask("");
+            }
+        } catch { /* */ }
+    };
+
+    const toggleSubtask = async (subtaskId: string, completed: boolean) => {
+        setSubtasks(prev => prev.map(s => s.id === subtaskId ? { ...s, completed } : s));
+        try {
+            await fetch(`/api/tasks/item/${task.id}/subtasks`, {
+                method: "PUT", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ subtaskId, completed }),
+            });
+        } catch { /* */ }
+    };
+
+    const deleteSubtask = async (subtaskId: string) => {
+        setSubtasks(prev => prev.filter(s => s.id !== subtaskId));
+        try {
+            await fetch(`/api/tasks/item/${task.id}/subtasks`, {
+                method: "DELETE", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ subtaskId }),
+            });
+        } catch { /* */ }
+    };
+
     const markDirty = () => { if (!dirty) setDirty(true); };
 
-    function handleSave() {
+    async function handleSave() {
         const updates: Record<string, any> = {};
         if (title.trim() && title !== task.title) updates.title = title.trim();
         if (description !== (task.description || "")) updates.description = description;
@@ -60,16 +98,18 @@ export function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
         if (date !== task.date) updates.date = date;
         if (time !== task.time) updates.time = time;
         if (dueDate !== (task.dueDate || "")) updates.dueDate = dueDate;
+        if (recurrence !== (task.recurrence || "none")) updates.recurrence = recurrence;
         const newAssignee = assigneeId || null;
         if (newAssignee !== task.assigneeId) updates.assigneeId = newAssignee;
 
         if (Object.keys(updates).length > 0) {
             onUpdate(updates);
-            setTimeout(() => {
-                fetch(`/api/tasks/item/${task.id}/comments`).then(r => r.json()).then(d => {
-                    if (Array.isArray(d)) setComments(d);
-                }).catch(() => {});
-            }, 500);
+            // Refresh comments after save completes (activity log entries)
+            try {
+                const res = await fetch(`/api/tasks/item/${task.id}/comments`);
+                const data = await res.json();
+                if (Array.isArray(data)) setComments(data);
+            } catch { /* non-blocking */ }
         }
 
         setSaved(true);
@@ -112,6 +152,13 @@ export function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
 
                     {/* Meta Grid */}
                     <div className="grid grid-cols-2 gap-3">
+                        {/* Recurrence Indicator if any */}
+                        {recurrence !== "none" && (
+                            <div className="col-span-2 flex items-center gap-1.5 px-3 py-2 bg-purple-500/10 text-purple-500 rounded-xl text-xs font-medium">
+                                <Repeat className="w-3.5 h-3.5" /> Tarefa Recorrente ({RECURRENCE_OPTIONS.find(r => r.value === recurrence)?.label})
+                            </div>
+                        )}
+
                         {/* Priority */}
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prioridade</label>
@@ -193,6 +240,68 @@ export function TaskDetailModal({ task, users, onUpdate, onDelete, onClose }: {
                             {dueDate && new Date(dueDate + 'T23:59:59') < new Date() && (
                                 <p className="text-[10px] text-red-400 font-medium flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Prazo vencido</p>
                             )}
+                        </div>
+
+                        {/* Recurrence Edit */}
+                        <div className="col-span-2 space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recorrência</label>
+                            <select value={recurrence} onChange={e => { setRecurrence(e.target.value); markDirty(); }}
+                                className="w-full h-11 px-3 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-[#00A868]/50">
+                                {RECURRENCE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                            </select>
+                            {recurrence !== "none" && (
+                                <p className="text-[10px] text-muted-foreground">Esta tarefa será recriada automaticamente ao ser concluída.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Subtasks (Checklist) */}
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                                <ListTodo className="w-3 h-3" /> Checklist
+                            </label>
+                            {subtasks.length > 0 && (
+                                <span className={`text-[10px] font-bold ${subtasks.filter(s => s.completed).length === subtasks.length ? "text-[#00A868]" : "text-muted-foreground"}`}>
+                                    {subtasks.filter(s => s.completed).length}/{subtasks.length}
+                                </span>
+                            )}
+                        </div>
+                        {subtasks.length > 0 && (
+                            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-[#00A868] rounded-full transition-all duration-300"
+                                    style={{ width: `${subtasks.length > 0 ? (subtasks.filter(s => s.completed).length / subtasks.length) * 100 : 0}%` }}
+                                />
+                            </div>
+                        )}
+                        
+                        <div className="space-y-1 mb-2">
+                            {subtasks.map((st, idx) => (
+                                <div key={st.id} className="flex items-center gap-2 group">
+                                    <button onClick={() => toggleSubtask(st.id, !st.completed)}
+                                        className={`shrink-0 w-6 h-6 flex items-center justify-center rounded-lg border transition-colors ${st.completed ? "bg-[#00A868] border-[#00A868] text-white" : "border-border text-transparent hover:border-[#00A868]"}`}>
+                                        <Check className="w-3.5 h-3.5" />
+                                    </button>
+                                    <span className={`text-sm flex-1 truncate transition-all ${st.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                                        {st.title}
+                                    </span>
+                                    <button onClick={() => deleteSubtask(st.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all shrink-0">
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-1.5">
+                            <input value={newSubtask} onChange={e => setNewSubtask(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') addSubtask(); }}
+                                placeholder="Adicionar item..."
+                                className="flex-1 h-9 px-3 bg-muted/50 border border-border rounded-xl text-xs text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50 min-w-0" />
+                            <button onClick={addSubtask} disabled={!newSubtask.trim()}
+                                className="h-9 px-3 rounded-xl text-xs font-bold bg-secondary text-foreground hover:bg-muted disabled:opacity-30 transition-all shrink-0">
+                                Adicionar
+                            </button>
                         </div>
                     </div>
 

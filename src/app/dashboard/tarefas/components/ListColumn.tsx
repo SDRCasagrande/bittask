@@ -98,8 +98,11 @@ export function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onS
             <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5">
                 {pending.map(task => {
                     const pri = PRIORITY_MAP[task.priority] || PRIORITY_MAP.medium;
+                    const overdue = isOverdue(task.dueDate || "") || isOverdue(task.date);
+                    const subtaskTotal = task.subtasks?.length || 0;
+                    const subtaskDone = task.subtasks?.filter(s => s.completed).length || 0;
                     return (
-                    <div key={task.id} className="group flex items-start gap-2 px-2 py-2.5 rounded-xl hover:bg-muted/40 transition-colors relative cursor-pointer active:bg-muted/60"
+                    <div key={task.id} className={`group flex items-start gap-2 px-2 py-2.5 rounded-xl hover:bg-muted/40 transition-colors relative cursor-pointer active:bg-muted/60 ${overdue ? "ring-1 ring-red-500/30 animate-pulse-subtle" : ""}`}
                         onClick={() => onOpenDetail(task)}>
                         <button onClick={(e) => { e.stopPropagation(); onToggle(task.id); }} className="shrink-0 mt-0.5 text-muted-foreground hover:text-[#00A868] touch-target p-0.5"><Circle className="w-[18px] h-[18px]" /></button>
                         <div className="flex-1 min-w-0">
@@ -118,6 +121,11 @@ export function ListColumn({ list, users, onAdd, onToggle, onStar, onDelete, onS
                                         <UserPlus className="w-3 h-3" /> {task.assignee.name.split(" ")[0]}
                                     </span>
                                 ) : null}
+                                {subtaskTotal > 0 && (
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-lg font-medium flex items-center gap-0.5 ${subtaskDone === subtaskTotal ? "bg-[#00A868]/10 text-[#00A868]" : "bg-muted text-muted-foreground"}`}>
+                                        <CheckSquare className="w-3 h-3" /> {subtaskDone}/{subtaskTotal}
+                                    </span>
+                                )}
                                 {task.description && (
                                     <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-lg flex items-center gap-0.5">
                                         <MessageSquare className="w-3 h-3" />

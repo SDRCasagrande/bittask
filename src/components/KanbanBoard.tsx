@@ -4,7 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
     DndContext, closestCenter, PointerSensor, TouchSensor, MouseSensor, KeyboardSensor, useSensor, useSensors,
-    DragEndEvent, DragStartEvent, DragOverlay
+    DragEndEvent, DragStartEvent, DragOverlay, useDroppable
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import {
     Circle, CheckCircle2, Star, Clock, Flag, GripVertical,
     Calendar, User as UserIcon
 } from "lucide-react";
+import { isOverdue, friendlyDate } from "@/app/dashboard/tarefas/components/types";
 
 interface TaskData {
     id: string; title: string; description: string; completed: boolean; date: string; time: string;
@@ -25,6 +26,7 @@ interface TaskData {
 interface KanbanBoardProps {
     tasks: TaskData[];
     onToggle: (taskId: string) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onUpdate: (taskId: string, data: Record<string, any>) => void;
     onSelect: (task: TaskData) => void;
 }
@@ -34,16 +36,6 @@ const COLUMNS = [
     { key: "medium", label: "🟡 Média Prioridade", color: "border-amber-500/30", headerBg: "bg-amber-500/10", headerText: "text-amber-500", dot: "bg-amber-500" },
     { key: "low", label: "🟢 Baixa Prioridade", color: "border-[#00A868]/30", headerBg: "bg-[#00A868]/10", headerText: "text-[#00A868]", dot: "bg-[#00A868]" },
 ];
-
-function isOverdue(d: string) { return d ? d < new Date().toISOString().split("T")[0] : false; }
-function friendlyDate(d: string) {
-    if (!d) return "";
-    const t = new Date(); const todayStr = t.toISOString().split("T")[0];
-    t.setDate(t.getDate() + 1); const tomorrowStr = t.toISOString().split("T")[0];
-    if (d === todayStr) return "Hoje";
-    if (d === tomorrowStr) return "Amanhã";
-    return new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
-}
 
 function SortableTask({ task, onToggle, onSelect }: { task: TaskData; onToggle: (id: string) => void; onSelect: (t: TaskData) => void }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });

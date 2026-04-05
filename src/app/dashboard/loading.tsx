@@ -1,13 +1,13 @@
 export default function DashboardLoading() {
     return (
-        <div className="max-w-6xl mx-auto space-y-5 animate-pulse">
+        <div className="max-w-6xl mx-auto space-y-5" style={{ animation: "pageEnter 0.3s ease-out", opacity: 0.6 }}>
             {/* Welcome banner skeleton */}
-            <div className="rounded-2xl p-5 bg-[#00A868]/80 h-20" />
+            <div className="rounded-2xl p-5 bg-[#00A868]/40 h-20 animate-pulse" />
 
             {/* KPI cards skeleton — 5 like the real dashboard */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                 {[...Array(5)].map((_, i) => (
-                    <div key={i} className="bg-card border border-border rounded-xl p-4 space-y-2.5">
+                    <div key={i} className="bg-card border border-border rounded-xl p-4 space-y-2.5 animate-pulse" style={{ animationDelay: `${i * 50}ms` }}>
                         <div className="flex items-center justify-between">
                             <div className="w-9 h-9 rounded-xl bg-muted" />
                         </div>
@@ -18,7 +18,7 @@ export default function DashboardLoading() {
             </div>
 
             {/* Goals skeleton */}
-            <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="bg-card border border-border rounded-xl p-5 space-y-3 animate-pulse" style={{ animationDelay: "150ms" }}>
                 <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-lg bg-muted" />
                     <div className="h-4 w-32 rounded bg-muted" />
@@ -37,7 +37,7 @@ export default function DashboardLoading() {
             </div>
 
             {/* Pipeline skeleton */}
-            <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="bg-card border border-border rounded-xl p-5 space-y-3 animate-pulse" style={{ animationDelay: "200ms" }}>
                 <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-lg bg-muted" />
                     <div className="h-4 w-44 rounded bg-muted" />
@@ -56,7 +56,7 @@ export default function DashboardLoading() {
             {/* Content rows skeleton */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {[...Array(2)].map((_, i) => (
-                    <div key={i} className="bg-card border border-border rounded-xl p-5 space-y-3">
+                    <div key={i} className="bg-card border border-border rounded-xl p-5 space-y-3 animate-pulse" style={{ animationDelay: `${250 + i * 50}ms` }}>
                         <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-lg bg-muted" />
                             <div className="h-4 w-36 rounded bg-muted" />

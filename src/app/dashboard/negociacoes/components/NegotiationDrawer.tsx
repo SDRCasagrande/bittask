@@ -3,13 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { formatPercent, calculateCET } from "@/lib/calculator";
 import { RI } from "@/components/rate-input";
-import { MessageSquare, CalendarPlus, FileDown, ArrowRight, Trash2, Send, Clock } from "lucide-react";
+import { MessageSquare, CalendarPlus, FileDown, ArrowRight, Trash2, Send, Clock, ListTodo, CheckSquare, Plus, Copy } from "lucide-react";
 import { generateProposalPDF } from "@/lib/proposal-pdf";
 import SlideDrawer from "@/components/SlideDrawer";
 import { StageBadge } from "./StageBadge";
 import {
     RateSnapshot, getLeadAge, getStage, normalizeStatus,
-    fmtDate, fmtDateTime, gcalLink, shareWhatsApp, STAGES
+    fmtDate, fmtDateTime, gcalLink, shareWhatsApp, STAGES, today
 } from "./types";
 
 export function NegotiationDrawer({ neg, onClose, onChangeStage, onDeleteNeg, loadAll }: {
@@ -31,8 +31,14 @@ export function NegotiationDrawer({ neg, onClose, onChangeStage, onDeleteNeg, lo
     const [sendingComment, setSendingComment] = useState(false);
     const commentsEndRef = useRef<HTMLDivElement>(null);
 
+    // Linked Tasks
+    const [tasks, setTasks] = useState<any[]>([]);
+    const [newTaskTitle, setNewTaskTitle] = useState("");
+    const [creatingTask, setCreatingTask] = useState(false);
+
     useEffect(() => {
         if (neg?.id) {
+            setTasks(neg.tasks || []);
             setLoadingComments(true);
             setComments([]);
             setEditingRates(false);
@@ -61,6 +67,45 @@ export function NegotiationDrawer({ neg, onClose, onChangeStage, onDeleteNeg, lo
             }
         } catch { /* */ }
         setSendingComment(false);
+    }
+
+    async function createTask() {
+        if (!neg || !newTaskTitle.trim()) return;
+        setCreatingTask(true);
+        try {
+            const res = await fetch(`/api/negotiations/${neg.id}/tasks`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: newTaskTitle.trim() }),
+            });
+            if (res.ok) {
+                const t = await res.json();
+                setTasks(prev => [...prev, t]);
+                setNewTaskTitle("");
+                loadAll();
+            }
+        } catch { /* */ }
+        setCreatingTask(false);
+    }
+
+    async function duplicateNegotiation() {
+        if (!neg) return;
+        try {
+            await fetch(`/api/clients/${neg.clientId}/negotiations`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    status: "prospeccao",
+                    dateNeg: today(),
+                    rates: neg.rates,
+                    notes: neg.notes,
+                    assigneeId: neg.assigneeId
+                })
+            });
+            loadAll();
+            setMsg({ type: "ok", text: "Negociação duplicada com sucesso!" });
+            setTimeout(onClose, 1500);
+        } catch {
+            setMsg({ type: "err", text: "Erro ao duplicar negociação" });
+        }
     }
 
     return (
@@ -252,6 +297,43 @@ export function NegotiationDrawer({ neg, onClose, onChangeStage, onDeleteNeg, lo
                         </div>
                     )}
 
+                    {/* Linked Tasks */}
+                    <div className="space-y-2 pt-2 border-t border-border">
+                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                            <ListTodo className="w-3 h-3" /> Tarefas Vinculadas
+                        </h4>
+                        <div className="space-y-1.5">
+                            {tasks.length === 0 ? (
+                                <p className="text-[10px] text-muted-foreground italic px-1">Nenhuma tarefa aberta.</p>
+                            ) : (
+                                tasks.map((t: any) => (
+                                    <div key={t.id} className="flex items-center gap-2 p-2 rounded-xl bg-secondary border border-border/50">
+                                        <div className={`w-2 h-2 rounded-full shrink-0 ${t.priority === 'high' ? 'bg-red-500' : t.priority === 'medium' ? 'bg-amber-500' : 'bg-[#00A868]'}`} />
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`text-xs font-bold truncate ${t.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{t.title}</p>
+                                            {t.date && <p className="text-[10px] text-muted-foreground/80">{fmtDate(t.date)}</p>}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <div className="flex gap-2 items-center">
+                            <input
+                                value={newTaskTitle}
+                                onChange={e => setNewTaskTitle(e.target.value)}
+                                onKeyDown={e => { if (e.key === "Enter") createTask(); }}
+                                placeholder="Título da nova tarefa..."
+                                className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-xs text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-[#00A868]/50"
+                            />
+                            <button
+                                onClick={createTask}
+                                disabled={creatingTask || !newTaskTitle.trim()}
+                                className="px-3 py-2 rounded-xl bg-secondary text-foreground text-xs font-bold hover:bg-muted transition-colors disabled:opacity-40 shrink-0 touch-target flex gap-1 items-center">
+                                <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Criar</span>
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Chat / Documentation */}
                     <div className="space-y-2 pt-2 border-t border-border">
                         <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
@@ -303,7 +385,13 @@ export function NegotiationDrawer({ neg, onClose, onChangeStage, onDeleteNeg, lo
 
                     {/* Actions */}
                     <div className="space-y-2 pt-2 border-t border-border">
-                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ações</h4>
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ações</h4>
+                            <button onClick={duplicateNegotiation}
+                                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors touch-target">
+                                <Copy className="w-3 h-3" /> Duplicar CRM
+                            </button>
+                        </div>
                         <div className="grid grid-cols-2 gap-2">
                             <button onClick={() => { shareWhatsApp(neg); onClose(); }}
                                 className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#00A868]/10 text-[#00A868] text-xs font-bold hover:bg-[#00A868]/20 transition-colors touch-target">

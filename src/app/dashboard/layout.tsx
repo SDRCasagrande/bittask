@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {
     LayoutDashboard, Calculator, FileBarChart, GitCompare,
     Handshake, Settings, Users, LogOut, Menu, X, ChevronRight,
@@ -15,6 +16,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationBell } from "@/components/NotificationBell";
 import LizzeChat from "@/components/LizzeChat";
 import { ConfirmProvider } from "@/components/ConfirmModal";
+
+const RouteProgress = dynamic(() => import("@/components/RouteProgress"), { ssr: false });
 
 /* ═══ Navigation Items ═══ */
 const MAIN_NAV = [
@@ -89,6 +92,9 @@ export default function DashboardLayout({
 
     return (
         <ConfirmProvider>
+        <Suspense fallback={null}>
+            <RouteProgress />
+        </Suspense>
         <div className="min-h-screen bg-background text-foreground">
             {/* ═══ DESKTOP: Sidebar (lg+) ═══ */}
             <aside className="hidden lg:flex fixed top-0 left-0 h-screen w-[260px] bg-card border-r border-border z-50 flex-col">
