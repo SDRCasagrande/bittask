@@ -28,6 +28,7 @@ export default function TarefasPage() {
     const [calYear, setCalYear] = useState(new Date().getFullYear());
     const [calView, setCalView] = useState<"day" | "week" | "month">("week");
     const [calDate, setCalDate] = useState(new Date());
+    const [primaryTab, setPrimaryTab] = useState<"minha_carteira" | "franquia" | "avulsos" | "tudo">("tudo");
     const [sidebarFilter, setSidebarFilter] = useState<"all" | "starred" | "assigned" | string>("all");
     const [detailTask, setDetailTask] = useState<TaskData | null>(null);
     const [gcalConnected, setGcalConnected] = useState<boolean | null>(null);
@@ -99,7 +100,24 @@ export default function TarefasPage() {
             .catch(() => {});
     }, [gcalConnected, calMonth, calYear]);
 
-    const allTasks = useMemo(() => lists.flatMap(l => l.tasks), [lists]);
+    const filteredAssignedToMe = useMemo(() => assignedToMe.filter(t => {
+        if (primaryTab === "minha_carteira") return t.clientId && t.client?.userId === currentUserId;
+        if (primaryTab === "franquia") return t.clientId && t.client?.userId !== currentUserId;
+        if (primaryTab === "avulsos") return !t.clientId;
+        return true;
+    }), [assignedToMe, primaryTab, currentUserId]);
+
+    const filteredLists = useMemo(() => lists.map(l => ({
+        ...l,
+        tasks: l.tasks.filter(t => {
+            if (primaryTab === "minha_carteira") return t.clientId && t.client?.userId === currentUserId;
+            if (primaryTab === "franquia") return t.clientId && t.client?.userId !== currentUserId;
+            if (primaryTab === "avulsos") return !t.clientId;
+            return true;
+        })
+    })), [lists, primaryTab, currentUserId]);
+
+    const allTasks = useMemo(() => filteredLists.flatMap(l => l.tasks), [filteredLists]);
     const totalPending = allTasks.filter(t => !t.completed).length;
     const totalStarred = allTasks.filter(t => t.starred && !t.completed).length;
 
@@ -238,12 +256,27 @@ export default function TarefasPage() {
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-1 pb-3 sm:pb-4 gap-2 flex-wrap">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-1 pb-3 sm:pb-4 gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-[#00A868] flex items-center justify-center text-white shadow-lg shadow-[#00A868]/20"><CheckSquare className="w-4 h-4" /></div>
                     <h1 className="text-lg font-bold text-foreground">Tarefas</h1>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2">
+                
+                {/* ═══ CONTEXT TABS (THE CRM MAGIC) ═══ */}
+                <div className="flex items-center gap-1 bg-secondary/60 rounded-xl p-1 overflow-x-auto snap-x mx-auto sm:mx-0 order-last w-full sm:w-auto">
+                    {(Object.entries({
+                        tudo: "Visão Geral",
+                        minha_carteira: "Minha Carteira",
+                        franquia: "Base da Franquia",
+                        avulsos: "Avulsos"
+                    }) as [typeof primaryTab, string][]).map(([k, label]) => (
+                        <button key={k} onClick={() => setPrimaryTab(k)} className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all touch-target snap-start ${primaryTab === k ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:bg-muted"}`}>
+                            {label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex items-center gap-1 sm:gap-2 sm:order-last ml-auto">
                     <button onClick={() => setView("board")} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${view === "board" ? "bg-[#00A868]/10 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}><ListTodo className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Board</span></button>
                     <button onClick={() => setView("kanban")} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${view === "kanban" ? "bg-[#00A868]/10 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}><Columns3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Kanban</span></button>
                     <button onClick={() => setView("calendar")} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${view === "calendar" ? "bg-[#00A868]/10 text-[#00A868]" : "text-muted-foreground hover:bg-muted"}`}><CalendarDays className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Calendário</span></button>
@@ -334,7 +367,7 @@ export default function TarefasPage() {
                     <div className="flex-1 overflow-x-auto">
                         <div className="flex flex-col lg:flex-row gap-4 min-h-full pb-4" style={{ minWidth: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${Math.max(lists.length + 1, 2) * 320}px` : 'auto' }}>
                             {sidebarFilter === "starred" && <ListColumn {...makeListColumnProps({ id: "starred", name: "Com estrela", tasks: allTasks.filter(t => t.starred) }, true)} />}
-                            {sidebarFilter === "assigned" && <ListColumn {...makeListColumnProps({ id: "assigned", name: "Atribuídas a mim", tasks: assignedToMe }, true)} />}
+                            {sidebarFilter === "assigned" && <ListColumn {...makeListColumnProps({ id: "assigned", name: "Atribuídas a mim", tasks: filteredAssignedToMe }, true)} />}
                             {sidebarFilter.startsWith("team_") && (() => {
                                 const userId = sidebarFilter.replace("team_", "");
                                 const user = users.find(u => u.id === userId);

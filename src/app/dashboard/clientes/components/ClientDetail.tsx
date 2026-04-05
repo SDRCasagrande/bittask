@@ -52,6 +52,13 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
     const [negSaving, setNegSaving] = useState(false);
     const [negCetMode, setNegCetMode] = useState(false);
 
+    // Dispatch form
+    const [showDispatch, setShowDispatch] = useState(false);
+    const [dispatchTitle, setDispatchTitle] = useState("");
+    const [dispatchDate, setDispatchDate] = useState("");
+    const [dispatchAssignee, setDispatchAssignee] = useState("");
+    const [dispatchSaving, setDispatchSaving] = useState(false);
+
     const sel = client;
     const lastNeg = sel.negotiations[0];
     const volumes = sel.monthlyVolumes || [];
@@ -101,8 +108,30 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
         } catch { /* */ } finally { setNegSaving(false); }
     };
 
+    const handleDispatch = async () => {
+        if (!dispatchTitle.trim()) return alert("Insira um título para a visita/tarefa.");
+        if (!dispatchAssignee) return alert("Selecione um Agente para receber a demanda.");
+        setDispatchSaving(true);
+        try {
+            const res = await fetch(`/api/clients/${sel.id}/tasks`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: dispatchTitle.trim(),
+                    date: dispatchDate,
+                    assigneeId: dispatchAssignee,
+                    priority: "high"
+                })
+            });
+            if (res.ok) {
+                setShowDispatch(false);
+                setDispatchTitle(""); setDispatchDate(""); setDispatchAssignee("");
+                alert("Atendimento despachado com sucesso!");
+            } else { alert("Erro ao despachar"); }
+        } catch { alert("Erro de rede"); } finally { setDispatchSaving(false); }
+    };
+
     return (
-        <div className="max-w-4xl mx-auto space-y-5">
+        <div className="max-w-4xl mx-auto space-y-5 relative">
             {/* Header */}
             <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
@@ -121,6 +150,9 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                     </div>
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
+                    <button onClick={() => setShowDispatch(!showDispatch)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-500/10 text-indigo-500 text-xs font-bold hover:bg-indigo-500/20 shadow-sm shadow-indigo-500/10 touch-target" title="Despachar Atendimento">
+                        <Clock className="w-3.5 h-3.5" /> Despachar
+                    </button>
                     <button onClick={() => { setTab("negs"); setShowNewNeg(true); }} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#00A868] text-white text-xs font-bold hover:bg-[#008f58] shadow-sm shadow-[#00A868]/20 touch-target" title="Nova Renegociação">
                         <TrendingUp className="w-3.5 h-3.5" /> Renegociar
                     </button>
@@ -144,6 +176,35 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                     </button>
                 </div>
             </div>
+
+            {/* Dispatch Form Panel */}
+            {showDispatch && (
+                <div className="card-elevated rounded-xl p-5 space-y-4 border border-indigo-500/30 bg-indigo-500/5 animate-slide-up relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-indigo-500 uppercase flex items-center gap-2">🚁 Despachar Atendimento p/ Base</h3>
+                        <button onClick={() => setShowDispatch(false)} className="p-1 rounded-lg hover:bg-indigo-500/10"><X className="w-4 h-4 text-indigo-500" /></button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Delegue uma visita, cobrança ou instalação rápida para outro agente da Franquia. A tarefa entrará na caixa &quot;Base da Franquia&quot; do agente selecionado.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div className="lg:col-span-2"><label className="text-xs font-medium text-muted-foreground block mb-1">Título / Demanda</label>
+                            <input value={dispatchTitle} onChange={e => setDispatchTitle(e.target.value)} placeholder="Ex: Substituir máquina S920 urgentemente" className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-indigo-500/50" /></div>
+                        <div><label className="text-xs font-medium text-muted-foreground block mb-1">Data Agendada (Opcional)</label>
+                            <input type="date" value={dispatchDate} onChange={e => setDispatchDate(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none [color-scheme:dark]" /></div>
+                    </div>
+                    <div><label className="text-xs font-medium text-muted-foreground block mb-1">Agente Responsável (Quem atende?)</label>
+                        <select value={dispatchAssignee} onChange={e => setDispatchAssignee(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-indigo-500/50">
+                            <option value="">Selecione um membro da equipe</option>
+                            {teamUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="flex justify-end pt-2">
+                        <button onClick={handleDispatch} disabled={dispatchSaving} className="px-5 py-2.5 rounded-xl bg-indigo-500 text-white font-bold hover:bg-indigo-600 disabled:opacity-50 transition-colors flex items-center gap-2 text-sm shadow-md">
+                            {dispatchSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "🚀 Despachar Tarefa"}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Edit Client Panel */}
             {editing && (

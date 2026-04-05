@@ -76,6 +76,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
                     listId: list.id,
                     createdById: session.userId,
                     assigneeId,
+                    clientId: client.id,
                 },
             });
         }

@@ -5,6 +5,8 @@ export interface TaskData {
     id: string; title: string; description: string; completed: boolean; date: string; time: string;
     dueDate?: string; starred: boolean; scheduled: boolean; priority: string; listId: string; createdById: string;
     assigneeId: string | null;
+    clientId?: string | null;
+    client?: { id: string; name: string, userId: string } | null;
     assignee: UserOption | null;
     createdBy: { id: string; name: string };
     createdAt: string;

@@ -19,6 +19,7 @@ export async function GET() {
                     include: {
                         assignee: { select: { id: true, name: true, email: true } },
                         createdBy: { select: { id: true, name: true } },
+                        client: { select: { id: true, name: true, userId: true } },
                     },
                     orderBy: { createdAt: 'asc' },
                 },
@@ -30,7 +31,7 @@ export async function GET() {
         if (lists.length === 0) {
             const newList = await prisma.taskList.create({
                 data: { name: 'Minhas Tarefas', userId: session.userId, orgId: session.orgId || null },
-                include: { tasks: { include: { assignee: { select: { id: true, name: true, email: true } }, createdBy: { select: { id: true, name: true } } } } },
+                include: { tasks: { include: { assignee: { select: { id: true, name: true, email: true } }, createdBy: { select: { id: true, name: true } }, client: { select: { id: true, name: true, userId: true } } } } },
             });
             lists = [newList];
         }
@@ -43,6 +44,7 @@ export async function GET() {
                 createdBy: { select: { id: true, name: true } },
                 list: { select: { name: true } },
                 group: { select: { id: true, name: true } },
+                client: { select: { id: true, name: true, userId: true } },
             },
         });
 
@@ -66,6 +68,7 @@ export async function GET() {
                     createdBy: { select: { id: true, name: true } },
                     list: { select: { name: true } },
                     group: { select: { id: true, name: true } },
+                    client: { select: { id: true, name: true, userId: true } },
                 },
             });
         }
