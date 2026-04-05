@@ -39,6 +39,8 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
     const [tpvD, setTpvD] = useState(""); const [tpvC, setTpvC] = useState(""); const [tpvP, setTpvP] = useState("");
     const [tpvSaving, setTpvSaving] = useState(false);
     const [showTpvAdvanced, setShowTpvAdvanced] = useState(false);
+    const [showMonthPicker, setShowMonthPicker] = useState(false);
+    const [pickerYear, setPickerYear] = useState(() => parseInt(currentMonth().split("-")[0]));
     const BRANDS = ["Mastercard", "Visa", "Elo", "Hiper", "Amex"] as const;
     const emptyBrands = () => Object.fromEntries(BRANDS.map(b => [b, ""]));
     const [brandDebit, setBrandDebit] = useState<Record<string, string>>(emptyBrands());
@@ -414,11 +416,48 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                         <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
                         <h3 className="text-sm font-bold text-blue-500 uppercase flex items-center gap-2"><BarChart3 className="w-4 h-4" /> Registrar TPV</h3>
 
-                        {/* Month Selector — simple native input */}
-                        <div>
+                        {/* Month Selector — Premium Custom Picker */}
+                        <div className="relative">
                             <label className="text-xs font-medium text-muted-foreground block mb-2">Mês de Referência</label>
-                            <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl bg-card border border-border text-sm font-semibold text-foreground focus:outline-none focus:border-blue-500/50 cursor-pointer" />
+                            <button type="button" onClick={() => { setShowMonthPicker(!showMonthPicker); setPickerYear(parseInt(tpvMonth.split("-")[0])); }}
+                                className="w-full px-4 py-3 rounded-xl bg-card border border-border text-sm font-semibold text-foreground hover:border-blue-500/50 transition-colors cursor-pointer flex items-center justify-between">
+                                <span className="flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-blue-500" />
+                                    {(() => { const [y, m] = tpvMonth.split("-"); const names = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]; return `${names[parseInt(m)-1]} ${y}`; })()}
+                                </span>
+                                <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showMonthPicker ? "rotate-90" : ""}`} />
+                            </button>
+                            {showMonthPicker && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-slide-up">
+                                    {/* Year nav */}
+                                    <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border-b border-border">
+                                        <button type="button" onClick={() => setPickerYear(p => p - 1)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+                                        <span className="text-sm font-bold">{pickerYear}</span>
+                                        <button type="button" onClick={() => setPickerYear(p => p + 1)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors"><ChevronRight className="w-4 h-4" /></button>
+                                    </div>
+                                    {/* Month grid */}
+                                    <div className="grid grid-cols-3 gap-1.5 p-3">
+                                        {["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"].map((name, i) => {
+                                            const mVal = `${pickerYear}-${String(i + 1).padStart(2, "0")}`;
+                                            const isSelected = tpvMonth === mVal;
+                                            const isCurrent = currentMonth() === mVal;
+                                            const isFuture = new Date(`${mVal}-01`) > new Date();
+                                            return (
+                                                <button key={mVal} type="button" disabled={isFuture}
+                                                    onClick={() => { setTpvMonth(mVal); setShowMonthPicker(false); }}
+                                                    className={`py-2.5 px-2 rounded-lg text-xs font-semibold transition-all ${
+                                                        isSelected ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" :
+                                                        isCurrent ? "bg-blue-500/10 text-blue-500 ring-1 ring-blue-500/30" :
+                                                        isFuture ? "text-muted-foreground/30 cursor-not-allowed" :
+                                                        "text-foreground hover:bg-secondary"
+                                                    }`}>
+                                                    {name}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* TPV Total */}
