@@ -27,12 +27,13 @@ export async function GET() {
         const normalize = (s: string) => {
             if (s === "pendente") return "proposta_enviada";
             if (s === "aceita") return "aprovado";
-            if (s === "recusada") return "recusado";
+            // Keep retention statuses as-is — they go into their own pipeline slots
             return s;
         };
         const pipeline: Record<string, number> = {
             prospeccao: 0, proposta_enviada: 0, aguardando_cliente: 0,
             aprovado: 0, recusado: 0, fechado: 0,
+            analise: 0, proposta_retencao: 0, aplicada: 0, recusada: 0,
         };
         allNegs.forEach(n => {
             const stage = normalize(n.status);
@@ -41,13 +42,13 @@ export async function GET() {
         });
 
         // Legacy compat counts
-        const pendingNeg = pipeline.proposta_enviada + pipeline.aguardando_cliente + pipeline.prospeccao;
-        const acceptedNeg = pipeline.aprovado + pipeline.fechado;
-        const rejectedNeg = pipeline.recusado;
+        const pendingNeg = pipeline.proposta_enviada + pipeline.aguardando_cliente + pipeline.prospeccao + (pipeline.analise || 0) + (pipeline.proposta_retencao || 0);
+        const acceptedNeg = pipeline.aprovado + pipeline.fechado + (pipeline.aplicada || 0);
+        const rejectedNeg = pipeline.recusado + (pipeline.recusada || 0);
         const conversionRate = totalNegotiations > 0 ? (acceptedNeg / totalNegotiations) * 100 : 0;
 
         // Average rates from accepted/approved negotiations
-        const approvedNegs = allNegs.filter(n => ["aceita", "aprovado", "fechado"].includes(n.status));
+        const approvedNegs = allNegs.filter(n => ["aceita", "aprovado", "fechado", "aplicada"].includes(n.status));
         let avgRates = { debit: 0, credit1x: 0, credit2to6: 0, credit7to12: 0, pix: 0, rav: 0 };
         if (approvedNegs.length > 0) {
             const sum = { debit: 0, credit1x: 0, credit2to6: 0, credit7to12: 0, pix: 0, rav: 0 };

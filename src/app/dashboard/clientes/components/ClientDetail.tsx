@@ -39,6 +39,8 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
     const [tpvSaving, setTpvSaving] = useState(false);
     const [showBreakdown, setShowBreakdown] = useState(false);
     const [tpvTotal, setTpvTotal] = useState("");
+    const [tpvCetMode, setTpvCetMode] = useState(false);
+    const [showTpvAdvanced, setShowTpvAdvanced] = useState(false);
 
     // Neg form
     const [showNewNeg, setShowNewNeg] = useState(false);
@@ -104,7 +106,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
             setShowNewNeg(false);
             setNegRates({ debit: "", credit1x: "", credit2to6: "", credit7to12: "", pix: "", rav: "" });
             setNegNotes(""); setNegAlertDate("");
-            setNegStatus("prospeccao"); setNegCreateTask(true); setNegTaskAssignee("");
+            setNegStatus("analise"); setNegCreateTask(true); setNegTaskAssignee("");
         } catch { /* */ } finally { setNegSaving(false); }
     };
 
@@ -354,7 +356,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                     const rd = parseFloat(rD) || lastNeg?.rates?.debit || 0;
                     const rc = parseFloat(rC) || lastNeg?.rates?.credit1x || 0;
                     const rp = parseFloat(rP) || lastNeg?.rates?.pix || 0;
-                    const rr = parseFloat(rR) || lastNeg?.rates?.rav || 0;
+                    const rr = tpvCetMode ? 0 : (parseFloat(rR) || lastNeg?.rates?.rav || 0);
                     try {
                         const res = await fetch(`/api/clients/${sel.id}/months`, { method: "POST", headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ month: tpvMonth, tpvDebit: effectiveD, tpvCredit: effectiveC, tpvPix: effectiveP, rateDebit: rd, rateCredit: rc, ratePix: rp, rateRav: rr })
@@ -370,7 +372,6 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                             });
                             
                             if (confirmed && data.fallbackRates) {
-                                // 1. Update rates locally to fallbackRates
                                 await fetch(`/api/clients/${sel.id}/negotiations`, {
                                     method: "POST", headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({
@@ -389,75 +390,123 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                 };
 
                 return (
-                <div className="bg-card border border-blue-500/20 rounded-xl p-5 space-y-4">
-                    <h3 className="text-sm font-bold text-blue-500 uppercase">Registrar TPV do Mês</h3>
-                    <div>
-                        <label className="text-xs font-medium text-muted-foreground block mb-2">Mês de Referência</label>
-                        <div className="flex items-center gap-2 flex-wrap">
-                            {[0, 1, 2, 3].map(mOff => {
-                                const d = new Date(); d.setMonth(d.getMonth() - mOff);
-                                const mVal = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-                                const lbl = mOff === 0 ? "Mês Atual" : mOff === 1 ? "Mês Passado" : fmtMonth(mVal);
-                                return (<button key={mVal} type="button" onClick={() => setTpvMonth(mVal)} className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm touch-target ${tpvMonth === mVal ? "bg-blue-600 text-white" : "bg-card border border-border text-muted-foreground hover:bg-muted"}`}>{lbl}</button>);
-                            })}
-                            <div className="relative">
-                                <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" />
-                                <button type="button" className="px-3 py-2 rounded-lg text-xs font-semibold bg-card border border-border text-muted-foreground hover:bg-muted flex items-center gap-1 touch-target"><Calendar className="w-3.5 h-3.5" /> Outro...</button>
+                <div className="space-y-3">
+                    <div className="card-elevated rounded-xl p-5 space-y-4 border border-blue-500/20 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
+                        {/* Header */}
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-blue-500 uppercase flex items-center gap-2"><BarChart3 className="w-4 h-4" /> Registrar TPV do Mês</h3>
+                        </div>
+
+                        {/* Month Selector */}
+                        <div>
+                            <label className="text-xs font-medium text-muted-foreground block mb-2">Mês de Referência</label>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {[0, 1, 2, 3].map(mOff => {
+                                    const d = new Date(); d.setMonth(d.getMonth() - mOff);
+                                    const mVal = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+                                    const lbl = mOff === 0 ? "Mês Atual" : mOff === 1 ? "Mês Passado" : fmtMonth(mVal);
+                                    return (<button key={mVal} type="button" onClick={() => setTpvMonth(mVal)} className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm touch-target ${tpvMonth === mVal ? "bg-blue-600 text-white" : "bg-card border border-border text-muted-foreground hover:bg-muted"}`}>{lbl}</button>);
+                                })}
+                                <div className="relative">
+                                    <input type="month" value={tpvMonth} onChange={e => setTpvMonth(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" />
+                                    <button type="button" className="px-3 py-2 rounded-lg text-xs font-semibold bg-card border border-border text-muted-foreground hover:bg-muted flex items-center gap-1 touch-target"><Calendar className="w-3.5 h-3.5" /> Outro...</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="bg-gradient-to-br from-blue-500/5 to-indigo-500/5 border border-blue-500/20 rounded-xl p-4">
-                        <label className="text-xs font-bold text-blue-500 uppercase block mb-2">TPV Total (R$)</label>
-                        <input type="number" value={showBreakdown ? "" : tpvTotal} onChange={e => setTpvTotal(e.target.value)} disabled={showBreakdown} placeholder="Ex: 100000.00"
-                            className="w-full px-4 py-3 rounded-xl bg-card border border-border text-lg font-bold text-foreground focus:outline-none focus:border-[#00A868]/50 disabled:opacity-40" />
-                        {!showBreakdown && totalVal > 0 && (
-                            <div className="flex gap-3 mt-2 text-[10px] text-muted-foreground flex-wrap">
-                                <span>Déb (30%): {fmtMoney(autoD)}</span><span>Créd (50%): {fmtMoney(autoC)}</span><span>PIX (20%): {fmtMoney(autoP)}</span>
+
+                        {/* TPV Input Section */}
+                        <div className="bg-gradient-to-br from-blue-500/5 to-indigo-500/5 border border-blue-500/20 rounded-xl p-4">
+                            <label className="text-xs font-bold text-blue-500 uppercase block mb-2">TPV Total (R$)</label>
+                            <input type="number" value={showBreakdown ? "" : tpvTotal} onChange={e => setTpvTotal(e.target.value)} disabled={showBreakdown} placeholder="Ex: 100000.00"
+                                className="w-full px-4 py-3 rounded-xl bg-card border border-border text-lg font-bold text-foreground focus:outline-none focus:border-blue-500/50 disabled:opacity-40" />
+                            {!showBreakdown && totalVal > 0 && (
+                                <div className="flex gap-3 mt-2 text-[10px] text-muted-foreground flex-wrap">
+                                    <span>Déb (30%): {fmtMoney(autoD)}</span><span>Créd (50%): {fmtMoney(autoC)}</span><span>PIX (20%): {fmtMoney(autoP)}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Breakdown Toggle */}
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <div className={`w-10 h-5 rounded-full relative transition-colors ${showBreakdown ? "bg-blue-500" : "bg-muted"}`}
+                                onClick={() => { setShowBreakdown(!showBreakdown); if (!showBreakdown) { setTpvTotal(""); } }}>
+                                <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all shadow-sm ${showBreakdown ? "left-[22px]" : "left-0.5"}`} />
+                            </div>
+                            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">Detalhar por Modalidade</span>
+                        </label>
+                        {showBreakdown && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Débito (R$)</label>
+                                    <input type="number" value={tpvD} onChange={e => setTpvD(e.target.value)} placeholder="0.00" className="w-full px-3 py-3 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Crédito (R$)</label>
+                                    <input type="number" value={tpvC} onChange={e => setTpvC(e.target.value)} placeholder="0.00" className="w-full px-3 py-3 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
+                                <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV PIX (R$)</label>
+                                    <input type="number" value={tpvP} onChange={e => setTpvP(e.target.value)} placeholder="0.00" className="w-full px-3 py-3 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" /></div>
                             </div>
                         )}
-                    </div>
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <div className={`w-10 h-5 rounded-full relative transition-colors ${showBreakdown ? "bg-blue-500" : "bg-muted"}`}
-                            onClick={() => { setShowBreakdown(!showBreakdown); if (!showBreakdown) { setTpvTotal(""); } }}>
-                            <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all shadow-sm ${showBreakdown ? "left-[22px]" : "left-0.5"}`} />
+
+                        {/* CET / MDR+RAV Toggle */}
+                        <div className="flex items-center gap-2 bg-secondary/50 rounded-xl p-2">
+                            <button type="button" onClick={() => setTpvCetMode(false)}
+                                className={`flex-1 py-2 text-xs rounded-lg font-bold transition-all ${!tpvCetMode ? "bg-blue-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Taxas MDR + RAV</button>
+                            <button type="button" onClick={() => setTpvCetMode(true)}
+                                className={`flex-1 py-2 text-xs rounded-lg font-bold transition-all ${tpvCetMode ? "bg-blue-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>Taxas com CET</button>
                         </div>
-                        <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">Detalhar por Modalidade</span>
-                    </label>
-                    {showBreakdown && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Débito (R$)</label>
-                                <input type="number" value={tpvD} onChange={e => setTpvD(e.target.value)} placeholder="0.00" className="w-full px-3 py-3 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
-                            <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV Crédito (R$)</label>
-                                <input type="number" value={tpvC} onChange={e => setTpvC(e.target.value)} placeholder="0.00" className="w-full px-3 py-3 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
-                            <div><label className="text-xs font-medium text-muted-foreground block mb-1">TPV PIX (R$)</label>
-                                <input type="number" value={tpvP} onChange={e => setTpvP(e.target.value)} placeholder="0.00" className="w-full px-3 py-3 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:border-[#00A868]/50" /></div>
+                        <p className="text-[9px] text-muted-foreground/70 -mt-1">
+                            {tpvCetMode ? "📌 Informe as taxas finais (MDR + antecipação). O RAV já está embutido." : "📌 Informe o MDR puro. O RAV será registrado separadamente."}
+                        </p>
+
+                        {/* Rate Fields */}
+                        <div className={`grid gap-2 ${tpvCetMode ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
+                            <div><label className="text-[10px] font-medium text-muted-foreground block mb-0.5 uppercase">{tpvCetMode ? "Déb (CET) (%)" : "Taxa Déb (%)"}</label>
+                                <input type="number" step="0.01" value={rD} onChange={e => setRD(e.target.value)} placeholder={lastNeg?.rates?.debit?.toString() || "0"}
+                                    className="w-full px-2 py-2 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-blue-500/50" /></div>
+                            <div><label className="text-[10px] font-medium text-muted-foreground block mb-0.5 uppercase">{tpvCetMode ? "Créd (CET) (%)" : "Taxa Créd (%)"}</label>
+                                <input type="number" step="0.01" value={rC} onChange={e => setRC(e.target.value)} placeholder={lastNeg?.rates?.credit1x?.toString() || "0"}
+                                    className="w-full px-2 py-2 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-blue-500/50" /></div>
+                            <div><label className="text-[10px] font-medium text-muted-foreground block mb-0.5 uppercase">{tpvCetMode ? "PIX (CET) (%)" : "Taxa PIX (%)"}</label>
+                                <input type="number" step="0.01" value={rP} onChange={e => setRP(e.target.value)} placeholder={lastNeg?.rates?.pix?.toString() || "0"}
+                                    className="w-full px-2 py-2 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-blue-500/50" /></div>
+                            {!tpvCetMode && (
+                                <div><label className="text-[10px] font-medium text-muted-foreground block mb-0.5 uppercase">Taxa RAV (%)</label>
+                                    <input type="number" step="0.01" value={rR} onChange={e => setRR(e.target.value)} placeholder={lastNeg?.rates?.rav?.toString() || "0"}
+                                        className="w-full px-2 py-2 rounded-lg bg-muted/50 border border-border text-xs text-center focus:outline-none focus:border-blue-500/50" /></div>
+                            )}
                         </div>
-                    )}
-                    <div className="flex items-end justify-between"><p className="text-xs text-muted-foreground">Taxas da negociação ou personalize:</p></div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div><label className="text-[10px] font-medium text-muted-foreground block mb-1 uppercase">Taxa Déb (%)</label>
-                            <input type="number" step="0.01" value={rD} onChange={e => setRD(e.target.value)} placeholder={lastNeg?.rates?.debit?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs focus:outline-none focus:border-[#00A868]/50" /></div>
-                        <div><label className="text-[10px] font-medium text-muted-foreground block mb-1 uppercase">Taxa Créd (%)</label>
-                            <input type="number" step="0.01" value={rC} onChange={e => setRC(e.target.value)} placeholder={lastNeg?.rates?.credit1x?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs focus:outline-none focus:border-[#00A868]/50" /></div>
-                        <div><label className="text-[10px] font-medium text-muted-foreground block mb-1 uppercase">Taxa PIX (%)</label>
-                            <input type="number" step="0.01" value={rP} onChange={e => setRP(e.target.value)} placeholder={lastNeg?.rates?.pix?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs focus:outline-none focus:border-[#00A868]/50" /></div>
-                        <div><label className="text-[10px] font-medium text-muted-foreground block mb-1 uppercase">Taxa RAV (%)</label>
-                            <input type="number" step="0.01" value={rR} onChange={e => setRR(e.target.value)} placeholder={lastNeg?.rates?.rav?.toString() || "0"} className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs focus:outline-none focus:border-[#00A868]/50" /></div>
-                    </div>
-                    {preview && (
-                        <div className="bg-gradient-to-br from-purple-500/5 to-indigo-500/5 border border-purple-500/20 rounded-xl p-4 space-y-2">
-                            <h4 className="text-xs font-bold text-purple-500 uppercase">Preview do Cálculo</h4>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                                <div><p className="text-[10px] text-muted-foreground">TPV Total</p><p className="text-sm font-bold">{fmtMoney(preview.tpvTotal)}</p></div>
-                                <div><p className="text-[10px] text-muted-foreground">Receita Taxas</p><p className="text-sm font-bold text-amber-500">{fmtMoney(preview.totalRevenue)}</p></div>
-                                <div><p className="text-[10px] text-muted-foreground">Franquia (30%)</p><p className="text-sm font-bold text-blue-500">{fmtMoney(preview.franchise)}</p></div>
-                                <div><p className="text-[10px] text-muted-foreground">Sua Comissão (10%)</p><p className="text-lg font-black text-purple-500">{fmtMoney(preview.agent)}</p></div>
+
+                        {/* Avançado — Per-Brand (Future) */}
+                        <button type="button" onClick={() => setShowTpvAdvanced(!showTpvAdvanced)}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all border ${showTpvAdvanced ? "bg-indigo-500/5 border-indigo-500/20 text-indigo-500" : "bg-secondary/30 border-border/30 text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}>
+                            <span className="flex items-center gap-1.5">⚙️ Avançado — Taxas por Bandeira</span>
+                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showTpvAdvanced ? "rotate-90" : ""}`} />
+                        </button>
+                        {showTpvAdvanced && (
+                            <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl p-4 text-center space-y-1">
+                                <p className="text-xs text-muted-foreground">🚧 Em breve: separar taxas por <strong>Visa, Master, Elo, Hiper, Amex</strong> individualmente.</p>
+                                <p className="text-[9px] text-muted-foreground/50">Este recurso será ativado na próxima atualização do BitTask.</p>
                             </div>
-                        </div>
-                    )}
-                    <button onClick={handleSaveTpvNew} disabled={tpvSaving || !previewReady} className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
-                        {tpvSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <BarChart3 className="w-4 h-4" />} Salvar TPV de {fmtMonth(tpvMonth)}
-                    </button>
+                        )}
+
+                        {/* Preview */}
+                        {preview && (
+                            <div className="bg-gradient-to-br from-purple-500/5 to-indigo-500/5 border border-purple-500/20 rounded-xl p-4 space-y-2">
+                                <h4 className="text-xs font-bold text-purple-500 uppercase">Preview do Cálculo</h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                                    <div><p className="text-[10px] text-muted-foreground">TPV Total</p><p className="text-sm font-bold">{fmtMoney(preview.tpvTotal)}</p></div>
+                                    <div><p className="text-[10px] text-muted-foreground">Receita Taxas</p><p className="text-sm font-bold text-amber-500">{fmtMoney(preview.totalRevenue)}</p></div>
+                                    <div><p className="text-[10px] text-muted-foreground">Franquia (30%)</p><p className="text-sm font-bold text-blue-500">{fmtMoney(preview.franchise)}</p></div>
+                                    <div><p className="text-[10px] text-muted-foreground">Sua Comissão (10%)</p><p className="text-lg font-black text-purple-500">{fmtMoney(preview.agent)}</p></div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Save */}
+                        <button onClick={handleSaveTpvNew} disabled={tpvSaving || !previewReady}
+                            className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
+                            {tpvSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <BarChart3 className="w-4 h-4" />} Salvar TPV de {fmtMonth(tpvMonth)}
+                        </button>
+                    </div>
                 </div>
                 );
             })()}

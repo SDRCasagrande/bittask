@@ -40,6 +40,10 @@ const STAGE_LABELS: Record<string, { label: string; color: string; dot: string }
     aprovado: { label: "Aprovado", color: "text-[#00A868] bg-[#00A868]/10", dot: "bg-[#00A868]" },
     recusado: { label: "Recusado", color: "text-red-500 bg-red-500/10", dot: "bg-red-500" },
     fechado: { label: "Fechado", color: "text-purple-500 bg-purple-500/10", dot: "bg-purple-500" },
+    analise: { label: "Em Análise", color: "text-amber-500 bg-amber-500/10", dot: "bg-amber-500" },
+    proposta_retencao: { label: "Retenção", color: "text-indigo-500 bg-indigo-500/10", dot: "bg-indigo-500" },
+    aplicada: { label: "Aplicada", color: "text-[#00A868] bg-[#00A868]/10", dot: "bg-[#00A868]" },
+    recusada: { label: "Recusada", color: "text-red-500 bg-red-500/10", dot: "bg-red-500" },
 };
 
 export default function DashboardPage() {
@@ -482,9 +486,12 @@ export default function DashboardPage() {
                                 aprovado: { color: "text-[#00A868] bg-[#00A868]/10", label: "Aprovado" },
                                 aceita: { color: "text-[#00A868] bg-[#00A868]/10", label: "Aprovado" },
                                 recusado: { color: "text-red-500 bg-red-500/10", label: "Recusado" },
-                                recusada: { color: "text-red-500 bg-red-500/10", label: "Recusado" },
+                                recusada: { color: "text-red-500 bg-red-500/10", label: "Recusada" },
                                 fechado: { color: "text-purple-500 bg-purple-500/10", label: "Fechado" },
                                 pendente: { color: "text-amber-500 bg-amber-500/10", label: "Pendente" },
+                                analise: { color: "text-amber-500 bg-amber-500/10", label: "Em Análise" },
+                                proposta_retencao: { color: "text-indigo-500 bg-indigo-500/10", label: "Retenção" },
+                                aplicada: { color: "text-[#00A868] bg-[#00A868]/10", label: "Aplicada" },
                             };
                             const st = stConfig[last?.status || ""] || { color: "text-muted-foreground bg-muted", label: "—" };
                             return (

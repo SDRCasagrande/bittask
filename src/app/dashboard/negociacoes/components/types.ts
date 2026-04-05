@@ -49,6 +49,10 @@ export function getStage(id: string) { return STAGES.find(s => s.id === id) || S
 export function normalizeStatus(s: string) {
     if (s === "pendente") return "prospeccao";
     if (s === "aceita") return "aprovado";
+    // Retention-specific statuses map to their closest pipeline equivalent for Kanban placement
+    if (s === "analise") return "prospeccao";
+    if (s === "proposta_retencao") return "proposta_enviada";
+    if (s === "aplicada") return "aprovado";
     if (s === "recusada") return "recusado";
     return s;
 }

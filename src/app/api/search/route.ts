@@ -58,6 +58,7 @@ export async function GET(request: Request) {
             const statusLabel: Record<string, string> = {
                 prospeccao: '🔵 Prospecção', proposta_enviada: '📤 Proposta', aguardando_cliente: '⏳ Aguardando',
                 aprovado: '✅ Aprovado', recusado: '❌ Recusado', fechado: '🟣 Fechado',
+                analise: '🟡 Em Análise', proposta_retencao: '🟣 Retenção', aplicada: '✅ Aplicada', recusada: '❌ Recusada',
             };
             results.push({
                 type: 'negotiation',

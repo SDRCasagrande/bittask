@@ -62,8 +62,8 @@ export async function GET(request: Request) {
         });
 
         // Proposals sent in period (proposta_enviada, pendente, or any neg created with rates)
-        const proposals = negsInPeriod.filter(n => ["proposta_enviada", "pendente", "aguardando_cliente"].includes(n.status) || n.status === "prospeccao");
-        const approved = negsInPeriod.filter(n => ["aprovado", "aceita", "fechado"].includes(n.status));
+        const proposals = negsInPeriod.filter(n => ["proposta_enviada", "pendente", "aguardando_cliente", "analise", "proposta_retencao"].includes(n.status) || n.status === "prospeccao");
+        const approved = negsInPeriod.filter(n => ["aprovado", "aceita", "fechado", "aplicada"].includes(n.status));
         const rejected = negsInPeriod.filter(n => ["recusado", "recusada"].includes(n.status));
 
         // Tasks created in period

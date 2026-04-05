@@ -94,10 +94,14 @@ export function calculateLeadScore(client: ClientForScoring): LeadScoreResult {
         const statusScores: Record<string, number> = {
             aprovado: 15,
             fechado: 14,
+            aplicada: 14,
             aguardando_cliente: 10,
+            proposta_retencao: 10,
             proposta_enviada: 8,
+            analise: 7,
             prospeccao: 5,
             recusado: 2,
+            recusada: 2,
         };
         pipeline = statusScores[latestNeg.status] || 3;
     }
