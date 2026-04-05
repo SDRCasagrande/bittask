@@ -568,16 +568,44 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                                         <th className="text-right py-2 text-muted-foreground font-semibold hidden sm:table-cell">PIX</th>
                                         <th className="text-right py-2 text-muted-foreground font-semibold">Total</th>
                                         <th className="text-right py-2 text-purple-500 font-semibold">Comissão</th>
+                                        <th className="text-center py-2 text-muted-foreground font-semibold w-16">Ações</th>
                                     </tr></thead>
                                     <tbody>
                                         {volumes.map(v => { const c = calcCommission(v); return (
-                                            <tr key={v.id} className="border-b border-border/50 hover:bg-muted/30">
+                                            <tr key={v.id} className="border-b border-border/50 hover:bg-muted/30 group">
                                                 <td className="py-2 font-semibold">{fmtMonth(v.month)}</td>
                                                 <td className="py-2 text-right hidden sm:table-cell">{fmtMoney(v.tpvDebit)}</td>
                                                 <td className="py-2 text-right hidden sm:table-cell">{fmtMoney(v.tpvCredit)}</td>
                                                 <td className="py-2 text-right hidden sm:table-cell">{fmtMoney(v.tpvPix)}</td>
                                                 <td className="py-2 text-right font-bold">{fmtMoney(c.tpvTotal)}</td>
                                                 <td className="py-2 text-right font-bold text-purple-500">{fmtMoney(c.agent)}</td>
+                                                <td className="py-2 text-center">
+                                                    <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button type="button" title="Editar TPV"
+                                                            onClick={() => {
+                                                                setTpvMonth(v.month);
+                                                                setTpvD(String(v.tpvDebit || ""));
+                                                                setTpvC(String(v.tpvCredit || ""));
+                                                                setTpvP(String(v.tpvPix || ""));
+                                                                setTpvTotal("");
+                                                                window.scrollTo({ top: 0, behavior: "smooth" });
+                                                            }}
+                                                            className="p-1.5 rounded-lg hover:bg-blue-500/10 text-muted-foreground hover:text-blue-500 transition-colors">
+                                                            <Pencil className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button type="button" title="Excluir TPV"
+                                                            onClick={async () => {
+                                                                if (!window.confirm(`Excluir TPV de ${fmtMonth(v.month)}?\n\nDéb: ${fmtMoney(v.tpvDebit)}\nCréd: ${fmtMoney(v.tpvCredit)}\nPIX: ${fmtMoney(v.tpvPix)}\n\nEsta ação não pode ser desfeita.`)) return;
+                                                                try {
+                                                                    await fetch(`/api/clients/${sel.id}/months/${v.id}`, { method: "DELETE" });
+                                                                    loadClients();
+                                                                } catch { /* */ }
+                                                            }}
+                                                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors">
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ); })}
                                     </tbody>
