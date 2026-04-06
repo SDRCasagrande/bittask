@@ -9,7 +9,7 @@ import {
     LayoutDashboard, Calculator, FileBarChart, GitCompare,
     Handshake, Settings, Users, LogOut, Menu, X, ChevronRight,
     CheckSquare, Briefcase, MoreHorizontal, Plus, Search, Bell,
-    CalendarDays, Loader2, ExternalLink
+    CalendarDays, Loader2, ExternalLink, MessageCircle
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -31,6 +31,7 @@ const TOOLS_NAV = [
     { href: "/dashboard/cet", label: "CET", icon: Calculator },
     { href: "/dashboard/proposta", label: "Simulador", icon: FileBarChart },
     { href: "/dashboard/comparativo", label: "Comparação", icon: GitCompare },
+    { href: "/dashboard/whatsapp", label: "WhatsApp Hub", icon: MessageCircle },
 ];
 
 const ADMIN_NAV = [
