@@ -41,6 +41,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
     const [showTpvAdvanced, setShowTpvAdvanced] = useState(false);
     const [showMonthPicker, setShowMonthPicker] = useState(false);
     const [pickerYear, setPickerYear] = useState(() => parseInt(currentMonth().split("-")[0]));
+    const [selectedNegId, setSelectedNegId] = useState("");
     const BRANDS = ["Mastercard", "Visa", "Elo", "Hiper", "Amex"] as const;
     const emptyBrands = () => Object.fromEntries(BRANDS.map(b => [b, ""]));
     const [brandDebit, setBrandDebit] = useState<Record<string, string>>(emptyBrands());
@@ -374,9 +375,11 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                 const pctC = effectiveTotal > 0 ? (effectiveC / effectiveTotal * 100) : 0;
                 const pctP = effectiveTotal > 0 ? (effectiveP / effectiveTotal * 100) : 0;
                 const autoTotal = hasManual ? fmtMoney(manualD + manualC + manualP) : "";
-                const rateD = lastNeg?.rates?.debit || 0;
-                const rateC = lastNeg?.rates?.credit1x || 0;
-                const rateP = lastNeg?.rates?.pix || 0;
+                // Rate selection — use selected negotiation or default to latest
+                const activeNeg = selectedNegId ? sel.negotiations.find(n => n.id === selectedNegId) : lastNeg;
+                const rateD = activeNeg?.rates?.debit || 0;
+                const rateC = activeNeg?.rates?.credit1x || 0;
+                const rateP = activeNeg?.rates?.pix || 0;
                 const hasRates = rateD > 0 || rateC > 0 || rateP > 0;
                 const previewReady = effectiveTotal > 0;
                 const previewVol = { tpvDebit: effectiveD, tpvCredit: effectiveC, tpvPix: effectiveP, rateDebit: rateD, rateCredit: rateC, ratePix: rateP } as MonthVolume;
@@ -395,7 +398,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                     setTpvSaving(true);
                     try {
                         const res = await fetch(`/api/clients/${sel.id}/months`, { method: "POST", headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ month: tpvMonth, tpvDebit: effectiveD, tpvCredit: effectiveC, tpvPix: effectiveP, brandBreakdown: buildBreakdown() })
+                            body: JSON.stringify({ month: tpvMonth, tpvDebit: effectiveD, tpvCredit: effectiveC, tpvPix: effectiveP, rateDebit: rateD, rateCredit: rateC, ratePix: rateP, brandBreakdown: buildBreakdown() })
                         });
                         const data = await res.json();
                         if (data.tpvWarning) {
@@ -495,23 +498,32 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                             ))}
                         </div>
 
-                        {/* Rates Indicator — show exactly what's being used */}
-                        {lastNeg && hasRates ? (
-                            <div className="bg-[#00A868]/5 border border-[#00A868]/10 rounded-xl p-3 space-y-1.5">
-                                <p className="text-[10px] text-[#00A868] font-bold flex items-center gap-1">
-                                    <CheckCircle className="w-3 h-3" /> Taxas vigentes da última renegociação:
-                                </p>
-                                <div className="flex items-center gap-3 text-[10px]">
-                                    <span className="text-foreground font-semibold">Déb: <span className="text-blue-500">{formatPercent(rateD)}</span></span>
-                                    <span className="text-foreground font-semibold">Créd: <span className="text-purple-500">{formatPercent(rateC)}</span></span>
-                                    <span className="text-foreground font-semibold">PIX: <span className="text-cyan-500">{formatPercent(rateP)}</span></span>
-                                </div>
+                        {/* Negotiation Rate Selector */}
+                        {sel.negotiations.length > 0 ? (
+                            <div className="bg-[#00A868]/5 border border-[#00A868]/10 rounded-xl p-3 space-y-2">
+                                <label className="text-[10px] text-[#00A868] font-bold flex items-center gap-1">
+                                    <CheckCircle className="w-3 h-3" /> Taxas para cálculo de comissão:
+                                </label>
+                                <select value={selectedNegId} onChange={e => setSelectedNegId(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg bg-card border border-border text-xs font-semibold focus:outline-none focus:border-[#00A868]/50 cursor-pointer">
+                                    <option value="">✅ Mais recente — {lastNeg ? `${fmtDate(lastNeg.dateNeg)} (${lastNeg.status === "aplicada" ? "Aplicada" : lastNeg.status})` : ""}</option>
+                                    {sel.negotiations.map((n, i) => (
+                                        <option key={n.id} value={n.id}>
+                                            {fmtDate(n.dateNeg)} — {n.status === "aplicada" ? "Aplicada" : n.status === "analise" ? "Análise" : n.status === "proposta_retencao" ? "Proposta" : n.status} | Déb {formatPercent(n.rates?.debit || 0)} / Créd {formatPercent(n.rates?.credit1x || 0)} / PIX {formatPercent(n.rates?.pix || 0)}
+                                            {i === 0 ? " ★" : ""}
+                                        </option>
+                                    ))}
+                                </select>
+                                {hasRates ? (
+                                    <div className="flex items-center gap-3 text-[10px]">
+                                        <span className="text-foreground font-semibold">Déb: <span className="text-blue-500">{formatPercent(rateD)}</span></span>
+                                        <span className="text-foreground font-semibold">Créd: <span className="text-purple-500">{formatPercent(rateC)}</span></span>
+                                        <span className="text-foreground font-semibold">PIX: <span className="text-cyan-500">{formatPercent(rateP)}</span></span>
+                                    </div>
+                                ) : (
+                                    <p className="text-[10px] text-amber-500">⚠️ Taxas zeradas nesta negociação — comissão ficará R$0</p>
+                                )}
                                 <p className="text-[9px] text-muted-foreground/60">Receita = TPV × Taxa → 30% Franquia → 10% Agente</p>
-                            </div>
-                        ) : lastNeg && !hasRates ? (
-                            <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3">
-                                <p className="text-[10px] text-amber-500 flex items-center gap-1">⚠️ A última renegociação não tem taxas preenchidas (Déb/Créd/PIX estão 0%). A comissão ficará R$0.</p>
-                                <p className="text-[9px] text-muted-foreground/60 mt-1">Vá na aba Negociações e edite a renegociação para preencher as taxas.</p>
                             </div>
                         ) : (
                             <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-3">
