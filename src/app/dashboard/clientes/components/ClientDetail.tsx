@@ -36,7 +36,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
     const [showTpvForm, setShowTpvForm] = useState(false);
     const [tpvMonth, setTpvMonth] = useState(currentMonth());
     const [tpvTotal, setTpvTotal] = useState("");
-    const [tpvD, setTpvD] = useState(""); const [tpvC, setTpvC] = useState(""); const [tpvP, setTpvP] = useState("");
+    const [tpvD, setTpvD] = useState(""); const [tpvC, setTpvC] = useState(""); const [tpvC2, setTpvC2] = useState(""); const [tpvC7, setTpvC7] = useState(""); const [tpvP, setTpvP] = useState("");
     const [tpvSaving, setTpvSaving] = useState(false);
     const [showTpvAdvanced, setShowTpvAdvanced] = useState(false);
     const [showMonthPicker, setShowMonthPicker] = useState(false);
@@ -365,24 +365,33 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
             {/* TAB: TPV */}
             {tab === "tpv" && (() => {
                 const totalVal = parseFloat(tpvTotal) || 0;
-                const manualD = parseFloat(tpvD) || 0; const manualC = parseFloat(tpvC) || 0; const manualP = parseFloat(tpvP) || 0;
-                const hasManual = manualD > 0 || manualC > 0 || manualP > 0;
+                const manualD = parseFloat(tpvD) || 0; const manualC = parseFloat(tpvC) || 0;
+                const manualC2 = parseFloat(tpvC2) || 0; const manualC7 = parseFloat(tpvC7) || 0;
+                const manualP = parseFloat(tpvP) || 0;
+                const hasManual = manualD > 0 || manualC > 0 || manualC2 > 0 || manualC7 > 0 || manualP > 0;
                 const effectiveD = hasManual ? manualD : totalVal * 0.30;
-                const effectiveC = hasManual ? manualC : totalVal * 0.50;
+                const effectiveC = hasManual ? manualC : totalVal * 0.40;
+                const effectiveC2 = hasManual ? manualC2 : 0;
+                const effectiveC7 = hasManual ? manualC7 : 0;
                 const effectiveP = hasManual ? manualP : totalVal * 0.20;
-                const effectiveTotal = hasManual ? (manualD + manualC + manualP) : totalVal;
+                const effectiveTotal = hasManual ? (manualD + manualC + manualC2 + manualC7 + manualP) : totalVal;
                 const pctD = effectiveTotal > 0 ? (effectiveD / effectiveTotal * 100) : 0;
                 const pctC = effectiveTotal > 0 ? (effectiveC / effectiveTotal * 100) : 0;
+                const pctC2 = effectiveTotal > 0 ? (effectiveC2 / effectiveTotal * 100) : 0;
+                const pctC7 = effectiveTotal > 0 ? (effectiveC7 / effectiveTotal * 100) : 0;
                 const pctP = effectiveTotal > 0 ? (effectiveP / effectiveTotal * 100) : 0;
-                const autoTotal = hasManual ? fmtMoney(manualD + manualC + manualP) : "";
+                const autoTotal = hasManual ? fmtMoney(manualD + manualC + manualC2 + manualC7 + manualP) : "";
                 // Rate selection — use selected negotiation or default to latest
                 const activeNeg = selectedNegId ? sel.negotiations.find(n => n.id === selectedNegId) : lastNeg;
                 const rateD = activeNeg?.rates?.debit || 0;
                 const rateC = activeNeg?.rates?.credit1x || 0;
+                const rateC2 = activeNeg?.rates?.credit2to6 || activeNeg?.rates?.credit1x || 0;
+                const rateC7 = activeNeg?.rates?.credit7to12 || 0;
                 const rateP = activeNeg?.rates?.pix || 0;
+                const rateRav = activeNeg?.rates?.rav || activeNeg?.rates?.ravRate || 0;
                 const hasRates = rateD > 0 || rateC > 0 || rateP > 0;
                 const previewReady = effectiveTotal > 0;
-                const previewVol = { tpvDebit: effectiveD, tpvCredit: effectiveC, tpvPix: effectiveP, rateDebit: rateD, rateCredit: rateC, ratePix: rateP } as MonthVolume;
+                const previewVol = { tpvDebit: effectiveD, tpvCredit: effectiveC, tpvCredit2to6: effectiveC2, tpvCredit7to12: effectiveC7, tpvPix: effectiveP, rateDebit: rateD, rateCredit: rateC, rateCredit2to6: rateC2, rateCredit7to12: rateC7, ratePix: rateP, rateRav } as MonthVolume;
                 const preview = previewReady ? calcCommission(previewVol) : null;
 
                 const buildBreakdown = () => {
@@ -398,7 +407,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                     setTpvSaving(true);
                     try {
                         const res = await fetch(`/api/clients/${sel.id}/months`, { method: "POST", headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ month: tpvMonth, tpvDebit: effectiveD, tpvCredit: effectiveC, tpvPix: effectiveP, rateDebit: rateD, rateCredit: rateC, ratePix: rateP, brandBreakdown: buildBreakdown() })
+                            body: JSON.stringify({ month: tpvMonth, tpvDebit: effectiveD, tpvCredit: effectiveC, tpvCredit2to6: effectiveC2, tpvCredit7to12: effectiveC7, tpvPix: effectiveP, rateDebit: rateD, rateCredit: rateC, rateCredit2to6: rateC2, rateCredit7to12: rateC7, ratePix: rateP, rateRav, brandBreakdown: buildBreakdown() })
                         });
                         const data = await res.json();
                         if (data.tpvWarning) {
@@ -413,7 +422,7 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                                 });
                             }
                         }
-                        loadClients(); setTpvTotal(""); setTpvD(""); setTpvC(""); setTpvP("");
+                        loadClients(); setTpvTotal(""); setTpvD(""); setTpvC(""); setTpvC2(""); setTpvC7(""); setTpvP("");
                         setBrandDebit(emptyBrands()); setBrandCredit(emptyBrands());
                         setShowTpvAdvanced(false);
                     } catch { /* */ } finally { setTpvSaving(false); }
@@ -482,11 +491,13 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                             <label className="text-xs font-medium text-muted-foreground">Detalhamento por Modalidade <span className="text-muted-foreground/50">(opcional)</span></label>
                             {([
                                 { label: "Débito", value: tpvD, setter: setTpvD, pct: pctD, color: "bg-blue-500", rate: rateD },
-                                { label: "Crédito", value: tpvC, setter: setTpvC, pct: pctC, color: "bg-purple-500", rate: rateC },
+                                { label: "Créd 1x", value: tpvC, setter: setTpvC, pct: pctC, color: "bg-purple-500", rate: rateC },
+                                { label: "Créd 2-6x", value: tpvC2, setter: setTpvC2, pct: pctC2, color: "bg-indigo-500", rate: rateC2 },
+                                { label: "Créd 7-12x", value: tpvC7, setter: setTpvC7, pct: pctC7, color: "bg-violet-500", rate: rateC7 },
                                 { label: "PIX", value: tpvP, setter: setTpvP, pct: pctP, color: "bg-cyan-500", rate: rateP },
                             ] as const).map(m => (
                                 <div key={m.label} className="flex items-center gap-3">
-                                    <label className="text-xs font-medium text-muted-foreground w-14 shrink-0">{m.label}</label>
+                                    <label className="text-xs font-medium text-muted-foreground w-16 shrink-0">{m.label}</label>
                                     <input type="number" value={m.value} onChange={e => m.setter(e.target.value)} placeholder="R$ 0,00"
                                         className="w-28 px-3 py-2 rounded-lg bg-secondary border border-border text-sm focus:outline-none focus:border-blue-500/50" />
                                     <div className="flex-1 h-5 bg-secondary rounded-full overflow-hidden relative">
@@ -496,6 +507,11 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                                     <span className="text-[10px] text-muted-foreground w-12 text-right shrink-0">{formatPercent(m.rate)}</span>
                                 </div>
                             ))}
+                            {rateRav > 0 && (effectiveC2 > 0 || effectiveC7 > 0) && (
+                                <p className="text-[10px] text-amber-500/80 flex items-center gap-1">
+                                    ⚡ RAV: {formatPercent(rateRav)} será aplicado sobre parcelado ({fmtMoney((effectiveC2 + effectiveC7) * rateRav / 100)} de antecipação)
+                                </p>
+                            )}
                         </div>
 
                         {/* Negotiation Rate Selector */}
@@ -566,22 +582,55 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                             </div>
                         )}
 
-                        {/* Preview */}
+                        {/* Espelho de Comissão */}
                         {preview && (() => {
                             const hasBrandBreakdown = Object.values(brandDebit).some(v => parseFloat(v) > 0) || Object.values(brandCredit).some(v => parseFloat(v) > 0);
                             return (
                             <div className="bg-gradient-to-br from-purple-500/5 to-indigo-500/5 border border-purple-500/20 rounded-xl p-4 space-y-3">
-                                <h4 className="text-xs font-bold text-purple-500 uppercase">Resumo do Cálculo</h4>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                                    <div><p className="text-[10px] text-muted-foreground">TPV Total</p><p className="text-sm font-bold">{fmtMoney(preview.tpvTotal)}</p></div>
-                                    <div><p className="text-[10px] text-muted-foreground">Receita Taxas</p><p className="text-sm font-bold text-amber-500">{fmtMoney(preview.totalRevenue)}</p></div>
-                                    <div><p className="text-[10px] text-muted-foreground">Franquia (30%)</p><p className="text-sm font-bold text-blue-500">{fmtMoney(preview.franchise)}</p></div>
-                                    <div><p className="text-[10px] text-muted-foreground">Sua Comissão (10%)</p><p className="text-lg font-black text-purple-500">{fmtMoney(preview.agent)}</p></div>
+                                <h4 className="text-xs font-bold text-purple-500 uppercase">Espelho de Comissão — {fmtMonth(tpvMonth)}</h4>
+                                {/* Detail table */}
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-[10px]">
+                                        <thead>
+                                            <tr className="text-muted-foreground border-b border-border/30">
+                                                <th className="text-left py-1 font-medium">Modalidade</th>
+                                                <th className="text-right py-1 font-medium">Volume</th>
+                                                <th className="text-right py-1 font-medium">Taxa %</th>
+                                                <th className="text-right py-1 font-medium">Receita</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {preview.lines.map((line, i) => (
+                                                <tr key={i} className={`border-b border-border/10 ${line.isRav ? "text-amber-500/80" : ""}`}>
+                                                    <td className={`py-1.5 ${line.isRav ? "pl-3 italic" : "font-semibold"}`}>{line.label}</td>
+                                                    <td className="text-right py-1.5">{line.isRav ? "" : fmtMoney(line.volume)}</td>
+                                                    <td className="text-right py-1.5">{formatPercent(line.rate)}</td>
+                                                    <td className="text-right py-1.5 font-semibold">{fmtMoney(line.revenue)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="border-t border-border/50 font-bold">
+                                                <td className="py-2">TOTAL BRUTO</td>
+                                                <td className="text-right py-2">{fmtMoney(preview.tpvTotal)}</td>
+                                                <td className="text-right py-2"></td>
+                                                <td className="text-right py-2 text-amber-500">{fmtMoney(preview.totalRevenue)}</td>
+                                            </tr>
+                                            <tr className="text-blue-500 font-bold">
+                                                <td className="py-1" colSpan={3}>Franquia (30%)</td>
+                                                <td className="text-right py-1">{fmtMoney(preview.franchise)}</td>
+                                            </tr>
+                                            <tr className="text-purple-500 font-black text-sm">
+                                                <td className="py-1" colSpan={3}>Sua Comissão (10%)</td>
+                                                <td className="text-right py-1 text-lg">{fmtMoney(preview.agent)}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
                                 {!hasBrandBreakdown && (
                                     <p className="text-[10px] text-amber-500/80 flex items-center gap-1.5 bg-amber-500/5 border border-amber-500/10 rounded-lg px-3 py-2">
                                         <span className="shrink-0">⚠️</span>
-                                        <span>Sem detalhamento por bandeira — usando taxas <b>Visa/Master</b> como base do cálculo. Para maior precisão, preencha o Avançado.</span>
+                                        <span>Sem detalhamento por bandeira — usando taxas <b>Visa/Master</b> como base do cálculo.</span>
                                     </p>
                                 )}
                             </div>
@@ -809,7 +858,45 @@ export function ClientDetail({ client, teamUsers, loadClients, onBack, onCancelC
                                         {i === 0 && <span className="text-[10px] font-bold text-[#00A868] bg-[#00A868]/10 px-2 py-0.5 rounded-full">Mais recente</span>}
                                         {neg.assignee && <span className="text-[10px] text-purple-500 bg-purple-500/10 px-2 py-0.5 rounded-full">{neg.assignee.name}</span>}
                                     </div>
-                                    <span className="text-xs text-muted-foreground">{fmtDate(neg.dateNeg)}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-muted-foreground">{fmtDate(neg.dateNeg)}</span>
+                                        <button type="button" title="Editar taxas"
+                                            onClick={() => {
+                                                setShowNewNeg(true);
+                                                setNegDate(neg.dateNeg);
+                                                setNegStatus(neg.status);
+                                                setNegNotes(neg.notes || "");
+                                                setNegRates({
+                                                    debit: String(neg.rates?.debit || ""),
+                                                    credit1x: String(neg.rates?.credit1x || ""),
+                                                    credit2x: String(neg.rates?.credit2x || ""),
+                                                    credit3x: String(neg.rates?.credit3x || ""),
+                                                    credit4x: String(neg.rates?.credit4x || ""),
+                                                    credit5x: String(neg.rates?.credit5x || ""),
+                                                    credit6x: String(neg.rates?.credit6x || ""),
+                                                    credit7to12: String(neg.rates?.credit7to12 || ""),
+                                                    pix: String(neg.rates?.pix || ""),
+                                                    rav: String(neg.rates?.rav || ""),
+                                                });
+                                                window.scrollTo({ top: 0, behavior: "smooth" });
+                                            }}
+                                            className="p-1 rounded-lg hover:bg-blue-500/10 text-muted-foreground hover:text-blue-500 transition-colors">
+                                            <Pencil className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button type="button" title="Excluir negociação"
+                                            onClick={async () => {
+                                                if (!window.confirm(`Excluir negociação de ${fmtDate(neg.dateNeg)}?\n\nEsta ação não pode ser desfeita.`)) return;
+                                                try {
+                                                    const res = await fetch(`/api/clients/${sel.id}/negotiations/${neg.id}`, { method: "DELETE" });
+                                                    const data = await res.json();
+                                                    if (data.error === "linked") { alert(data.message); return; }
+                                                    loadClients();
+                                                } catch { /* */ }
+                                            }}
+                                            className="p-1 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors">
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                                     {[{ l: "Déb", v: neg.rates?.debit }, { l: "1x", v: neg.rates?.credit1x }, { l: "2-6x", v: neg.rates?.credit2to6 }, { l: "7-12x", v: neg.rates?.credit7to12 }, { l: "PIX", v: neg.rates?.pix }, { l: "RAV", v: neg.rates?.rav }].map(r => (

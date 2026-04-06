@@ -316,20 +316,24 @@ model Client {
 }
 
 model ClientMonth {
-  id         String   @id @default(cuid())
-  clientId   String
-  month      String
-  tpvDebit   Float    @default(0)
-  tpvCredit  Float    @default(0)
-  tpvPix     Float    @default(0)
-  rateDebit  Float    @default(0)
-  rateCredit Float    @default(0)
-  ratePix    Float    @default(0)
-  rateRav    Float    @default(0)
-  brandBreakdown Json?              // { debit: { master: 30000, visa: 10000, elo: 10000 }, credit: { ... }, pix: { ... } }
-  notes      String   @default("")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              String   @id @default(cuid())
+  clientId        String
+  month           String
+  tpvDebit        Float    @default(0)
+  tpvCredit       Float    @default(0)      // Crédito à vista (1x)
+  tpvCredit2to6   Float    @default(0)      // Crédito parcelado 2-6x
+  tpvCredit7to12  Float    @default(0)      // Crédito parcelado 7-12x
+  tpvPix          Float    @default(0)
+  rateDebit       Float    @default(0)
+  rateCredit      Float    @default(0)      // Taxa crédito 1x
+  rateCredit2to6  Float    @default(0)      // Taxa crédito 2-6x
+  rateCredit7to12 Float    @default(0)      // Taxa crédito 7-12x
+  ratePix         Float    @default(0)
+  rateRav         Float    @default(0)
+  brandBreakdown  Json?              // { debit: { master: 30000, visa: 10000, elo: 10000 }, credit: { ... }, pix: { ... } }
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 

@@ -35,7 +35,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         if (!client || client.userId !== session.userId) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
         const body = await request.json();
-        const { month, tpvDebit, tpvCredit, tpvPix, rateDebit, rateCredit, ratePix, rateRav, brandBreakdown, notes } = body;
+        const { month, tpvDebit, tpvCredit, tpvCredit2to6, tpvCredit7to12, tpvPix, rateDebit, rateCredit, rateCredit2to6, rateCredit7to12, ratePix, rateRav, brandBreakdown, notes } = body;
 
         if (!month) return NextResponse.json({ error: "Month is required (YYYY-MM)" }, { status: 400 });
 
@@ -59,7 +59,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             }
         }
 
-        const totalTpv = (tpvDebit || 0) + (tpvCredit || 0) + (tpvPix || 0);
+        let effectiveRateCredit2to6 = rateCredit2to6;
+        let effectiveRateCredit7to12 = rateCredit7to12;
+        if (effectiveRateCredit2to6 == null || effectiveRateCredit7to12 == null) {
+            const lastNeg2 = await prisma.negotiation.findFirst({ where: { clientId: id }, orderBy: { createdAt: "desc" } });
+            if (lastNeg2) {
+                const rates2 = lastNeg2.rates as any;
+                if (effectiveRateCredit2to6 == null) effectiveRateCredit2to6 = rates2?.credit2to6 || 0;
+                if (effectiveRateCredit7to12 == null) effectiveRateCredit7to12 = rates2?.credit7to12 || 0;
+            }
+        }
+
+        const totalTpv = (tpvDebit || 0) + (tpvCredit || 0) + (tpvCredit2to6 || 0) + (tpvCredit7to12 || 0) + (tpvPix || 0);
 
         const record = await prisma.clientMonth.upsert({
             where: { clientId_month: { clientId: id, month } },
@@ -68,9 +79,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
                 month,
                 tpvDebit: tpvDebit || 0,
                 tpvCredit: tpvCredit || 0,
+                tpvCredit2to6: tpvCredit2to6 || 0,
+                tpvCredit7to12: tpvCredit7to12 || 0,
                 tpvPix: tpvPix || 0,
                 rateDebit: effectiveRateDebit || 0,
                 rateCredit: effectiveRateCredit || 0,
+                rateCredit2to6: effectiveRateCredit2to6 || 0,
+                rateCredit7to12: effectiveRateCredit7to12 || 0,
                 ratePix: effectiveRatePix || 0,
                 rateRav: effectiveRateRav || 0,
                 brandBreakdown: brandBreakdown || undefined,
@@ -79,9 +94,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             update: {
                 tpvDebit: tpvDebit ?? undefined,
                 tpvCredit: tpvCredit ?? undefined,
+                tpvCredit2to6: tpvCredit2to6 ?? undefined,
+                tpvCredit7to12: tpvCredit7to12 ?? undefined,
                 tpvPix: tpvPix ?? undefined,
                 rateDebit: effectiveRateDebit ?? undefined,
                 rateCredit: effectiveRateCredit ?? undefined,
+                rateCredit2to6: effectiveRateCredit2to6 ?? undefined,
+                rateCredit7to12: effectiveRateCredit7to12 ?? undefined,
                 ratePix: effectiveRatePix ?? undefined,
                 rateRav: effectiveRateRav ?? undefined,
                 brandBreakdown: brandBreakdown !== undefined ? brandBreakdown : undefined,
